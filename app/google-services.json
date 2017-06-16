@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "729803344455",
+    "firebase_url": "https://loci-c1be4.firebaseio.com",
+    "project_id": "loci-c1be4",
+    "storage_bucket": "loci-c1be4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729803344455:android:8f851abf12ef7a7e",
+        "android_client_info": {
+          "package_name": "com.lauriedugdale.loci"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "729803344455-rfl0gaovptarottl2ksfh030k27ak73a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPYEMNbP_uQwKge9L5RMWqOOJBG1zLpgE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
