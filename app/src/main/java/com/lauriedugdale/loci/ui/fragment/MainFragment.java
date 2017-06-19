@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,20 +14,33 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.lauriedugdale.loci.DataUtils;
+import com.lauriedugdale.loci.GeoEntry;
 import com.lauriedugdale.loci.R;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mnt_x on 28/05/2017.
@@ -38,9 +53,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMarkerClickListener {
 
+    private static float MAXIMUM_DISTANCE = 50.0f;
+
     private GoogleMap mMap;
-    private MarkerOptions mMarkerOptions;
-    private Marker mMarker;
 
     private GoogleApiClient mGoogleApiClient;
     private Location mCurrentLocation;
@@ -54,6 +69,15 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private int curMapTypeIndex = 3;
 
     private DataUtils mDataUtils;
+
+    private HashMap<String, Marker> visibleMarkers;
+
+    private RelativeLayout mInfoBar;
+    private TextView mInfoBarTitle;
+    private ImageView mInfoBarImage;
+
+    private FusedLocationProviderClient mFusedLocationClient;
+
 
     public static MainFragment create(){
 
@@ -69,8 +93,11 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
         mDataUtils = new DataUtils(getActivity());
+        visibleMarkers = new HashMap<String, Marker>();
+
 
         return view;
     }
@@ -87,6 +114,10 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .addApi( LocationServices.API )
                 .build();
 
+        mInfoBar = (RelativeLayout) getActivity().findViewById(R.id.info_bar);
+        mInfoBarTitle = (TextView) getActivity().findViewById(R.id.info_bar_title);
+        mInfoBarImage = (ImageView) getActivity().findViewById(R.id.info_bar_type);
+
     }
 
     private void initListeners() {
@@ -99,7 +130,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     @Override
     public void onResume() {
         super.onResume();
-
         // get map fragment
         SupportMapFragment smf = ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map));
         smf.getMapAsync(this);
@@ -119,7 +149,85 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         initListeners();
-        mDataUtils.readFile();
+//        mDataUtils.readFile();
+        mMap.setOnCameraIdleListener(getCameraIdleListener());
+
+    }
+
+    public GoogleMap.OnCameraIdleListener getCameraIdleListener()
+    {
+        return new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+
+                LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+                mDataUtils.readFile(bounds.southwest.latitude, bounds.northeast.latitude);
+
+                addEntryToMap();
+            }
+        };
+    }
+
+    public MarkerOptions getMarkerForItem(GeoEntry entry) {
+
+        MarkerOptions mo = new MarkerOptions();
+
+        switch(entry.getFileType()){
+            case DataUtils.NO_MEDIA:
+                mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
+                break;
+            case DataUtils.IMAGE:
+//                .icon(icon)
+//                BitmapDescriptorFactory.fromResource(R.drawable.ic_image)
+//                Bitmap icon  = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_image);
+                mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
+                break;
+            case DataUtils.AUDIO:
+                mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
+                break;
+            default:
+                break;
+        }
+
+        return mo;
+    }
+
+    //Note that the type "Items" will be whatever type of object you're adding markers for so you'll
+    //likely want to create a List of whatever type of items you're trying to add to the map and edit this appropriately
+    //Your "Item" class will need at least a unique id, latitude and longitude.
+    public void addEntryToMap() {
+
+        if(this.mMap != null) {
+            //This is the current user-viewable region of the map
+            LatLngBounds bounds = this.mMap.getProjection().getVisibleRegion().latLngBounds;
+
+            //Loop through all the items that are available to be placed on the map
+            for(Map.Entry<String, GeoEntry> entry : mDataUtils.getEntryList().entrySet()) {
+
+                //If the item is within the the bounds of the screen
+                if(bounds.contains(new LatLng(entry.getValue().getLatitude(), entry.getValue().getLongitude()))) {
+                    //If the item isn't already being displayed
+                    if(!visibleMarkers.containsKey(entry.getValue().getId())) {
+                        //Add the Marker to the Map and keep track of it with the HashMap
+                        //getMarkerForItem just returns a MarkerOptions object
+
+                        Marker m = this.mMap.addMarker(getMarkerForItem(entry.getValue()));
+                        m.setTag(entry.getValue());
+                        this.visibleMarkers.put(entry.getValue().getId(), m);
+                    }
+                } else {
+                    //If the course was previously on screen
+                    if(visibleMarkers.containsKey(entry.getValue().getId())) {
+                        //1. Remove the Marker from the GoogleMap
+                        visibleMarkers.get(entry.getValue().getId()).remove();
+
+                        //2. Remove the reference to the Marker from the HashMap
+                        visibleMarkers.remove(entry.getValue().getId());
+                        mDataUtils.getEntryList().remove(entry.getValue().getId());
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -151,7 +259,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                         location.getLongitude() ) )
                 .zoom( 16f )
                 .bearing( 0.0f )
-                .tilt( 0.0f )
+                .tilt( 0.3f )
                 .build();
 
         getMap().animateCamera( CameraUpdateFactory
@@ -160,30 +268,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         getMap().setMapType( MAP_TYPES[curMapTypeIndex] );
         getMap().setBuildingsEnabled(true);
         getMap().setMyLocationEnabled(true);
-        getMap().getUiSettings().setZoomControlsEnabled( true );
-    }
-
-
-
-    private void initMarkers() {
-//        ClusterManager<ClusterMarkerLocation> clusterManager = new ClusterManager<ClusterMarkerLocation>( this, mGoogleMap );
-//        mMap.setOnCameraChangeListener(clusterManager);
-//
-//
-//        double lat;
-//        double lng;
-//        Random generator = new Random();
-//        for( int i = 0; i < 1000; i++ ) {
-//            lat = generator.nextDouble() / 3;
-//            lng = generator.nextDouble() / 3;
-//            if( generator.nextBoolean() ) {
-//                lat = -lat;
-//            }
-//            if( generator.nextBoolean() ) {
-//                lng = -lng;
-//            }
-//            clusterManager.addItem( new ClusterMarkerLocation( new LatLng( mCenterLocation.latitude + lat, mCenterLocation.longitude + lng ) ) );
-//        }
+//        getMap().getUiSettings().setZoomControlsEnabled( true );
     }
 
     @Override
@@ -203,6 +288,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     @Override
     public void onMapClick(LatLng latLng) {
+        mInfoBar.setVisibility(View.INVISIBLE);
 
     }
 
@@ -212,8 +298,45 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker) {
-        return false;
+    public boolean onMarkerClick(final Marker marker) {
+
+        final Location[] currentLocation = new Location[1];
+        final boolean[] distanceWithinBounds = new boolean[1];
+
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                // Got last known location. In some rare situations this can be null.
+                if (location != null) {
+                    currentLocation[0] = location;
+
+                    Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), marker.getPosition().latitude, marker.getPosition().longitude);
+
+                    distanceWithinBounds[0] = (distance <= MAXIMUM_DISTANCE);
+
+                    System.out.println(distanceWithinBounds[0]);
+                    System.out.println("float distance : " + distance );
+                    if (!distanceWithinBounds[0]){
+                        // TODO Display message about node being too far away
+                        mInfoBar.setVisibility(View.INVISIBLE);
+                        return;
+                    }
+
+                    GeoEntry geoMarker = (GeoEntry) marker.getTag();
+                    mInfoBarTitle.setText(geoMarker.getTitle());
+                    mInfoBar.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+
+        return true;
+    }
+
+    public float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
+        float [] dist = new float[1];
+        Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
+        return dist[0];
     }
 
 }

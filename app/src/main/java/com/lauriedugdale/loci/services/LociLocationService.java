@@ -15,7 +15,7 @@ import android.util.Log;
 
 public class LociLocationService extends Service {
 
-    private static final String TAG = "SensedLocation";
+    private static final String TAG = "LociLocation";
 
     private LocationManager mLocationManager = null;
     private static final int LOCATION_INTERVAL = 1000;

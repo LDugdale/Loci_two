@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -15,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.lauriedugdale.loci.DataUtils;
@@ -32,15 +34,23 @@ public class UploadActivity extends AppCompatActivity {
     private int REQUEST_CAMERA = 0;
     private int SELECT_FILE = 1;
 
+    // ui elements
+    private ImageView mDone;
+    private EditText mTitle;
+    private EditText mDescription;
+
+    // media pickers
     private ImageView mAudioItem;
     private ImageView mImageItem;
     private ImageView mCameraItem;
 
+    // chosen media upload
     private int mChosenTask;
 
     private DataUtils mDataUtils;
 
-
+    private Uri mUploadData;
+    public int mUploadType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +63,15 @@ public class UploadActivity extends AppCompatActivity {
         mImageItem = (ImageView) findViewById(R.id.au_image_picker);
         mAudioItem = (ImageView) findViewById(R.id.au_audio_picker);
         mCameraItem = (ImageView) findViewById(R.id.au_camera_picker);
+        mDone = (ImageView) findViewById(R.id.au_done);
+        mTitle = (EditText) findViewById(R.id.au_entry_title);
+        mDescription = (EditText) findViewById(R.id.au_entry_description);
 
         selectImage();
         selectAudio();
         selectCamera();
+
+        uploadEntry();
 
     }
 
@@ -74,6 +89,22 @@ public class UploadActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    private void uploadEntry(){
+
+        mDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDataUtils.writeNewFile(
+                        mTitle.getText().toString(),
+                        mDescription.getText().toString(),
+                        mUploadData,
+                        mUploadType
+                );
+
+            }
+        });
     }
 
     private void selectImage() {
@@ -182,9 +213,9 @@ public class UploadActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        System.out.println("onSelectFromGalleryResult");
 
-        mDataUtils.writeNewFile(data.getData(), DataUtils.IMAGE);
+        mUploadData = data.getData();
+        mUploadType = DataUtils.IMAGE;
     }
 
     public boolean checkPermission() {

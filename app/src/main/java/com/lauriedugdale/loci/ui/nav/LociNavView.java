@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.ui.activity.UploadActivity;
@@ -29,8 +30,8 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
 
     // represents the four buttons
     private ImageView mCenterImage;
-    private ImageView mStartImage;
-    private ImageView mEndImage;
+    private FrameLayout mStartImage;
+    private FrameLayout mEndImage;
     private ImageView mBottomImage;
     private ImageView mCenterBackgroundImage;
     private ImageView mCenterImageAdd;
@@ -71,8 +72,8 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
         mCenterBackgroundImage = (ImageView) findViewById(R.id.vst_center_background_image);
         mCenterImage = (ImageView) findViewById(R.id.vst_center_image);
         mCenterImageAdd = (ImageView) findViewById(R.id.vst_center_image_add);
-        mStartImage = (ImageView) findViewById(R.id.vst_start_image);
-        mEndImage = (ImageView) findViewById(R.id.vst_end_image);
+        mStartImage = (FrameLayout) findViewById(R.id.vst_start_image);
+        mEndImage = (FrameLayout) findViewById(R.id.vst_end_image);
         mBottomImage = (ImageView) findViewById(R.id.vst_bottom_image);
 
         mIndicator = findViewById(R.id.vst_indicator_image);
@@ -226,7 +227,7 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
         int color = (int) mArgbEvaluator.evaluate(fractionFromCenter, mCenterColor, mSideColor);
 
         mCenterImage.setColorFilter(color);
-        mStartImage.setColorFilter(color);
-        mEndImage.setColorFilter(color);
+//        mStartImage.setColorFilter(color);
+//        mEndImage.setColorFilter(color);
     }
 }

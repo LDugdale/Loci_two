@@ -20,8 +20,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.File;
-import java.util.concurrent.Executor;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mnt_x on 14/06/2017.
@@ -31,6 +32,8 @@ public class DataUtils {
 
     private Context mContext;
 
+    // int representation of what media the entry contains
+    public static final int NO_MEDIA = 0;
     public static final int IMAGE = 1;
     public static final int AUDIO = 2;
 
@@ -39,14 +42,29 @@ public class DataUtils {
     private DatabaseReference mDatabase;
     private FirebaseStorage mStorage;
 
-    public DataUtils(Context context){
+    private Map<String, GeoEntry> mEntryMap;
+
+
+    public DataUtils(Context context) {
+        mContext = context;
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mStorage = FirebaseStorage.getInstance();
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        mEntryMap = new HashMap<String, GeoEntry>();
+    }
+
+    public DataUtils(Context context, List<GeoEntry> entryList) {
         mContext = context;
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mStorage = FirebaseStorage.getInstance();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
-    public String getCurrentUID(){
+    public Map<String, GeoEntry> getEntryList() {
+        return this.mEntryMap;
+    }
+
+    public String getCurrentUID() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = null;
         if (user != null) {
@@ -60,7 +78,7 @@ public class DataUtils {
         mDatabase.child("users").child(getCurrentUID()).setValue(user);
     }
 
-    public void writeNewFile(final Uri path, final int type) {
+    public void writeNewFile(final String title, final String description, final Uri path, final int type) {
 
         uploadNewFile(getCurrentUID(), path);
 
@@ -69,7 +87,7 @@ public class DataUtils {
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    UserUpload user = new UserUpload(location.getLatitude(), location.getLongitude(), path.toString(), type, true);
+                    GeoEntry user = new GeoEntry(title, description, location.getLatitude(), location.getLongitude(), path.toString(), type, true);
                     mDatabase.child("files").push().setValue(user);
                 }
             }
@@ -80,11 +98,11 @@ public class DataUtils {
 
         StorageReference storageRef = mStorage.getReference();
 
-//        Uri file = Uri.fromFile(new File(path));
+        // Uri file = Uri.fromFile(new File(path));
         StorageReference riversRef = storageRef.child(userId + "/images/");
         UploadTask uploadTask = riversRef.putFile(path);
 
-// Register observers to listen for when the download is done or if it fails
+        // Register observers to listen for when the download is done or if it fails
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -99,15 +117,15 @@ public class DataUtils {
         });
     }
 
-    public void readFile(){
+    public void readFile(double latitudeStart, double latitudeEnd){
 
-        mDatabase.child("files").orderByChild("latitude").addChildEventListener(new ChildEventListener() {
+        mDatabase.child("files").orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-
-                UserUpload file = dataSnapshot.getValue(UserUpload.class);
-
-                System.out.println(dataSnapshot.getKey() + " was latitude is:" + file.latitude + " longitude is:" + file.longitude);
+                GeoEntry file = dataSnapshot.getValue(GeoEntry.class);
+                file.setId(dataSnapshot.getKey());
+                mEntryMap.put(dataSnapshot.getKey(), file);
+                System.out.println(dataSnapshot.getKey() + " was latitude is:" + file.getLatitude() + " longitude is:" + file.getLongitude());
             }
 
             @Override
