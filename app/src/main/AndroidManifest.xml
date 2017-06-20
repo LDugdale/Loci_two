@@ -17,7 +17,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.activity.MainActivity"
-            android:theme="@style/FullScreenTheme"></activity>
+            android:theme="@style/FullScreenTheme" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -41,15 +41,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.auth.SignupActivity" />
-        <activity android:name=".ui.activity.auth.ResetPasswordActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".ui.activity.UploadActivity"></activity>
+        <activity android:name=".ui.activity.auth.SignupActivity"
+            android:theme="@style/FullScreenTheme"/>
+        <activity android:name=".ui.activity.auth.ResetPasswordActivity"
+            android:theme="@style/FullScreenTheme"/>
+        <activity android:name=".ui.activity.UploadActivity"
+            android:theme="@style/FullScreenTheme"/>
+        <activity android:name=".ui.activity.ViewEntryActivity"
+            android:theme="@style/FullScreenTheme" />
+        <activity android:name=".ui.activity.FullScreenActivity"
+            android:theme="@style/FullScreenTheme"/>
     </application>
 
 </manifest>

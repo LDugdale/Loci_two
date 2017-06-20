@@ -1,12 +1,6 @@
 package com.lauriedugdale.loci.ui.fragment;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,20 +20,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.lauriedugdale.loci.DataUtils;
+import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.GeoEntry;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.ui.activity.ViewEntryActivity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -75,9 +67,11 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private RelativeLayout mInfoBar;
     private TextView mInfoBarTitle;
     private ImageView mInfoBarImage;
+    private TextView mInfoBarShowEntry;
 
     private FusedLocationProviderClient mFusedLocationClient;
 
+    private String mCurrentEntryID;
 
     public static MainFragment create(){
 
@@ -94,6 +88,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        mCurrentEntryID = "";
 
         mDataUtils = new DataUtils(getActivity());
         visibleMarkers = new HashMap<String, Marker>();
@@ -117,7 +112,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mInfoBar = (RelativeLayout) getActivity().findViewById(R.id.info_bar);
         mInfoBarTitle = (TextView) getActivity().findViewById(R.id.info_bar_title);
         mInfoBarImage = (ImageView) getActivity().findViewById(R.id.info_bar_type);
-
+        mInfoBarShowEntry = (TextView) getActivity().findViewById(R.id.info_bar_show_entry);
     }
 
     private void initListeners() {
@@ -161,7 +156,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             public void onCameraIdle() {
 
                 LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-                mDataUtils.readFile(bounds.southwest.latitude, bounds.northeast.latitude);
+                mDataUtils.readAllEntries(bounds.southwest.latitude, bounds.northeast.latitude);
 
                 addEntryToMap();
             }
@@ -207,23 +202,23 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 //If the item is within the the bounds of the screen
                 if(bounds.contains(new LatLng(entry.getValue().getLatitude(), entry.getValue().getLongitude()))) {
                     //If the item isn't already being displayed
-                    if(!visibleMarkers.containsKey(entry.getValue().getId())) {
+                    if(!visibleMarkers.containsKey(entry.getValue().getEntryID())) {
                         //Add the Marker to the Map and keep track of it with the HashMap
                         //getMarkerForItem just returns a MarkerOptions object
 
                         Marker m = this.mMap.addMarker(getMarkerForItem(entry.getValue()));
                         m.setTag(entry.getValue());
-                        this.visibleMarkers.put(entry.getValue().getId(), m);
+                        this.visibleMarkers.put(entry.getValue().getEntryID(), m);
                     }
                 } else {
                     //If the course was previously on screen
-                    if(visibleMarkers.containsKey(entry.getValue().getId())) {
+                    if(visibleMarkers.containsKey(entry.getValue().getEntryID())) {
                         //1. Remove the Marker from the GoogleMap
-                        visibleMarkers.get(entry.getValue().getId()).remove();
+                        visibleMarkers.get(entry.getValue().getEntryID()).remove();
 
                         //2. Remove the reference to the Marker from the HashMap
-                        visibleMarkers.remove(entry.getValue().getId());
-                        mDataUtils.getEntryList().remove(entry.getValue().getId());
+                        visibleMarkers.remove(entry.getValue().getEntryID());
+//                        mDataUtils.getEntryList().remove(entry.getValue().getId());
                     }
                 }
             }
@@ -299,44 +294,72 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+        showEntry(marker.getPosition().latitude, marker.getPosition().longitude, (GeoEntry)marker.getTag());
+
+        GeoEntry geoMarker = (GeoEntry) marker.getTag();
+        mCurrentEntryID = geoMarker.getEntryID();
+        setInfoBarImage(geoMarker.getFileType());
+
+        mInfoBarTitle.setText(geoMarker.getTitle());
+        mInfoBar.setVisibility(View.VISIBLE);
+
+        return true;
+    }
+
+    private void setInfoBarImage(int type){
+
+        switch(type){
+            case DataUtils.NO_MEDIA:
+                break;
+            case DataUtils.IMAGE:
+                mInfoBarImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_image));
+                break;
+            case DataUtils.AUDIO:
+                mInfoBarImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_audiotrack));
+                break;
+            default:
+                break;
+        }
+    }
+
+    private float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
+        float [] dist = new float[1];
+        Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
+        return dist[0];
+    }
+
+    public void showEntry(final double markerLat, final double markerLng, final GeoEntry entry){
 
         final Location[] currentLocation = new Location[1];
         final boolean[] distanceWithinBounds = new boolean[1];
-
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+        mInfoBarShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onSuccess(Location location) {
+            public void onClick(View v) {
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
                     currentLocation[0] = location;
 
-                    Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), marker.getPosition().latitude, marker.getPosition().longitude);
+                    Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), markerLat, markerLng);
 
                     distanceWithinBounds[0] = (distance <= MAXIMUM_DISTANCE);
 
-                    System.out.println(distanceWithinBounds[0]);
-                    System.out.println("float distance : " + distance );
                     if (!distanceWithinBounds[0]){
                         // TODO Display message about node being too far away
                         mInfoBar.setVisibility(View.INVISIBLE);
                         return;
                     }
-
-                    GeoEntry geoMarker = (GeoEntry) marker.getTag();
-                    mInfoBarTitle.setText(geoMarker.getTitle());
-                    mInfoBar.setVisibility(View.VISIBLE);
                 }
+                }
+            });
+
+            Intent startViewEntryIntent = new Intent(getActivity(), ViewEntryActivity.class);
+            startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
+            getActivity().startActivity(startViewEntryIntent);
             }
         });
-
-
-        return true;
-    }
-
-    public float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
-        float [] dist = new float[1];
-        Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
-        return dist[0];
     }
 
 }

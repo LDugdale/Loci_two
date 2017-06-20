@@ -19,7 +19,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.lauriedugdale.loci.DataUtils;
+import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.R;
 
 import java.io.ByteArrayOutputStream;
@@ -33,6 +33,7 @@ public class UploadActivity extends AppCompatActivity {
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
     private int REQUEST_CAMERA = 0;
     private int SELECT_FILE = 1;
+    private int SELECT_AUDIO = 2;
 
     // ui elements
     private ImageView mDone;
@@ -80,10 +81,13 @@ public class UploadActivity extends AppCompatActivity {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if(mChosenTask == REQUEST_CAMERA)
+                    if(mChosenTask == REQUEST_CAMERA) {
                         cameraIntent();
-                    else if(mChosenTask == SELECT_FILE)
+                    } else if(mChosenTask == SELECT_FILE) {
                         galleryIntent();
+                    } else if(mChosenTask == SELECT_AUDIO){
+                        audioIntent();
+                    }
                 } else {
                     //code for deny
                 }
@@ -94,14 +98,24 @@ public class UploadActivity extends AppCompatActivity {
     private void uploadEntry(){
 
         mDone.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
-                mDataUtils.writeNewFile(
-                        mTitle.getText().toString(),
-                        mDescription.getText().toString(),
-                        mUploadData,
-                        mUploadType
-                );
+
+                if (mUploadData == null){
+                    mDataUtils.writeNewFile(
+                            mTitle.getText().toString(),
+                            mDescription.getText().toString(),
+                            mUploadType
+                    );
+                } else {
+                    mDataUtils.writeNewFile(
+                            mTitle.getText().toString(),
+                            mDescription.getText().toString(),
+                            mUploadData,
+                            mUploadType
+                    );
+                }
 
             }
         });
@@ -111,7 +125,6 @@ public class UploadActivity extends AppCompatActivity {
         mImageItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("test");
                 boolean result=checkPermission();
                 mChosenTask = SELECT_FILE;
                 if(result) {
@@ -126,7 +139,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 boolean result=checkPermission();
-                mChosenTask = SELECT_FILE;
+                mChosenTask = SELECT_AUDIO;
                 if(result) {
                     audioIntent();
                 }
@@ -156,9 +169,9 @@ public class UploadActivity extends AppCompatActivity {
 
     private void audioIntent() {
         Intent intent = new Intent();
-        intent.setType("image/*");
+        intent.setType("audio/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);//
-        startActivityForResult(Intent.createChooser(intent, "Select File"),SELECT_FILE);
+        startActivityForResult(Intent.createChooser(intent, "Select File"),SELECT_AUDIO);
     }
 
 
@@ -172,10 +185,13 @@ public class UploadActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == SELECT_FILE)
+            if (requestCode == SELECT_FILE) {
                 onSelectFromGalleryResult(data);
-            else if (requestCode == REQUEST_CAMERA)
+            } else if (requestCode == REQUEST_CAMERA) {
                 onCaptureImageResult(data);
+            } else if (requestCode == SELECT_AUDIO){
+                onSelectAudioResult(data);
+            }
         }
     }
 
@@ -199,23 +215,19 @@ public class UploadActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-//        ivImage.setImageBitmap(thumbnail);
+        mUploadData = Uri.parse(destination.toURI().toString());
+        mUploadType = DataUtils.IMAGE;
     }
 
     @SuppressWarnings("deprecation")
     private void onSelectFromGalleryResult(Intent data) {
-
-        Bitmap bm=null;
-        if (data != null) {
-            try {
-                bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
         mUploadData = data.getData();
         mUploadType = DataUtils.IMAGE;
+    }
+
+    private void onSelectAudioResult(Intent data) {
+        mUploadData = data.getData();
+        mUploadType = DataUtils.AUDIO;
     }
 
     public boolean checkPermission() {
