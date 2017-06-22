@@ -6,30 +6,37 @@
 
 
     <fragment
-        android:layout_marginTop="50dp"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <View
+        android:layout_marginTop="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+        android:background="@color/light_grey"/>
+
     <RelativeLayout
         android:id="@+id/info_bar"
         android:layout_width="match_parent"
-        android:layout_height="90dp"
+        android:layout_height="wrap_content"
         android:background="@color/white"
         android:layout_gravity="top"
         android:layout_marginTop="70dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:padding="10dp"
         android:visibility="invisible">
 
         <RelativeLayout
             android:id="@+id/top_info_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true">
+            android:layout_alignParentTop="true"
+            android:padding="10dp">
 
             <TextView
                 android:id="@+id/info_bar_title"
@@ -49,13 +56,15 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/top_info_bar">
+            android:layout_below="@id/top_info_bar"
+            android:background="@color/green">
 
             <TextView
                 android:id="@+id/info_bar_show_entry"
-                android:layout_alignParentBottom="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textColor="@color/white"
                 android:text="@string/show_entry"/>
 
         </RelativeLayout>

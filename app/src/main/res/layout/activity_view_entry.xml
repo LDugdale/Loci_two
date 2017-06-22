@@ -5,17 +5,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.lauriedugdale.loci.ui.activity.ViewEntryActivity">
+    tools:context="com.lauriedugdale.loci.ui.activity.ImageEntryActivity">
 
-    <ImageView
-        android:id="@+id/view_entry_hero_image"
+    <FrameLayout
+        android:id="@+id/view_entry_hero_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"/>
+        android:background="@color/green">
+
+        <ImageView
+            android:id="@+id/view_entry_hero_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/view_entry_title_bar"
-        android:layout_alignBottom="@+id/view_entry_hero_image"
+        android:layout_alignBottom="@+id/view_entry_hero_container"
         android:background="@color/green"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -36,5 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/entry_description"/>
+
+
 
 </RelativeLayout>

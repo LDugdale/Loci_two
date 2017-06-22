@@ -3,26 +3,20 @@ package com.lauriedugdale.loci.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.lauriedugdale.loci.GeoEntry;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 
-public class ViewEntryActivity extends AppCompatActivity {
-
-    public static final String TAG = "ViewEntryActivity";
+public class ImageEntryActivity extends AppCompatActivity {
+    public static final String TAG = "ImageEntryActivity";
 
     private DataUtils mDataUtils;
 
@@ -31,8 +25,6 @@ public class ViewEntryActivity extends AppCompatActivity {
     private TextView mTitle;
     private TextView mDescription;
     private ImageView mHeroImage;
-
-    boolean isImageFitToScreen;
 
 
     @Override
@@ -51,14 +43,15 @@ public class ViewEntryActivity extends AppCompatActivity {
         mDescription = (TextView) findViewById(R.id.view_entry_description);
         mHeroImage = (ImageView) findViewById(R.id.view_entry_hero_image);
 
-
+        // set description and title
         mTitle.setText(mGeoEntry.getTitle());
         mDescription.setText(mGeoEntry.getDescription());
 
+        // fetch Image from database and display it
         mDataUtils.readEntry(mHeroImage, mGeoEntry.getEntryID(), mGeoEntry.getFilePath());
-
-
         imageListener();
+
+
     }
 
     public void imageListener(){
@@ -92,4 +85,5 @@ public class ViewEntryActivity extends AppCompatActivity {
             }
         });
     }
+
 }

@@ -3,30 +3,38 @@
     android:layout_width="match_parent"
     tools:background="@color/light_blue"
     android:layout_height="match_parent"
+    android:background="@color/light_grey"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp">
+    <!--<FrameLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="200dp">-->
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center|bottom"/>
-    </FrameLayout>
+        <!--<ImageView-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_gravity="center|bottom"/>-->
+    <!--</FrameLayout>-->
 
-    <View
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginTop="50dp"-->
+        <!--android:background="@drawable/card_background_grey"/>-->
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_social"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="50dp"
-        android:background="@drawable/card_background_grey"/>
+        android:background="@drawable/card_background"/>
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/black"
-        android:layout_marginTop="50dp"
-        android:layout_gravity="top"
-        android:alpha="0.2"/>
+    <!--<ImageView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="5dp"-->
+        <!--android:background="@color/black"-->
+        <!--android:layout_marginTop="50dp"-->
+        <!--android:layout_gravity="top"-->
+        <!--android:alpha="0.2"/>-->
 
 </FrameLayout>

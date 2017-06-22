@@ -1,22 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.lauriedugdale.loci.ui.activity.MainActivity">
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/am_view_pager"
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:context="com.learn2crack.myapplication.MainActivity">
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/am_sensed_tabs"
-            android:layout_alignParentStart="true"/>
+            android:layout_height="match_parent">
 
-        <com.lauriedugdale.loci.ui.nav.LociNavView
-            android:id="@+id/am_sensed_tabs"
+            <android.support.v4.view.ViewPager
+                android:id="@+id/am_view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignBottom="@+id/am_loci_tabs"
+                android:layout_alignParentStart="true"/>
+
+
+            <com.lauriedugdale.loci.ui.nav.LociNavView
+                android:id="@+id/am_loci_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"/>
+
+        </RelativeLayout>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"/>
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/green"
+            android:titleTextColor="@color/white"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-</RelativeLayout>
+            <!--<android.support.v7.widget.Toolbar-->
+
+                <!--android:id="@+id/toolbar"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="?attr/actionBarSize"-->
+                <!--android:background="?attr/colorPrimary"-->
+                <!--app:popupTheme="@style/AppTheme.PopupOverlay" />-->
+
+        <!--</android.support.design.widget.AppBarLayout>-->
+
+
+    </android.support.design.widget.CoordinatorLayout>
+
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/menu_navigation"/>
+
+
+
+</android.support.v4.widget.DrawerLayout>

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -25,7 +26,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.GeoEntry;
 import com.lauriedugdale.loci.User;
+import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +57,8 @@ public class DataUtils {
 
     // stores a single GeoEntry
     private GeoEntry mGeoEntry;
+
+
 
     public DataUtils(Context context) {
         mContext = context;
@@ -138,6 +143,75 @@ public class DataUtils {
         });
     }
 
+    public void fetchUserFriends(final SocialAdapter adapter, final SocialAdapter.SocialAdapterOnClickHandler clickHandler){
+
+//        // Read from the database
+//        FirebaseDatabase database = FirebaseDatabase.getInstance();
+//        DatabaseReference myRef = database.getReference("users");
+//
+//        myRef.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                ArrayList<User> values = new ArrayList<User>();
+//
+//
+//                for (DataSnapshot entry: dataSnapshot.getChildren()) {
+////                    System.out.println(entry.getValue());
+//                    User user = dataSnapshot.getValue(User.class);
+//                    System.out.println(user.email);
+//                    values.add(user);
+//                }
+//                // This method is called once with the initial value and again
+//                // whenever data at this location is updated.
+//
+//
+//                SocialAdapter adapter = new SocialAdapter(mContext, values, clickHandler);
+//                recyclerView.setAdapter(adapter);
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError error) {
+//                // Failed to read value
+//
+//            }
+//        });
+
+        mDatabase.child("users").addChildEventListener(new ChildEventListener() {
+
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                for (DataSnapshot entry: dataSnapshot.getChildren()) {
+                    User user = dataSnapshot.getValue(User.class);
+                    adapter.addToUsers(user);
+                }
+                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
 
     public void readAllEntries(double latitudeStart, double latitudeEnd){
 
@@ -181,7 +255,6 @@ public class DataUtils {
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
 //                System.out.println("datasnapshot : " + dataSnapshot.getKey());
                 GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
-                System.out.println(entry.getEntryID());
                 StorageReference storageRef = mStorage.getReferenceFromUrl(entry.getFilePath());
 
                 Glide.with(mContext)

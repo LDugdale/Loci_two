@@ -1,6 +1,7 @@
 package com.lauriedugdale.loci.ui.fragment;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -20,6 +21,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -29,7 +32,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.GeoEntry;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.ui.activity.ViewEntryActivity;
+import com.lauriedugdale.loci.ui.activity.AudioEntryActivity;
+import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
+import com.lauriedugdale.loci.ui.activity.ImageEntryActivity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,7 +76,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     private FusedLocationProviderClient mFusedLocationClient;
 
-    private String mCurrentEntryID;
+    private GeoEntry mCurrentEntry;
+
+    private boolean mIsWithinBounds;
 
     public static MainFragment create(){
 
@@ -88,7 +95,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
-        mCurrentEntryID = "";
 
         mDataUtils = new DataUtils(getActivity());
         visibleMarkers = new HashMap<String, Marker>();
@@ -166,21 +172,21 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public MarkerOptions getMarkerForItem(GeoEntry entry) {
 
         MarkerOptions mo = new MarkerOptions();
+        mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
 
         switch(entry.getFileType()){
             case DataUtils.NO_MEDIA:
-                mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
+                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.blank_marker ) ) );
                 break;
             case DataUtils.IMAGE:
-//                .icon(icon)
-//                BitmapDescriptorFactory.fromResource(R.drawable.ic_image)
-//                Bitmap icon  = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_image);
-                mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
+                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.image_marker ) ) );
+
                 break;
             case DataUtils.AUDIO:
-                mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
+                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.audio_marker ) ) );
                 break;
             default:
+                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.blank_marker ) ) );
                 break;
         }
 
@@ -257,12 +263,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .tilt( 0.3f )
                 .build();
 
-        getMap().animateCamera( CameraUpdateFactory
-                .newCameraPosition( position ), null );
+        getMap().animateCamera( CameraUpdateFactory.newCameraPosition( position ), null );
 
         getMap().setMapType( MAP_TYPES[curMapTypeIndex] );
         getMap().setBuildingsEnabled(true);
         getMap().setMyLocationEnabled(true);
+        getMap().getUiSettings().setMyLocationButtonEnabled(false);
+
 //        getMap().getUiSettings().setZoomControlsEnabled( true );
     }
 
@@ -294,25 +301,28 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        showEntry(marker.getPosition().latitude, marker.getPosition().longitude, (GeoEntry)marker.getTag());
+        checkDistance(marker.getPosition().latitude, marker.getPosition().longitude);
+        mCurrentEntry = (GeoEntry)marker.getTag();
 
         GeoEntry geoMarker = (GeoEntry) marker.getTag();
-        mCurrentEntryID = geoMarker.getEntryID();
         setInfoBarImage(geoMarker.getFileType());
 
         mInfoBarTitle.setText(geoMarker.getTitle());
         mInfoBar.setVisibility(View.VISIBLE);
+        showEntry();
 
         return true;
     }
 
     private void setInfoBarImage(int type){
-
+        // remove previous listener
+        mInfoBarImage.setOnClickListener(null);
         switch(type){
             case DataUtils.NO_MEDIA:
                 break;
             case DataUtils.IMAGE:
                 mInfoBarImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_image));
+                showImage();
                 break;
             case DataUtils.AUDIO:
                 mInfoBarImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_audiotrack));
@@ -322,42 +332,85 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         }
     }
 
+    public void showImage(){
+
+        if(!mIsWithinBounds){
+            return;
+        }
+
+        mInfoBarImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent startViewEntryIntent = new Intent(getActivity(), FullScreenActivity.class);
+                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
+                getActivity().startActivity(startViewEntryIntent);
+            }
+        });
+    }
+
+    public void playAudio(){
+
+        if(!mIsWithinBounds){
+            return;
+        }
+
+        mInfoBarImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+    }
+
     private float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
         float [] dist = new float[1];
         Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
         return dist[0];
     }
 
-    public void showEntry(final double markerLat, final double markerLng, final GeoEntry entry){
+    public void showEntry(){
 
-        final Location[] currentLocation = new Location[1];
-        final boolean[] distanceWithinBounds = new boolean[1];
+        if(!mIsWithinBounds){
+            return;
+        }
         mInfoBarShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
+            Intent startViewEntryIntent = new Intent(getActivity(), getDestination());
+            startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
+            getActivity().startActivity(startViewEntryIntent);
+            }
+        });
+    }
+
+    public Class getDestination(){
+        Class destination = null;
+        switch(mCurrentEntry.getFileType()){
+            case DataUtils.IMAGE:
+                destination = ImageEntryActivity.class;
+                break;
+            case DataUtils.AUDIO:
+                destination = AudioEntryActivity.class;
+                break;
+            default:
+                break;
+        }
+
+        return destination;
+    }
+
+    public void checkDistance(final double markerLat, final double markerLng){
+
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    currentLocation[0] = location;
 
                     Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), markerLat, markerLng);
 
-                    distanceWithinBounds[0] = (distance <= MAXIMUM_DISTANCE);
-
-                    if (!distanceWithinBounds[0]){
-                        // TODO Display message about node being too far away
-                        mInfoBar.setVisibility(View.INVISIBLE);
-                        return;
-                    }
+                    mIsWithinBounds = (distance <= MAXIMUM_DISTANCE);
                 }
-                }
-            });
-
-            Intent startViewEntryIntent = new Intent(getActivity(), ViewEntryActivity.class);
-            startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
-            getActivity().startActivity(startViewEntryIntent);
             }
         });
     }

@@ -37,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         //Get Firebase auth instance
         mAuth = FirebaseAuth.getInstance();
 
+        // if curretn used is not null meaning that they are already signed in, load the main activity class
         if (mAuth.getCurrentUser() != null) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
             finish();

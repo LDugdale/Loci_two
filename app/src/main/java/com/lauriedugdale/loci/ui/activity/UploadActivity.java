@@ -95,6 +95,10 @@ public class UploadActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Upload the details that have been entered and return to the main Fragment
+     * uses mDataUtils to writeNerFile method to add the data to firebase.
+     */
     private void uploadEntry(){
 
         mDone.setOnClickListener(new View.OnClickListener() {
@@ -108,6 +112,8 @@ public class UploadActivity extends AppCompatActivity {
                             mDescription.getText().toString(),
                             mUploadType
                     );
+                    finish();
+
                 } else {
                     mDataUtils.writeNewFile(
                             mTitle.getText().toString(),
@@ -115,10 +121,13 @@ public class UploadActivity extends AppCompatActivity {
                             mUploadData,
                             mUploadType
                     );
+                    finish();
                 }
 
             }
         });
+
+
     }
 
     private void selectImage() {
