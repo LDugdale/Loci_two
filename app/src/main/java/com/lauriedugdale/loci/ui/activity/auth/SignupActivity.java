@@ -21,6 +21,7 @@ import com.lauriedugdale.loci.ui.activity.MainActivity;
 
 public class SignupActivity extends AppCompatActivity {
 
+    private EditText mInputUsername;
     private EditText mInputEmail;
     private EditText mInputPassword;
     private Button mBtnSignIn;
@@ -30,6 +31,7 @@ public class SignupActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DataUtils mDatabaseUtils;
 
+    private String mUsername;
     private String mEmail;
 
     @Override
@@ -45,6 +47,7 @@ public class SignupActivity extends AppCompatActivity {
 
         mBtnSignIn = (Button) findViewById(R.id.sign_in_button);
         mBtnSignUp = (Button) findViewById(R.id.sign_up_button);
+        mInputUsername = (EditText) findViewById(R.id.username);
         mInputEmail = (EditText) findViewById(R.id.email);
         mInputPassword = (EditText) findViewById(R.id.password);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -68,6 +71,7 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                mUsername = mInputUsername.getText().toString().trim();
                 mEmail = mInputEmail.getText().toString().trim();
                 String password = mInputPassword.getText().toString().trim();
 
@@ -103,7 +107,7 @@ public class SignupActivity extends AppCompatActivity {
                                 } else {
                                     startActivity(new Intent(SignupActivity.this, MainActivity.class));
 
-                                    mDatabaseUtils.writeNewUser(mEmail);
+                                    mDatabaseUtils.writeNewUser(mUsername, mEmail);
                                     finish();
                                 }
                             }

@@ -3,6 +3,8 @@
 
     // login and sign up
     <string name="action_sign_in_short">Register</string>
+    <string name="username">Username</string>
+    <string name="long_name">Username is too long</string>
     <string name="email">Email</string>
     <string name="minimum_password">Password too short, enter minimum 6 characters!</string>
     <string name="auth_failed">Authentication failed, check your email and password or sign up</string>
@@ -17,7 +19,7 @@
     <string name="hint_password">Password</string>
     <string name="hint_name">Fullname</string>
     <string name="btn_login">LOGIN</string>
-    <string name="btn_link_to_register">Not a member? Get registered in Firebase now!</string>
+    <string name="btn_link_to_register">Not a member? Get registered!</string>
     <string name="btn_link_to_login">Already registered. Login Me!</string>
     <string name="title_activity_reset_password">ResetPasswordActivity</string>
     <string name="btn_forgot_password">Forgot your password?</string>
@@ -59,6 +61,14 @@
         <item>Notifications</item>
         <item>Settings</item>
     </string-array>
+
+    <string name="search">Search</string>
+    <string name="search_input">Enter username</string>
+    <string name="add_user">add</string>
+
+    <string name="add_filters">Apply</string>
+    <string name="friend_filter">Filter by your friends</string>
+    <string name="group_filter">Filter by your groups</string>
 
     <string name="activity_title_about_us">About Us</string>
     <string name="activity_title_privacy_policy">Privacy Policy</string>

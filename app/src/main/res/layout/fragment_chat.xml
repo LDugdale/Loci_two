@@ -1,26 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     tools:background="@color/light_blue"
     android:layout_height="match_parent"
     android:background="@color/light_grey"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <!--<FrameLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="200dp">-->
-
-        <!--<ImageView-->
-            <!--android:layout_width="50dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:layout_gravity="center|bottom"/>-->
-    <!--</FrameLayout>-->
-
-    <!--<View-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_marginTop="50dp"-->
-        <!--android:background="@drawable/card_background_grey"/>-->
+    android:id="@+id/social_frag">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_social"
@@ -28,13 +14,5 @@
         android:layout_height="match_parent"
         android:layout_marginTop="50dp"
         android:background="@drawable/card_background"/>
-
-    <!--<ImageView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="5dp"-->
-        <!--android:background="@color/black"-->
-        <!--android:layout_marginTop="50dp"-->
-        <!--android:layout_gravity="top"-->
-        <!--android:alpha="0.2"/>-->
 
 </FrameLayout>

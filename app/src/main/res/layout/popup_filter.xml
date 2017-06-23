@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="50dp">
+
+    <LinearLayout
+        android:id="@+id/filter_checkboxes"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <CheckBox android:id="@+id/checkbox_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onCheckboxClicked"/>
+        <CheckBox android:id="@+id/checkbox_audio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onCheckboxClicked"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/filter_add_friends"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:layout_below="@+id/filter_checkboxes">
+
+        <TextView
+            android:layout_weight="20"
+            android:text="@string/friend_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:height="30dp"
+            android:gravity="center_vertical"/>
+        <ImageView
+            android:layout_weight="1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_add_circle"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/filter_add_groups"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:layout_below="@+id/filter_add_friends">
+
+        <TextView
+            android:layout_weight="20"
+            android:text="@string/group_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:height="30dp"
+            android:gravity="center_vertical"/>
+        <ImageView
+            android:layout_weight="1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_add_circle"/>
+
+    </LinearLayout>
+    <Button
+        android:id="@+id/apply_filters"
+        android:background="@color/green"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:text="@string/add_filters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>

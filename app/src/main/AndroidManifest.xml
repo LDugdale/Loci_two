@@ -17,8 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.activity.MainActivity"
-            android:theme="@style/FullScreenTheme" />
+            android:name=".ui.activity.MainActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -67,7 +66,8 @@
         <activity
             android:name=".NavDraw"
             android:label="@string/title_activity_nav_draw"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
+        <activity android:name=".ui.activity.SelectFriend"></activity>
     </application>
 
 </manifest>

@@ -9,6 +9,7 @@ import android.os.Parcelable;
 
 public class GeoEntry implements Parcelable{
 
+    private String creator;
     private String title;
     private String description;
     private double latitude;
@@ -16,12 +17,14 @@ public class GeoEntry implements Parcelable{
     private String filePath;
     private int fileType;
     private String entryID;
+    private long uploadDate;
 
     public GeoEntry() {
         // Default constructor required for calls to DataSnapshot.getValue(File.class)
     }
 
     private GeoEntry(Parcel in) {
+        creator = in.readString();
         title = in.readString();
         description = in.readString();
         latitude = in.readDouble();
@@ -29,16 +32,23 @@ public class GeoEntry implements Parcelable{
         filePath = in.readString();
         fileType = in.readInt();
         entryID = in.readString();
+        uploadDate = in.readLong();
 
     }
 
-    public GeoEntry(String title, String description, double latitude, double longitude, String filePath, int fileType) {
+    public GeoEntry(String creator, String title, String description, double latitude, double longitude, String filePath, int fileType, long uploadDate) {
+        this.creator = creator;
         this.title = title;
         this.description = description;
         this.latitude = latitude;
         this.longitude = longitude;
         this.filePath = filePath;
         this.fileType = fileType;
+        this.uploadDate = uploadDate;
+    }
+
+    public String getCreator() {
+        return creator;
     }
 
     public String getTitle() {
@@ -73,6 +83,13 @@ public class GeoEntry implements Parcelable{
         this.entryID = entryID;
     }
 
+    public long getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(long uploadDate) {
+        this.uploadDate = uploadDate;
+    }
 
     @Override
     public int describeContents() {
@@ -81,6 +98,7 @@ public class GeoEntry implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(creator);
         dest.writeString(title);
         dest.writeString(description);
         dest.writeDouble(latitude);
@@ -88,6 +106,7 @@ public class GeoEntry implements Parcelable{
         dest.writeString(filePath);
         dest.writeInt(fileType);
         dest.writeString(entryID);
+        dest.writeLong(uploadDate);
 
     }
 
