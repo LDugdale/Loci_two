@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.activity;
+package com.lauriedugdale.loci.ui.activity.entry;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,12 +8,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.lauriedugdale.loci.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class ImageEntryActivity extends AppCompatActivity {
     public static final String TAG = "ImageEntryActivity";

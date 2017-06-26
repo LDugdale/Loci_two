@@ -1,8 +1,12 @@
 package com.lauriedugdale.loci.ui.fragment;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
+import android.icu.text.SimpleDateFormat;
+import android.icu.util.Calendar;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,12 +14,18 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -25,7 +35,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,14 +43,19 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.ui.activity.AudioEntryActivity;
+import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
-import com.lauriedugdale.loci.ui.activity.ImageEntryActivity;
+import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
 
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -87,6 +101,21 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private ImageView mInfoBarImage;
     private TextView mInfoBarShowEntry;
 
+    // time controls
+    private final static String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
+    private final static String DATE = "dd-MM-yyyy";
+    private SimpleDateFormat mDateTime;
+    private Calendar mCalendar;
+    private TextView mDisplayFromDate;
+    private TextView mDisplayToDate;
+    private DatePickerDialog mFromTimePicker;
+    private DatePickerDialog mToTimePicker;
+    private Button mFilterButton;
+
+    // filter variables
+    private FilterOptions mFilterOptions;
+    private FilterOptions mTempFilterOptions;
+
 
     /**
      * Used to return fragment for viewpager quickly
@@ -111,6 +140,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         visibleMarkers = new HashMap<String, Marker>();
         mEntryMap = new HashMap<String, GeoEntry>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        mFilterOptions = new FilterOptions();
+
+
 
         return view;
     }
@@ -132,6 +164,26 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mInfoBarTitle = (TextView) getActivity().findViewById(R.id.info_bar_title);
         mInfoBarImage = (ImageView) getActivity().findViewById(R.id.info_bar_type);
         mInfoBarShowEntry = (TextView) getActivity().findViewById(R.id.info_bar_show_entry);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem addFriendItem = menu.findItem(R.id.action_add_friend);
+        addFriendItem.setVisible(false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.action_filter) {
+            showSelectFriendsPopup(mInfoBar);
+        }
+
+
+            return false;
     }
 
     @Override
@@ -169,10 +221,14 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             @Override
             public void onCameraIdle() {
 
-            LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-            mDataUtils.readAllEntries(bounds.southwest.latitude, bounds.northeast.latitude, mEntryMap);
-
-            addEntryToMap();
+                LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+                mDataUtils.readAllEntries(bounds.southwest.latitude,
+                                          bounds.northeast.latitude,
+                                          mFilterOptions.getNumericalFromDate(),
+                                          mFilterOptions.getNumericalToDate(),
+                                          mFilterOptions.getCheckedTypes(),
+                                          mEntryMap);
+                addEntryToMap();
             }
         };
     }
@@ -216,12 +272,11 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             LatLngBounds bounds = this.mMap.getProjection().getVisibleRegion().latLngBounds;
 
             //Loop through all the items that are available to be placed on the map
-//            for(Map.Entry<String, GeoEntry> entry : mEntryMap.entrySet()) {
             Iterator it = mEntryMap.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
                 GeoEntry entry = (GeoEntry) pair.getValue();
-                //If the item is within the the bounds of the screen
+
                 if(bounds.contains(new LatLng(entry.getLatitude(), entry.getLongitude()))) {
                     //If the item isn't already being displayed
                     if(!visibleMarkers.containsKey(entry.getEntryID())) {
@@ -246,9 +301,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             }
         }
     }
-
-
-
 
     @Override
     public void onStart() {
@@ -445,23 +497,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public void showSelectFriendsPopup(View anchorView) {
 
         // TODO check boxes for media types and date pickers to and from dates
-
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_filter, null);
 
-        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
-
-
-        // Example: If you have a TextView inside `popup_layout.xml`
-//        TextView tv = (TextView) popupView.findViewById(R.id.tv);
-//
-//        tv.setText(....);
-
-        // Initialize more widgets from `popup_layout.xml`
-
+//        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
 
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
-
         // If you need the PopupWindow to dismiss when when touched outside
         popupWindow.setBackgroundDrawable(new ColorDrawable());
 
@@ -471,9 +513,130 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         anchorView.getLocationOnScreen(location);
 
         // Using location, the PopupWindow will be displayed right under anchorView
-        popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY,
-                location[0], location[1] + anchorView.getHeight());
+        popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
 
+        // connect time UI elements
+        mDisplayFromDate = (TextView) popupView.findViewById(R.id.display_from_date);
+        mDisplayToDate = (TextView) popupView.findViewById(R.id.display_to_date);
+
+        final CheckBox checkBoxImage = (CheckBox) popupView.findViewById(R.id.checkbox_image);
+        final CheckBox checkBoxAudio = (CheckBox) popupView.findViewById(R.id.checkbox_audio);
+        Button button = (Button) popupView.findViewById(R.id.apply_filters);
+        mTempFilterOptions = new FilterOptions();
+
+        mDisplayToDate.setText(mFilterOptions.getToDate());
+        mDisplayFromDate.setText(mFilterOptions.getFromDate());
+
+        checkBoxImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkBoxImage.isChecked()){
+                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, true);
+                } else {
+                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, false);
+                }
+            }
+        });
+
+        checkBoxAudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkBoxAudio.isChecked()){
+                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, true);
+                } else {
+                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, false);
+                }
+            }
+        });
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mFilterOptions.setFromDate(mTempFilterOptions.getFromDate());
+                mFilterOptions.setToDate(mTempFilterOptions.getToDate());
+                mFilterOptions.setCheckedTypes(mTempFilterOptions.getCheckedTypes());
+                popupWindow.dismiss();
+            }
+        });
+
+        dateTimeListeners();
+    }
+
+    public void dateTimeListeners(){
+
+        mDateTime = new SimpleDateFormat(DATE_TIME, Locale.UK);
+
+        mCalendar = Calendar.getInstance();
+
+
+        // listner for text field, launches android calendar
+        mDisplayFromDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mFromTimePicker.show();
+            }
+        });
+
+        // listner for text field, launches android calendar
+        mDisplayToDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mToTimePicker.show();
+            }
+        });
+
+
+        // date listner update when changed
+        mFromTimePicker = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                mCalendar.set(year, monthOfYear, dayOfMonth);
+                mDateTime.applyPattern(DATE);
+                String fromDate = mDateTime.format(mCalendar.getTime());
+                mDisplayFromDate.setText(fromDate);
+                mTempFilterOptions.setFromDate(fromDate);
+            }
+
+        },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
+
+        // date listner update when changed
+        mToTimePicker = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                mCalendar.set(year, monthOfYear, dayOfMonth);
+                mDateTime.applyPattern(DATE);
+                String toDate = mDateTime.format(mCalendar.getTime());
+                mDisplayToDate.setText(toDate);
+                mTempFilterOptions.setToDate(toDate);
+            }
+
+        },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    public void onCheckboxClicked(View view) {
+
+
+
+//        // is it checked
+//        boolean checked = ((CheckBox) view).isChecked();
+//
+//        // Check which checkbox was clicked
+//        switch(view.getId()) {
+//            case R.id.checkbox_image:
+//                if (checked){
+//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, true);
+//                } else {
+//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, false);                }
+//                break;
+//            case R.id.checkbox_audio:
+//                if (checked){
+//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, true);
+//                } else {
+//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, false);
+//                }
+//                break;
+//        }
     }
 
 }

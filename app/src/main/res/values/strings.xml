@@ -65,7 +65,23 @@
     <string name="search">Search</string>
     <string name="search_input">Enter username</string>
     <string name="add_user">add</string>
+    <string name="accept_user">Accept</string>
+    <string name="reject_user">Reject</string>
 
+    <string name="entry_title">Title</string>
+    <string name="entry_description">Description</string>
+
+
+    <string name="entry_viewable_title">Who can see?</string>
+    <string name="entry_viewable_anoyone">Everyone</string>
+    <string name="entry_viewable_friends">Just Friends</string>
+    <string name="entry_viewable_none">Only me</string>
+
+
+
+    <string name="filter_title">Filter search results</string>
+    <string name="type_filter_title">Choose media type</string>
+    <string name="date_filter_title">Choose date</string>
     <string name="add_filters">Apply</string>
     <string name="friend_filter">Filter by your friends</string>
     <string name="group_filter">Filter by your groups</string>

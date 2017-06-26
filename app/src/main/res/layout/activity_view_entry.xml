@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.lauriedugdale.loci.ui.activity.ImageEntryActivity">
+    tools:context="com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity">
 
     <FrameLayout
         android:id="@+id/view_entry_hero_container"
@@ -32,7 +32,7 @@
             android:textColor="@color/white"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/entry_title"
+            android:textSize="@dimen/h1"
             android:padding="10dp" />
 
     </RelativeLayout>
@@ -42,7 +42,7 @@
         android:layout_alignBottom="@+id/view_entry_title_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/entry_description"/>
+        android:textSize="@dimen/p"/>
 
 
 

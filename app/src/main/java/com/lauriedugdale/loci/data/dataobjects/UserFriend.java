@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci;
+package com.lauriedugdale.loci.data.dataobjects;
 
 /**
  * Created by mnt_x on 22/06/2017.

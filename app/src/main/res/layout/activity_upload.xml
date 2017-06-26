@@ -1,18 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
+    android:background="@color/white"
+    android:paddingTop="50dp"
     tools:context="com.lauriedugdale.loci.ui.activity.UploadActivity">
+
+    <LinearLayout
+        android:id="@+id/au_media_picker_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:id="@+id/au_image_picker"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_image"/>
+
+        <ImageView
+            android:id="@+id/au_audio_picker"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_audiotrack"/>
+
+        <ImageView
+            android:id="@+id/au_camera_picker"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_camera"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/viewable_wrapper"
+        android:layout_below="@+id/au_media_picker_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:id="@+id/viewable_title"
+            android:text="@string/entry_viewable_title"
+            android:textSize="@dimen/h3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/viewable_selection"
+            android:textSize="@dimen/p"
+            android:layout_below="@id/viewable_title"
+            android:text="@string/entry_viewable_anoyone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
 
     <RelativeLayout
         android:id="@+id/au_text_entry_wrapper"
+        android:layout_below="@id/viewable_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="30dp"
-        android:layout_marginLeft="30dp">
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp">
 
         <android.support.design.widget.TextInputLayout
             android:id="@+id/au_entry_title_wrapper"
@@ -24,11 +89,11 @@
                 android:id="@+id/au_entry_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_email"
+                android:hint="@string/entry_title"
                 android:inputType="textEmailAddress"
                 android:textColor="@android:color/black"
                 android:textColorHint="@android:color/white"
-                android:textSize="20sp"/>
+                android:textSize="@dimen/h2"/>
 
         </android.support.design.widget.TextInputLayout>
 
@@ -39,50 +104,24 @@
 
             <EditText
                 android:id="@+id/au_entry_description"
+                android:hint="@string/entry_description"
+                android:scrollbarSize="@dimen/p"
                 android:layout_width="match_parent"
+                android:height="300dp"
+                android:gravity="top"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/white"
                 android:background="@color/white"
-                android:textSize="20sp"/>
+                android:inputType="textMultiLine"
+                android:textSize="@dimen/p"/>
         </android.support.design.widget.TextInputLayout>
 
     </RelativeLayout>
 
-
-    <LinearLayout
-        android:id="@+id/au_media_picker_wrapper"
-        android:layout_below="@+id/au_text_entry_wrapper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-
-        <ImageView
-            android:id="@+id/au_image_picker"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_image"/>
-
-        <ImageView
-            android:id="@+id/au_audio_picker"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_audiotrack"/>
-
-        <ImageView
-            android:id="@+id/au_camera_picker"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_camera"/>
-
-    </LinearLayout>
-
     <RelativeLayout
-        android:layout_below="@+id/au_media_picker_wrapper"
+        android:layout_margin="16dp"
+        android:layout_below="@+id/au_text_entry_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center">

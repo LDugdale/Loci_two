@@ -1,52 +1,30 @@
 package com.lauriedugdale.loci.ui.activity;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.graphics.drawable.ColorDrawable;
 import android.icu.util.Calendar;
-import android.location.Location;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.User;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.services.LociLocationService;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
 import com.lauriedugdale.loci.ui.adapter.MainActivityAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
-import com.lauriedugdale.loci.ui.fragment.ChatFragment;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
-import com.lauriedugdale.loci.ui.nav.LociTitleView;
 
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -93,11 +71,6 @@ public class MainActivity extends AppCompatActivity {
         Format format = new SimpleDateFormat("yyyyMMdd HHmmss", Locale.UK);
 
         format.format(date);
-
-
-
-
-
         mAuth = FirebaseAuth.getInstance();
 
         //find view pager and Adapter for managing fragments
@@ -130,12 +103,12 @@ public class MainActivity extends AppCompatActivity {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 System.out.println((int) (positionOffset * 100));
                 if (position == 0) {
-                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.light_grey));
+                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
                     mToolbar.getBackground().setAlpha((int) (positionOffset * 100));
                 } else if (position == 1){
                      mToolbar.getBackground().setAlpha(0);
                 } else if (position == 2){
-                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.light_grey));
+                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
 
                 }
             }
@@ -196,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         View header = navigationView.getHeaderView(0);
         TextView tv_email = (TextView)header.findViewById(R.id.tv_email);
         tv_email.setText("raj.amalw@learn2crack.com");
@@ -220,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -15,12 +16,20 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.RadioButton;
+import android.widget.TextView;
 
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,6 +48,7 @@ public class UploadActivity extends AppCompatActivity {
     private ImageView mDone;
     private EditText mTitle;
     private EditText mDescription;
+    private TextView mViewableSelection;
 
     // media pickers
     private ImageView mAudioItem;
@@ -51,14 +61,19 @@ public class UploadActivity extends AppCompatActivity {
     private DataUtils mDataUtils;
 
     private Uri mUploadData;
-    public int mUploadType;
+    private int mUploadType;
+
+    private int mPermissionType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
 
+
         mDataUtils = new DataUtils(this);
+        mPermissionType = DataUtils.ANYONE;
+        mUploadType = DataUtils.NO_MEDIA;
 
         // find ui elements
         mImageItem = (ImageView) findViewById(R.id.au_image_picker);
@@ -67,6 +82,9 @@ public class UploadActivity extends AppCompatActivity {
         mDone = (ImageView) findViewById(R.id.au_done);
         mTitle = (EditText) findViewById(R.id.au_entry_title);
         mDescription = (EditText) findViewById(R.id.au_entry_description);
+        mViewableSelection = (TextView) findViewById(R.id.viewable_selection);
+
+        onViewableSelectionClick();
 
         selectImage();
         selectAudio();
@@ -100,14 +118,15 @@ public class UploadActivity extends AppCompatActivity {
      * uses mDataUtils to writeNerFile method to add the data to firebase.
      */
     private void uploadEntry(){
-
         mDone.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
                 if (mUploadData == null){
+
                     mDataUtils.writeNewFile(
+                            mPermissionType,
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
                             mUploadType
@@ -115,7 +134,10 @@ public class UploadActivity extends AppCompatActivity {
                     finish();
 
                 } else {
+
                     mDataUtils.writeNewFile(
+
+                            mPermissionType,
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
                             mUploadData,
@@ -267,6 +289,62 @@ public class UploadActivity extends AppCompatActivity {
             }
         } else {
             return true;
+        }
+    }
+
+    private void onViewableSelectionClick(){
+        mViewableSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSelectFriendsPopup(mTitle);
+            }
+        });
+    }
+
+
+    public void showSelectFriendsPopup(View anchorView) {
+
+
+        View popupView = getLayoutInflater().inflate(R.layout.popup_viewable, null);
+
+//        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        int location[] = new int[2];
+
+        // Get the View's(the one that was clicked in the Fragment) location
+        anchorView.getLocationOnScreen(location);
+
+        // Using location, the PopupWindow will be displayed right under anchorView
+        popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
+
+        // connect time UI elements
+
+    }
+
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.radio_anyone:
+                if (checked)
+                    mPermissionType = DataUtils.ANYONE;
+                    break;
+            case R.id.radio_friends:
+                if (checked)
+                    mPermissionType = DataUtils.FRIENDS;
+                    break;
+            case R.id.radio_none:
+                if (checked)
+                    mPermissionType = DataUtils.NO_ONE;
+                    break;
         }
     }
 }

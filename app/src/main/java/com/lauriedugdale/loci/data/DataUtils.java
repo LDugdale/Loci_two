@@ -1,12 +1,11 @@
 package com.lauriedugdale.loci.data;
 
 import android.content.Context;
-import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import android.util.SparseBooleanArray;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -17,7 +16,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,18 +25,18 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.lauriedugdale.loci.GeoEntry;
-import com.lauriedugdale.loci.User;
-import com.lauriedugdale.loci.UserFriend;
+import com.lauriedugdale.loci.data.dataobjects.FriendRequest;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.data.dataobjects.UserFriend;
+import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
+import com.lauriedugdale.loci.ui.adapter.SocialRequestAdapter;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -48,20 +46,35 @@ import java.util.Map;
 
 public class DataUtils {
 
+    // TODO check if friend before adding
+    // TODO change button when search for friend if already a friend
+    // TODO write reject button - remove from database on reject
+
+    // TODO switch to geofire api to query location more effectively
+
+    // TODO lower case everything
+
+    // TODO stop location querying if only moved a little bit and expand the query parameter to just outside the screen view to allow for this
+
+
     private Context mContext;
 
     // int representation of what media the entry contains
-    public static final int NO_MEDIA = 0;
-    public static final int IMAGE = 1;
-    public static final int AUDIO = 2;
+    public static final int NO_MEDIA = 100;
+    public static final int IMAGE = 101;
+    public static final int AUDIO = 102;
+
+    public static final int ANYONE = 200;
+    public static final int FRIENDS = 201;
+    public static final int NO_ONE = 202;
+
+
 
     private FusedLocationProviderClient mFusedLocationClient;
 
     private DatabaseReference mDatabase;
     private FirebaseStorage mStorage;
     private FirebaseUser mUser;
-    // Stores multiple geo entries
-    private Map<String, GeoEntry> mEntryMap;
 
     public DataUtils(Context context) {
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -69,12 +82,6 @@ public class DataUtils {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mStorage = FirebaseStorage.getInstance();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-        // TODO maybe put entry map in main fragment
-        mEntryMap = new HashMap<String, GeoEntry>();
-    }
-
-    public Map<String, GeoEntry> getEntryList() {
-        return this.mEntryMap;
     }
 
     public String getCurrentUID() {
@@ -93,8 +100,7 @@ public class DataUtils {
         String currentDateandTime = sdf.format(c.getTime());
         Long dateInLong = 0L;
         try {
-            Date date = sdf.parse(currentDateandTime);
-            dateInLong = date.getTime();
+            dateInLong = sdf.parse(currentDateandTime).getTime();
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -115,7 +121,9 @@ public class DataUtils {
         mDatabase.child("users").child(currentUID).setValue(user);
     }
 
-    public void writeNewFile(final String title, final String description, final Uri path, final int type) {
+    public void writeNewFile(final int permissions, final String title, final String description, final Uri path, final int type) {
+        final String uid = getCurrentUID();
+
         StorageReference storageRef = mStorage.getReference();
 
         StorageReference ref = storageRef.child(getCurrentUID() + "/type/" +  + new Date().getTime());
@@ -138,11 +146,12 @@ public class DataUtils {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            GeoEntry user = new GeoEntry(getCurrentUID(), title, description, location.getLatitude(), location.getLongitude(), downloadUrl.toString(), type, getDateTime());
+                            GeoEntry file = new GeoEntry(uid, title, description, location.getLatitude(), location.getLongitude(), downloadUrl.toString(), type, getDateTime());
                             DatabaseReference entryRef = mDatabase.child("files");
                             DatabaseReference pushEntryRef = entryRef.push();
-                            user.setEntryID(pushEntryRef.getKey());
-                            pushEntryRef.setValue(user);
+                            file.setEntryID(pushEntryRef.getKey());
+                            pushEntryRef.setValue(file);
+                            writeAccessPermissionFriends(permissions, uid, file);
                         }
                     }
                 });
@@ -150,21 +159,128 @@ public class DataUtils {
         });
     }
 
-    public void writeNewFile(final String title, final String description, final int type) {
-
+    public void writeNewFile(final int permissions, final String title, final String description, final int type) {
+        final String uid = getCurrentUID();
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    GeoEntry user = new GeoEntry(getCurrentUID(), title, description, location.getLatitude(), location.getLongitude(), "", type, getDateTime());
+                    GeoEntry file = new GeoEntry(uid, title, description, location.getLatitude(), location.getLongitude(), "", type, getDateTime());
                     DatabaseReference entryRef = mDatabase.child("files");
                     DatabaseReference pushEntryRef = entryRef.push();
-                    user.setEntryID(pushEntryRef.getKey());
-                    pushEntryRef.setValue(user);
+                    file.setEntryID(pushEntryRef.getKey());
+                    pushEntryRef.setValue(file);
+                    writeAccessPermissionFriends(permissions, uid, file);
                 }
             }
         });
+    }
+
+    public void writeAccessPermissionFriends(final int permissions, String ownerID, final GeoEntry file){
+        System.out.println("writeAccessPermissionFriends");
+        System.out.println(permissions);
+        final String fileID = file.getEntryID();
+        if (permissions == ANYONE) {
+            mDatabase.child("file_permission").child("anyone/" + fileID).setValue(file);
+        } else if (permissions ==  NO_ONE) {
+            mDatabase.child("file_permission").child(ownerID + "/" + fileID).setValue(file);
+        } else if (permissions == FRIENDS) {
+            mDatabase.child("file_permission").child(ownerID + "/" + fileID).setValue(file);
+            final FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference ref = database.getReference("friends");
+            ref.child(ownerID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        UserFriend friend = postSnapshot.getValue(UserFriend.class);
+                        mDatabase.child("file_permission").child(friend.getUserID() + "/" + fileID).setValue(file);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+        }
+
+
+    }
+
+    public void fetchFriendRequests(final SelectFriendsAdapter adapter) {
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("users");
+
+        mDatabase.child("friend_requests").orderByChild(getCurrentUID()).equalTo(true).addChildEventListener(new ChildEventListener() {
+
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                String fromUser = dataSnapshot.getKey();
+                ref.child(fromUser).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        User user = dataSnapshot.getValue(User.class);
+                        adapter.addToUsers(user);
+                        adapter.notifyDataSetChanged();
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    /**
+     * status true - pending
+     * status false - accepted
+     *
+     * @param fromUser
+     * @param fromUser
+     * @param status
+     */
+    public void addFriendRequest( String fromUser, String toUser, boolean status) {
+//        {
+//            "friend_requests": {
+//                // user Ids who sent request
+//                "userId1": {
+//                    // receiver ids
+//                    "userId2": true,
+//                    "userId3": true,
+//                    "userId4": true
+//                },
+//                "userId2": {
+//                    "userId3": true,
+//                    "userId4": true
+//                }
+//            }
+//        }
+
+        // user 1 - current user - add the selected user to the current user entry
+        mDatabase.child("friend_requests").child(fromUser).child(toUser).setValue(status);
     }
 
     public void addFriend(final User selectedUser){
@@ -183,6 +299,8 @@ public class DataUtils {
                 mDatabase.child("friends").child(currentUID + "/" + selectedUser.getUserID()).setValue(new UserFriend(selectedUser, true));
                 // user 2 - selected user - add the current user to the selected user entry
                 mDatabase.child("friends").child(selectedUser.getUserID() + "/" + currentUID).setValue(new UserFriend(currentUser, true));
+
+                addFriendRequest(selectedUser.getUserID(), currentUID, false);
             }
 
             @Override
@@ -208,113 +326,115 @@ public class DataUtils {
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }
 
     public void fetchUserFriends(final SocialAdapter adapter){
 
-        // Get a reference to our posts
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("friends");
-
-//        ref.child(getCurrentUID()).orderByChild("username").addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                UserFriend user = dataSnapshot.getValue(UserFriend.class);
-//                System.out.println(user.getUsername());
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//            }
-//        });
-
         mDatabase.child("friends").child(getCurrentUID()).addChildEventListener(new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-
                 UserFriend user = dataSnapshot.getValue(UserFriend.class);
-                System.out.println(user.getUsername());
                 adapter.addToUsers(user);
-
                 // notify the adapter that data has been changed in order for it to be displayed in recyclerview
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }
 
 
-
-    public void readAllEntries(double latitudeStart, double latitudeEnd, final HashMap<String, GeoEntry> entryMap){
-
-        mDatabase.child("files").orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addChildEventListener(new ChildEventListener() {
+    public void readAllEntries(double latitudeStart, double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final HashMap<String, GeoEntry> entryMap){
+        String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(currentUID).orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                GeoEntry file = dataSnapshot.getValue(GeoEntry.class);
-//                mEntryMap.put(dataSnapshot.getKey(), file);
-                entryMap.put(dataSnapshot.getKey(), file);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
 
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                        System.out.println("inside the if statement" + entry.getTitle());
+                        entryMap.put(entry.getEntryID(), entry);
+                    }
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
+        ref.child("anyone").orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                        entryMap.put(entry.getEntryID(), entry);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
             }
         });
     }
+
+    public void fetchUserFiles(final FileAdapter adapter){
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("files");
+        ref.orderByChild("creator").equalTo(getCurrentUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                    // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
 
     /**
      * For reading a single GeoEntry
@@ -335,50 +455,16 @@ public class DataUtils {
             } else {
                 image.setImageResource(drawableID);
             }
-
         }
-
-//        mDatabase.child("users").equalTo(id).addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-//                User user = dataSnapshot.getValue(User.class);
-//                String path = user.getProfilePath();
-//                if (path != null) {
-//                    StorageReference storageRef = mStorage.getReferenceFromUrl(user.getProfilePath());
-//                    Glide.with(mContext)
-//                            .using(new FirebaseImageLoader())
-//                            .load(storageRef)
-//                            .into(image);
-//                }
-//            }
-//
-//            @Override
-//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-//
-//            }
-//
-//            @Override
-//            public void onChildRemoved(DataSnapshot dataSnapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
     }
 
 
-        /**
-         * For reading a single GeoEntry
-         * @param id
-         */
+    /**
+     * Updates the specified image view
+     * @param image
+     * @param id
+     * @param path
+     */
     public void readEntry(final ImageView image, String id, String path){
 
         mDatabase.child("files").orderByChild("entryID").equalTo(id).addChildEventListener(new ChildEventListener() {
@@ -396,22 +482,18 @@ public class DataUtils {
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
 

@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.activity;
+package com.lauriedugdale.loci.ui.activity.entry;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.services.AudioService;
 import com.lauriedugdale.loci.audio.AudioUtilities;
-import com.lauriedugdale.loci.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
 
 public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener {

@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci;
+package com.lauriedugdale.loci.data.dataobjects;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 

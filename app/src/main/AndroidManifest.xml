@@ -16,8 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".ui.activity.MainActivity" />
+        <activity android:name=".ui.activity.MainActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -51,7 +50,7 @@
             android:name=".ui.activity.UploadActivity"
             android:theme="@style/FullScreenTheme" />
         <activity
-            android:name=".ui.activity.ImageEntryActivity"
+            android:name=".ui.activity.entry.ImageEntryActivity"
             android:theme="@style/FullScreenTheme" />
         <activity
             android:name=".ui.activity.FullScreenActivity"
@@ -62,12 +61,13 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.activity.AudioEntryActivity" />
+        <activity android:name=".ui.activity.entry.AudioEntryActivity" />
         <activity
             android:name=".NavDraw"
             android:label="@string/title_activity_nav_draw"
             android:theme="@style/AppTheme" />
-        <activity android:name=".ui.activity.SelectFriend"></activity>
+        <activity android:name=".ui.activity.SelectFriend" />
+        <activity android:name=".ui.activity.NotificationActivity"></activity>
     </application>
 
 </manifest>

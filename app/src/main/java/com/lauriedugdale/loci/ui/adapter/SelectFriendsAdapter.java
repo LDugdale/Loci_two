@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.User;
+import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.DataUtils;
 
 import java.util.ArrayList;
@@ -26,9 +26,7 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
     // Store the context and cursor for easy access
     private Context mContext;
     private List<User> mUsers;
-
     private DataUtils mDataUtils;
-
 
     /**
      * Entry adapter constructor
@@ -50,6 +48,11 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
         notifyDataSetChanged();
     }
 
+    public void removeEntry(int position){
+        mUsers.remove(position);
+        notifyItemRemoved(position);
+    }
+
     @Override
     /**
      * Inflates a layout depending on its position and returns a ViewHolder
@@ -60,7 +63,7 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
 
 
         // inflate second item layout & return that viewHolder
-        contactView = inflater.inflate(R.layout.item_select_friends_entry, parent, false);
+        contactView = inflater.inflate(R.layout.item_request_entry, parent, false);
 
 
         // Return a new holder instance
@@ -71,7 +74,7 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(SelectFriendsAdapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(SelectFriendsAdapter.ViewHolder viewHolder, final int position) {
 
         final User user = mUsers.get(position);
 
@@ -85,6 +88,7 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
             @Override
             public void onClick(View v) {
                 mDataUtils.addFriend(user);
+                removeEntry(position);
             }
         });
     }
@@ -101,12 +105,6 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
         return mUsers.size();
     }
 
-//    @Override
-//    public int getItemViewType(int position) {
-//        if (position == 0) return 1;
-//        else return 2;
-//    }
-
     /**
      * CLASS
      * Used to cache the views within the layout for quick access
@@ -117,18 +115,18 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
         public TextView mName;
         public ImageView mProfilePic;
         public Button mAddButton;
+        public Button mRejectButton;
+
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             // Find the UI elements
-            mName = (TextView) itemView.findViewById(R.id.ise_name);
-            mProfilePic = (ImageView) itemView.findViewById(R.id.ise_profile_pic);
-            mAddButton = (Button) itemView.findViewById(R.id.add_user_button);
+            mName = (TextView) itemView.findViewById(R.id.ire_name);
+            mProfilePic = (ImageView) itemView.findViewById(R.id.ire_profile_pic);
+            mAddButton = (Button) itemView.findViewById(R.id.ire_accept_button);
+            mRejectButton = (Button) itemView.findViewById(R.id.ire_reject_button);
+
         }
-
-
-
     }
-
 }

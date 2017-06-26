@@ -10,15 +10,22 @@
         app:showAsAction="ifRoom"/>
 
     <item
+        android:id="@+id/action_notification"
+        android:orderInCategory="400"
+        android:title="Filter"
+        android:icon="@drawable/ic_notifications"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/action_location"
-        android:orderInCategory="300"
+        android:orderInCategory="200"
         android:title="Location"
         android:icon="@drawable/ic_my_location"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_filter"
-        android:orderInCategory="200"
+        android:orderInCategory="100"
         android:title="Filter"
         android:icon="@drawable/ic_filter_list"
         app:showAsAction="ifRoom"/>

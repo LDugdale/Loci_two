@@ -1,40 +1,41 @@
 package com.lauriedugdale.loci.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.User;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.ui.activity.NotificationActivity;
+import com.lauriedugdale.loci.ui.activity.SelectFriend;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
-
-import java.util.List;
 
 /**
  * @author Laurie Dugdale
  */
 
-public class ChatFragment extends BaseFragment implements SocialAdapter.SocialAdapterOnClickHandler  {
+public class SocialFragment extends BaseFragment implements SocialAdapter.SocialAdapterOnClickHandler  {
 
     private SocialAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private DataUtils mDataUtils;
 
-    public static ChatFragment create(){
-        return new ChatFragment();
+    public static SocialFragment create(){
+        return new SocialFragment();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_chat, container, false);
-
+        View view = inflater.inflate(R.layout.fragment_social, container, false);
+        setHasOptionsMenu(true);
 
         mDataUtils = new DataUtils(getActivity());
 
@@ -52,8 +53,17 @@ public class ChatFragment extends BaseFragment implements SocialAdapter.SocialAd
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem filterItem = menu.findItem(R.id.action_filter);
+        MenuItem locationItem = menu.findItem(R.id.action_location);
+        filterItem.setVisible(false);
+        locationItem.setVisible(false);
+    }
+
+    @Override
     public int getLayoutResId() {
-        return R.layout.fragment_chat;
+        return R.layout.fragment_social;
     }
 
     @Override
@@ -61,6 +71,19 @@ public class ChatFragment extends BaseFragment implements SocialAdapter.SocialAd
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_notification) {
+            Intent intent = new Intent(getActivity(), NotificationActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
 
     @Override
     /**
