@@ -1,18 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<android.support.v4.app.FragmentTabHost
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/tabhost"
+    android:background="@color/white"
+    android:paddingTop="?attr/actionBarSize"
     android:layout_width="match_parent"
-    tools:background="@color/light_blue"
-    android:layout_height="match_parent"
-    android:background="@color/light_grey"
-    android:id="@+id/social_frag">
+    android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_social"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/card_background"/>
+        android:layout_height="match_parent">
 
-</FrameLayout>
+        <FrameLayout
+            android:id="@+id/social_tab_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+</android.support.v4.app.FragmentTabHost>

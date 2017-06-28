@@ -85,7 +85,7 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, user.getProfilePath(), R.drawable.default_profile);
+        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
     }
 
 

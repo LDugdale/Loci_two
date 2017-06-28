@@ -1,6 +1,7 @@
 package com.lauriedugdale.loci.data;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.icu.util.Calendar;
 import android.location.Location;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.FriendRequest;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
@@ -85,10 +87,9 @@ public class DataUtils {
     }
 
     public String getCurrentUID() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = null;
-        if (user != null) {
-            uid = user.getUid();
+        if (mUser != null) {
+            uid = mUser.getUid();
         }
         return uid;
     }
@@ -178,8 +179,6 @@ public class DataUtils {
     }
 
     public void writeAccessPermissionFriends(final int permissions, String ownerID, final GeoEntry file){
-        System.out.println("writeAccessPermissionFriends");
-        System.out.println(permissions);
         final String fileID = file.getEntryID();
         if (permissions == ANYONE) {
             mDatabase.child("file_permission").child("anyone/" + fileID).setValue(file);
@@ -415,10 +414,56 @@ public class DataUtils {
         });
     }
 
+    public void readAllEntriesForAR(double latitudeStart, double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final HashMap<String, GeoEntry> entryMap){
+        String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(currentUID).orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                        System.out.println("inside the if statement" + entry.getTitle());
+                        entryMap.put(entry.getEntryID(), entry);
+                        entry.setImage(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.default_profile));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        ref.child("anyone").orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                        entryMap.put(entry.getEntryID(), entry);
+                        entry.setImage(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.default_profile));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
+
+
     public void fetchUserFiles(final FileAdapter adapter){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("files");
-        ref.orderByChild("creator").equalTo(getCurrentUID()).addValueEventListener(new ValueEventListener() {
+        ref.orderByChild("creator").equalTo(getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
@@ -435,12 +480,55 @@ public class DataUtils {
         });
     }
 
+    public void fetchUserSharedFiles(final FileAdapter adapter){
+        final String uID = getCurrentUID();
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    if(!entry.getCreator().equals(uID)) {
+                        adapter.addToFiles(entry);
+                        // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
 
     /**
      * For reading a single GeoEntry
-     * @param id
+     * @param path
      */
-    public void getProfilePic(final ImageView image, String id, int drawableID) {
+    public void getFilePic(final ImageView image, String path, int drawableID) {
+
+        System.out.println(path);
+        Uri filePath = Uri.parse(path);
+
+        if(filePath != null){
+            StorageReference storageRef = mStorage.getReferenceFromUrl(filePath.toString());
+            Glide.with(mContext)
+                    .using(new FirebaseImageLoader())
+                    .load(storageRef)
+                    .into(image);
+        } else {
+            image.setImageResource(drawableID);
+        }
+
+    }
+
+
+    /**
+     * For reading a single GeoEntry
+     */
+    public void getProfilePic(final ImageView image, int drawableID) {
 
         if (mUser != null) {
             // Name, email address, and profile photo Url

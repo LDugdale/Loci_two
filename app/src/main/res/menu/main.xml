@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_ar"
+        android:orderInCategory="400"
+        android:title="Filter"
+        android:icon="@drawable/ic_visibility"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/action_add_friend"
         android:orderInCategory="400"
         android:title="Filter"

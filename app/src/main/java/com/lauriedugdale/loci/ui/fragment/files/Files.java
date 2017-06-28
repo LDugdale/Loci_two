@@ -24,6 +24,7 @@ public class Files extends Fragment  {
     private RecyclerView mRecyclerView;
     private DataUtils mDataUtils;
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -41,7 +42,9 @@ public class Files extends Fragment  {
         mAdapter = new FileAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 
+        // TODO sort out duplication issue or make singlevalueeventlistner trigger twice when switching between fragments
         mDataUtils.fetchUserFiles(mAdapter);
+
         return view;
     }
 

@@ -34,7 +34,7 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
     private FrameLayout mEndImage;
     private ImageView mBottomImage;
     private ImageView mCenterBackgroundImage;
-    private ImageView mCenterImageAdd;
+//    private ImageView mCenterImageAdd;
 
     // indicator of current page
     private View mIndicator;
@@ -71,7 +71,7 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
 
         mCenterBackgroundImage = (ImageView) findViewById(R.id.vst_center_background_image);
         mCenterImage = (ImageView) findViewById(R.id.vst_center_image);
-        mCenterImageAdd = (ImageView) findViewById(R.id.vst_center_image_add);
+//        mCenterImageAdd = (ImageView) findViewById(R.id.vst_center_image_add);
         mStartImage = (FrameLayout) findViewById(R.id.vst_start_image);
         mEndImage = (FrameLayout) findViewById(R.id.vst_end_image);
         mBottomImage = (ImageView) findViewById(R.id.vst_bottom_image);
@@ -148,7 +148,7 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
      */
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-        mCenterImageAdd.setAlpha(1 - positionOffset);
+//        mCenterImageAdd.setAlpha(1 - positionOffset);
 
         if (position == 0) {
 
@@ -156,7 +156,7 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
             moveViews( 1 - positionOffset);
             moveAndScaleCenter(1 - positionOffset);
             mIndicator.setTranslationX((positionOffset - 1) * mIndicatorTranslationX);
-            mCenterImageAdd.setAlpha(positionOffset);
+//            mCenterImageAdd.setAlpha(positionOffset);
         } else if ( position == 1){
 
             setColor(positionOffset);
@@ -164,11 +164,11 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
             moveAndScaleCenter(positionOffset);
             mIndicator.setTranslationX(positionOffset * mIndicatorTranslationX);
             if(positionOffset == 0.0f) {
-                mCenterImageAdd.setAlpha(1f);
+//                mCenterImageAdd.setAlpha(1f);
             }
         } else if(position == 2){
 
-            mCenterImageAdd.setAlpha(0f);
+//            mCenterImageAdd.setAlpha(0f);
         }
 
     }

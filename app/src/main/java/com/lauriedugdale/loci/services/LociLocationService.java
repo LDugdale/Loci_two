@@ -11,6 +11,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class LociLocationService extends Service {
@@ -23,6 +24,7 @@ public class LociLocationService extends Service {
 
     private double mLatitude;
     private double mLongitude;
+    private Location mOldLocation;
     private Location mLocation;
 
     private class SensedLocationListener implements LocationListener{
@@ -38,7 +40,10 @@ public class LociLocationService extends Service {
             Log.e(TAG, "onLocationChanged: " + location);
             mLatitude = location.getLatitude();
             mLongitude = location.getLongitude();
+            mOldLocation = mLocation;
             mLocation = location;
+            broadcastLocation();
+
             mLastLocation.set(location);
 
             Intent broadcastIntent = new Intent("com.lauriedugdale.loci.location_change");
@@ -79,6 +84,33 @@ public class LociLocationService extends Service {
         return mLocation;
     }
 
+
+    /**
+     * Broadcast location if travelled
+     */
+    private void broadcastLocation() {
+
+        // don't broadcast if travelled less than 100 meters
+//        if (getDistanceInMeters() < 100f) {
+//            return;
+//        }
+
+        Intent intent = new Intent("location-changed");
+        // You can also include some extra data.
+        intent.putExtra("location", mLocation);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private float getDistanceInMeters() {
+        if(mOldLocation == null){
+            return 0f;
+        }
+
+        float [] dist = new float[1];
+        Location.distanceBetween(mLocation.getLatitude(), mLocation.getLongitude(),
+                                mOldLocation.getLatitude(), mOldLocation.getLongitude(), dist);
+        return dist[0];
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

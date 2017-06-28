@@ -1,5 +1,6 @@
 package com.lauriedugdale.loci.data.dataobjects;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -18,6 +19,7 @@ public class GeoEntry implements Parcelable{
     private int fileType;
     private String entryID;
     private long uploadDate;
+    private Bitmap image;
 
     public GeoEntry() {
         // Default constructor required for calls to DataSnapshot.getValue(File.class)
@@ -45,6 +47,14 @@ public class GeoEntry implements Parcelable{
         this.filePath = filePath;
         this.fileType = fileType;
         this.uploadDate = uploadDate;
+    }
+
+    public Bitmap getImage() {
+        return image;
+    }
+
+    public void setImage(Bitmap image) {
+        this.image = image;
     }
 
     public String getCreator() {

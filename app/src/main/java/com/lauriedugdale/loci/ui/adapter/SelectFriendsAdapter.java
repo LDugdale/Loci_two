@@ -82,7 +82,7 @@ public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdap
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, user.getProfilePath(), R.drawable.default_profile);
+        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
         viewHolder.mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override

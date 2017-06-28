@@ -42,10 +42,15 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.clustering.ClusterManager;
+import com.lauriedugdale.loci.EntryItem;
+import com.lauriedugdale.loci.EventIconRendered;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
+import com.lauriedugdale.loci.ui.activity.NotificationActivity;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
@@ -84,12 +89,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             GoogleMap.MAP_TYPE_TERRAIN,
             GoogleMap.MAP_TYPE_NONE };
 
-    private int curMapTypeIndex = 3; // chosen map type from MAP_TYPES
+    private int curMapTypeIndex = 1; // chosen map type from MAP_TYPES
 
     private DataUtils mDataUtils; // handles data transactions with firebase
 
-    private HashMap<String, Marker> visibleMarkers; // keeps track of visible markers
+    private HashMap<String, EntryItem> visibleMarkers; // keeps track of visible markers
     private HashMap<String, GeoEntry> mEntryMap; // keeps track of the entries downloaded from the server
+    private ClusterManager<EntryItem> mClusterManager;
 
     private FusedLocationProviderClient mFusedLocationClient; // used for getting the current lcoation
 
@@ -116,6 +122,8 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private FilterOptions mFilterOptions;
     private FilterOptions mTempFilterOptions;
 
+    private ImageView mArView;
+
 
     /**
      * Used to return fragment for viewpager quickly
@@ -137,11 +145,10 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
         // instantiate inital variables
         mDataUtils = new DataUtils(getActivity());
-        visibleMarkers = new HashMap<String, Marker>();
+        visibleMarkers = new HashMap<String, EntryItem>();
         mEntryMap = new HashMap<String, GeoEntry>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         mFilterOptions = new FilterOptions();
-
 
 
         return view;
@@ -170,7 +177,10 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         MenuItem addFriendItem = menu.findItem(R.id.action_add_friend);
+        MenuItem notificationItem = menu.findItem(R.id.action_notification);
+
         addFriendItem.setVisible(false);
+        notificationItem.setVisible(false);
     }
 
     @Override
@@ -183,7 +193,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         }
 
 
-            return false;
+        return false;
     }
 
     @Override
@@ -208,9 +218,14 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         // instantiate the google map field variable
         mMap = googleMap;
 
+        // configure cluster manager
+        mClusterManager = new ClusterManager<EntryItem>(getActivity(), mMap);
+        mClusterManager.setRenderer(new EventIconRendered(getActivity().getApplicationContext(), googleMap, mClusterManager));
+
         // setup listeners
+        getMap().setOnCameraIdleListener(mClusterManager);
+        getMap().setOnMarkerClickListener(mClusterManager);
         getMap().setOnCameraIdleListener(getCameraIdleListener());
-        getMap().setOnMarkerClickListener(this);
         getMap().setOnMapLongClickListener(this);
         getMap().setOnInfoWindowClickListener(this);
         getMap().setOnMapClickListener(this);
@@ -220,14 +235,14 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-
+                System.out.println("onCameraIdle");
                 LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
                 mDataUtils.readAllEntries(bounds.southwest.latitude,
-                                          bounds.northeast.latitude,
-                                          mFilterOptions.getNumericalFromDate(),
-                                          mFilterOptions.getNumericalToDate(),
-                                          mFilterOptions.getCheckedTypes(),
-                                          mEntryMap);
+                        bounds.northeast.latitude,
+                        mFilterOptions.getNumericalFromDate(),
+                        mFilterOptions.getNumericalToDate(),
+                        mFilterOptions.getCheckedTypes(),
+                        mEntryMap);
                 addEntryToMap();
             }
         };
@@ -277,27 +292,40 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 Map.Entry pair = (Map.Entry)it.next();
                 GeoEntry entry = (GeoEntry) pair.getValue();
 
+
                 if(bounds.contains(new LatLng(entry.getLatitude(), entry.getLongitude()))) {
                     //If the item isn't already being displayed
                     if(!visibleMarkers.containsKey(entry.getEntryID())) {
                         //Add the Marker to the Map and keep track of it with the HashMap
                         //getMarkerForItem just returns a MarkerOptions object
 
-                        Marker m = this.mMap.addMarker(getMarkerForItem(entry));
-                        m.setTag(entry);
-                        this.visibleMarkers.put(entry.getEntryID(), m);
+                        EntryItem marker = new EntryItem(entry.getLatitude(), entry.getLongitude(), entry.getTitle(), entry.getFileType());
+                        visibleMarkers.put(entry.getEntryID(), marker);
+                        mClusterManager.addItem(marker);
+                        mClusterManager.cluster();
+
+
+
                     }
                 } else {
                     //If the course was previously on screen
                     if(visibleMarkers.containsKey(entry.getEntryID())) {
                         //1. Remove the Marker from the GoogleMap
-                        visibleMarkers.get(entry.getEntryID()).remove();
+//                        visibleMarkers.get(entry.getEntryID()).remove();
+                        mClusterManager.removeItem(visibleMarkers.get(entry.getEntryID()));
+                        mClusterManager.cluster();
+
+                        visibleMarkers.remove(entry.getEntryID());
 
                         //2. Remove the reference to the Marker from the HashMap
                         visibleMarkers.remove(entry.getEntryID());
+                        // remove from iterator
                         it.remove();
                     }
                 }
+
+
+
             }
         }
     }
@@ -306,14 +334,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
-
-//
-//        Iterator it = mEntryMap.entrySet().iterator();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry)it.next();
-//            System.out.println(pair.getKey() + " = " + pair.getValue());
-//            it.remove(); // avoids a ConcurrentModificationException
-//        }
     }
 
     @Override
@@ -455,9 +475,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mInfoBarShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            Intent startViewEntryIntent = new Intent(getActivity(), getDestination());
-            startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
-            getActivity().startActivity(startViewEntryIntent);
+                Intent startViewEntryIntent = new Intent(getActivity(), getDestination());
+                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
+                getActivity().startActivity(startViewEntryIntent);
             }
         });
     }

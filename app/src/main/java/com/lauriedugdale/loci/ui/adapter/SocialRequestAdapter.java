@@ -75,7 +75,7 @@ public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdap
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, user.getProfilePath(), R.drawable.default_profile);
+        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
         viewHolder.mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override

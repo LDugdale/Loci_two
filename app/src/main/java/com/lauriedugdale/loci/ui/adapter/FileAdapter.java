@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
@@ -23,6 +24,7 @@ import java.util.List;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
+    //TODO add delete, locate and edit buttons (only edit if within distance)
 
     // Store the context and cursor for easy access
     private Context mContext;
@@ -75,19 +77,21 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
         final GeoEntry entry = mFiles.get(position);
 
-//        // set username
-//        viewHolder.mName.setText(user.getUsername());
-//
-//        // set profile picture
-//        mDataUtils.getProfilePic(viewHolder.mProfilePic, user.getProfilePath(), R.drawable.default_profile);
-//
-//        viewHolder.mAddButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                mDataUtils.addFriend(user);
-//                removeEntry(position);
-//            }
-//        });
+        viewHolder.mTitle.setText(entry.getTitle());
+        int entryType;
+        switch (entry.getFileType()){
+            case DataUtils.IMAGE:
+                entryType = R.drawable.ic_image;
+                break;
+            case DataUtils.AUDIO:
+                entryType = R.drawable.ic_audiotrack_light;
+                break;
+            default:
+                entryType = R.drawable.ic_text;
+                break;
+        }
+        // set file picture
+        mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryType);
     }
 
     @Override
@@ -109,6 +113,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
         // The UI elements
         public TextView mTitle;
+        public ImageView mFilePic;
 
 
         public ViewHolder(View itemView) {
@@ -116,6 +121,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
             // Find the UI elements
             mTitle = (TextView) itemView.findViewById(R.id.if_name);
+            mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
         }
     }
 }

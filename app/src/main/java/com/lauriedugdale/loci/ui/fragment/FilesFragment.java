@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -17,6 +19,8 @@ import com.lauriedugdale.loci.ui.fragment.files.SharedFiles;
  */
 
 public class FilesFragment extends BaseFragment {
+
+    // TODO consider adding folders or "collections" of entries
 
     private FragmentTabHost mTabHost;
 
@@ -48,7 +52,6 @@ public class FilesFragment extends BaseFragment {
         mTabHost.addTab(mTabHost.newTabSpec("sharedfiles").setIndicator("Shared"),
                 SharedFiles.class, null);
 
-
         return rootView;
     }
 
@@ -65,7 +68,29 @@ public class FilesFragment extends BaseFragment {
 
     @Override
     public void inOnCreateView(View root, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    }
 
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem addFriendItem = menu.findItem(R.id.action_add_friend);
+        MenuItem notificationItem = menu.findItem(R.id.action_notification);
+        MenuItem filterItem = menu.findItem(R.id.action_filter);
+        MenuItem locationItem = menu.findItem(R.id.action_location);
+        MenuItem arItem = menu.findItem(R.id.action_ar);
+
+        filterItem.setVisible(false);
+        locationItem.setVisible(false);
+        arItem.setVisible(false);
+        addFriendItem.setVisible(false);
+        notificationItem.setVisible(false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        return false;
     }
 
 }

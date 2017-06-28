@@ -28,14 +28,14 @@
         android:layout_gravity="center|bottom"
         android:src="@drawable/large_circle"
         android:layout_marginBottom="33dp"/>
-    <ImageView
-        android:id="@+id/vst_center_image_add"
-        android:layout_width="88dp"
-        android:layout_height="88dp"
-        android:layout_gravity="center|bottom"
-        android:src="@drawable/ic_add_location"
-        android:layout_marginBottom="33dp"
-        android:alpha="1.0"/>
+    <!--<ImageView-->
+        <!--android:id="@+id/vst_center_image_add"-->
+        <!--android:layout_width="88dp"-->
+        <!--android:layout_height="88dp"-->
+        <!--android:layout_gravity="center|bottom"-->
+        <!--android:src="@drawable/ic_add_location"-->
+        <!--android:layout_marginBottom="33dp"-->
+        <!--android:alpha="1.0"/>-->
 
     <FrameLayout
         android:id="@+id/vst_start_image"

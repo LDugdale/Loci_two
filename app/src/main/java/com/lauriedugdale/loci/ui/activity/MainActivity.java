@@ -13,10 +13,18 @@ import android.os.Bundle;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.services.LociLocationService;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
+import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.MainActivityAdapter;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
 
@@ -25,6 +33,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private Toolbar mToolbar;
 
-
+    private TextView mUsername;
+    private TextView mEmail;
+    private ImageView mMenuProfileImage;
 
     private Context mContext = this;
 
@@ -52,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mDataUtils = new DataUtils(this);
+
         Calendar c = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HHmmss", Locale.UK);
         String currentDateandTime = sdf.format(c.getTime());
@@ -62,10 +75,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
-
-
-
 
         Date date = new Date(dateInLong);
         Format format = new SimpleDateFormat("yyyyMMdd HHmmss", Locale.UK);
@@ -101,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                System.out.println((int) (positionOffset * 100));
                 if (position == 0) {
                     mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
                     mToolbar.getBackground().setAlpha((int) (positionOffset * 100));
@@ -135,17 +143,6 @@ public class MainActivity extends AppCompatActivity {
                 int id = menuItem.getItemId();
 
                 switch (id){
-                    case R.id.home:
-                        Toast.makeText(getApplicationContext(),"Home",Toast.LENGTH_SHORT).show();
-                        mDrawerLayout.closeDrawers();
-                        break;
-                    case R.id.settings:
-                        Toast.makeText(getApplicationContext(),"Settings",Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.trash:
-                        Toast.makeText(getApplicationContext(),"Trash",Toast.LENGTH_SHORT).show();
-                        mDrawerLayout.closeDrawers();
-                        break;
                     case R.id.logout:
                         mAuth.signOut();
 
@@ -169,9 +166,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         View header = navigationView.getHeaderView(0);
-        TextView tv_email = (TextView)header.findViewById(R.id.tv_email);
-        tv_email.setText("raj.amalw@learn2crack.com");
+        mUsername = (TextView)header.findViewById(R.id.tv_username);
+        mEmail = (TextView)header.findViewById(R.id.tv_email);
+        mMenuProfileImage = (ImageView) header.findViewById(R.id.menu_profile_image);
+
+        mDataUtils.getProfilePic(mMenuProfileImage, R.drawable.default_profile);
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("users");
+        ref.child(mDataUtils.getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    User user = dataSnapshot.getValue(User.class);
+                    mUsername.setText(user.getUsername());
+                    mEmail.setText(user.getEmail());
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer);
 
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout,mToolbar,R.string.openDrawer,R.string.closeDrawer){
@@ -208,6 +229,13 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_add_friend) {
             Intent intent = new Intent(this, SelectFriend.class);
+            startActivity(intent);
+
+            return true;
+        }
+
+        if (id == R.id.action_ar) {
+            Intent intent = new Intent(this, AugmentedActivity.class);
             startActivity(intent);
 
             return true;
