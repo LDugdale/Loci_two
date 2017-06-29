@@ -63,13 +63,18 @@
             android:exported="true" />
 
         <activity android:name=".ui.activity.entry.AudioEntryActivity" />
-        <!--<activity-->
-            <!--android:name=".NavDraw"-->
-            <!--android:label="@string/title_activity_nav_draw"-->
-            <!--android:theme="@style/AppTheme" />-->
+        <!-- <activity -->
+        <!-- android:name=".NavDraw" -->
+        <!-- android:label="@string/title_activity_nav_draw" -->
+        <!-- android:theme="@style/AppTheme" /> -->
         <activity android:name=".ui.activity.SelectFriend" />
         <activity android:name=".ui.activity.NotificationActivity" />
-        <activity android:name=".ui.activity.AugmentedActivity"></activity>
+        <activity android:name=".ui.activity.AugmentedActivity" />
+        <activity
+            android:name=".ui.CreateGroup"
+            android:label="@string/title_activity_create_group"
+            android:theme="@style/AppTheme" />
+        <activity android:name=".ui.activity.creategroup.CreateGroup"></activity>
     </application>
 
 </manifest>

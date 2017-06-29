@@ -78,20 +78,20 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         final GeoEntry entry = mFiles.get(position);
 
         viewHolder.mTitle.setText(entry.getTitle());
-        int entryType;
+        int entryImage;
         switch (entry.getFileType()){
             case DataUtils.IMAGE:
-                entryType = R.drawable.ic_image;
+                entryImage = R.drawable.ic_image;
                 break;
             case DataUtils.AUDIO:
-                entryType = R.drawable.ic_audiotrack_light;
+                entryImage = R.drawable.ic_audiotrack_light;
                 break;
             default:
-                entryType = R.drawable.ic_text;
+                entryImage = R.drawable.ic_text;
                 break;
         }
         // set file picture
-        mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryType);
+        mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryImage, entry.getFileType());
     }
 
     @Override

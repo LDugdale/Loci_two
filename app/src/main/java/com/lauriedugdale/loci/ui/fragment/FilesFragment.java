@@ -79,7 +79,9 @@ public class FilesFragment extends BaseFragment {
         MenuItem filterItem = menu.findItem(R.id.action_filter);
         MenuItem locationItem = menu.findItem(R.id.action_location);
         MenuItem arItem = menu.findItem(R.id.action_ar);
+        MenuItem addGroupItem = menu.findItem(R.id.action_add_group);
 
+        addGroupItem.setVisible(false);
         filterItem.setVisible(false);
         locationItem.setVisible(false);
         arItem.setVisible(false);

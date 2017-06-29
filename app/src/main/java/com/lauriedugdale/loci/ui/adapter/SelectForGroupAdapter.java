@@ -5,87 +5,103 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Created by mnt_x on 21/06/2017.
+ * @author Laurie Dugdale
  */
 
-public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder> {
-
+public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAdapter.ViewHolder> {
 
     // Store the context and cursor for easy access
     private Context mContext;
     private List<User> mUsers;
-
     private DataUtils mDataUtils;
 
-    // This interface handles clicks on items within this Adapter. This is populated from the constructor
-    // Call the instance in this variable to call the onClick method whenever and item is clicked in the list.
-    final private SocialAdapterOnClickHandler mClickHandler;
+    private HashSet<String> mCheckedItems;
 
-    /**
-     * The interface that receives onClick messages.
-     */
-    public interface SocialAdapterOnClickHandler {
-        void onSocialClick(long date);
-    }
 
     /**
      * Entry adapter constructor
      *
      * @param context
-     * @param clickHandler
      */
-    public SocialAdapter(Context context, SocialAdapterOnClickHandler clickHandler) {
+    public SelectForGroupAdapter(Context context) {
         this.mContext = context;
-        this.mClickHandler = clickHandler;
         mUsers = new ArrayList<User>();
         mDataUtils = new DataUtils(context);
+
+        mCheckedItems = new HashSet<String>();
     }
 
     public void addToUsers(User user){
         mUsers.add(user);
+        notifyDataSetChanged();
+    }
+
+    public void clearData(){
+        mUsers.clear();
+        notifyDataSetChanged();
+    }
+
+    public HashSet<String> getCheckedItems() {
+        return mCheckedItems;
     }
 
     @Override
     /**
      * Inflates a layout depending on its position and returns a ViewHolder
      */
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SelectForGroupAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
 
 
         // inflate second item layout & return that viewHolder
-        contactView = inflater.inflate(R.layout.item_social_entry, parent, false);
+        contactView = inflater.inflate(R.layout.item_select_for_group, parent, false);
 
 
         // Return a new holder instance
-        return new ViewHolder(contactView);
+        return new SelectForGroupAdapter.ViewHolder(contactView);
     }
 
     @Override
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(SelectForGroupAdapter.ViewHolder viewHolder, int position) {
 
-        User user = mUsers.get(position);
-
+        final User user = mUsers.get(position);
+        System.out.println("name : " + user.getUsername());
         // set username
         viewHolder.mName.setText(user.getUsername());
 
-        // set profile picture
         mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+
+        viewHolder.mCheckedItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    mCheckedItems.add(user.getUserID());
+                } else {
+                    mCheckedItems.remove(user.getUserID());
+                }
+            }
+        });
+
     }
 
 
@@ -100,38 +116,25 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
         return mUsers.size();
     }
 
-//    @Override
-//    public int getItemViewType(int position) {
-//        if (position == 0) return 1;
-//        else return 2;
-//    }
-
     /**
      * CLASS
      * Used to cache the views within the layout for quick access
      */
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder{
 
         // The UI elements
         public TextView mName;
         public ImageView mProfilePic;
+        public CheckBox mCheckedItem;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             // Find the UI elements
-            mName = (TextView) itemView.findViewById(R.id.ise_name);
-            mProfilePic = (ImageView) itemView.findViewById(R.id.ise_profile_pic);
+            mName = (TextView) itemView.findViewById(R.id.isfg_name);
+            mProfilePic = (ImageView) itemView.findViewById(R.id.isfg_profile_pic);
+            mCheckedItem = (CheckBox) itemView.findViewById(R.id.isfg_user_checkbox);
 
-            // set the listener as this class
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-
-            // call the onClick method for the mClickHandler variable
-//            mClickHandler.onClick(id);
         }
     }
 }

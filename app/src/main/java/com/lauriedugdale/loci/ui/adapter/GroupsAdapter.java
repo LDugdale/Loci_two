@@ -9,33 +9,34 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.Group;
+import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by mnt_x on 21/06/2017.
+ * Created by mnt_x on 28/06/2017.
  */
 
-public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder> {
+public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder> {
 
 
     // Store the context and cursor for easy access
     private Context mContext;
-    private List<User> mUsers;
+    private List<Group> mGroups;
 
     private DataUtils mDataUtils;
 
     // This interface handles clicks on items within this Adapter. This is populated from the constructor
     // Call the instance in this variable to call the onClick method whenever and item is clicked in the list.
-    final private SocialAdapterOnClickHandler mClickHandler;
+    final private GroupsAdapter.GroupAdapterOnClickHandler mClickHandler;
 
     /**
      * The interface that receives onClick messages.
      */
-    public interface SocialAdapterOnClickHandler {
+    public interface GroupAdapterOnClickHandler {
         void onSocialClick(long date);
     }
 
@@ -45,47 +46,48 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
      * @param context
      * @param clickHandler
      */
-    public SocialAdapter(Context context, SocialAdapterOnClickHandler clickHandler) {
+    public GroupsAdapter(Context context, GroupsAdapter.GroupAdapterOnClickHandler clickHandler) {
         this.mContext = context;
         this.mClickHandler = clickHandler;
-        mUsers = new ArrayList<User>();
+        mGroups = new ArrayList<Group>();
         mDataUtils = new DataUtils(context);
     }
 
-    public void addToUsers(User user){
-        mUsers.add(user);
+    public void addToGroups(Group group){
+        mGroups.add(group);
+        notifyDataSetChanged();
     }
 
     @Override
     /**
      * Inflates a layout depending on its position and returns a ViewHolder
      */
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public GroupsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
 
 
         // inflate second item layout & return that viewHolder
-        contactView = inflater.inflate(R.layout.item_social_entry, parent, false);
+        contactView = inflater.inflate(R.layout.item_groups, parent, false);
 
 
         // Return a new holder instance
-        return new ViewHolder(contactView);
+        return new GroupsAdapter.ViewHolder(contactView);
     }
 
     @Override
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(GroupsAdapter.ViewHolder viewHolder, int position) {
 
-        User user = mUsers.get(position);
+        Group group = mGroups.get(position);
 
         // set username
-        viewHolder.mName.setText(user.getUsername());
+        viewHolder.mName.setText(group.getGroupName());
 
         // set profile picture
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+        mDataUtils.getGroupPic(viewHolder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
     }
 
 
@@ -94,10 +96,10 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
      * return the total count of items in the list
      */
     public int getItemCount() {
-        if (mUsers == null) {
+        if (mGroups == null) {
             return 0;
         }
-        return mUsers.size();
+        return mGroups.size();
     }
 
 //    @Override
@@ -114,14 +116,14 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
 
         // The UI elements
         public TextView mName;
-        public ImageView mProfilePic;
+        public ImageView mGroupPic;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             // Find the UI elements
-            mName = (TextView) itemView.findViewById(R.id.ise_name);
-            mProfilePic = (ImageView) itemView.findViewById(R.id.ise_profile_pic);
+            mName = (TextView) itemView.findViewById(R.id.ig_group_name);
+            mGroupPic = (ImageView) itemView.findViewById(R.id.ig_group_pic);
 
             // set the listener as this class
             itemView.setOnClickListener(this);

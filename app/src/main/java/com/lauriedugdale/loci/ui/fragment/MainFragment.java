@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.EventIconRendered;
 import com.lauriedugdale.loci.data.DataUtils;
@@ -178,7 +179,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         super.onPrepareOptionsMenu(menu);
         MenuItem addFriendItem = menu.findItem(R.id.action_add_friend);
         MenuItem notificationItem = menu.findItem(R.id.action_notification);
+        MenuItem addGroupItem = menu.findItem(R.id.action_add_group);
 
+        addGroupItem.setVisible(false);
         addFriendItem.setVisible(false);
         notificationItem.setVisible(false);
     }

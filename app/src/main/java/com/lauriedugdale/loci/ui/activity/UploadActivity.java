@@ -322,9 +322,6 @@ public class UploadActivity extends AppCompatActivity {
 
         // Using location, the PopupWindow will be displayed right under anchorView
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
-
-        // connect time UI elements
-
     }
 
     public void onRadioButtonClicked(View view) {

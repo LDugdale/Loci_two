@@ -29,16 +29,21 @@ import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.FriendRequest;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
+import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
+import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 import com.lauriedugdale.loci.ui.adapter.SocialRequestAdapter;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
@@ -309,6 +314,70 @@ public class DataUtils {
 
     }
 
+    public void createGroup(final HashSet<String> usersToAdd, String groupName, Uri path){
+
+        // add group to group
+        final Group group = new Group(groupName);
+        DatabaseReference entryRef = mDatabase.child("groups");
+        DatabaseReference pushEntryRef = entryRef.push();
+        group.setGroupID(pushEntryRef.getKey());
+        pushEntryRef.setValue(group);
+
+        //upload group profile pic
+        StorageReference storageRef = mStorage.getReference();
+        StorageReference ref = storageRef.child(group.getGroupID() + "/group_picture/" +  + new Date().getTime());
+        UploadTask uploadTask = ref.putFile(path);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                mDatabase.child("groups").child(group.getGroupID()).setValue(group);
+                final Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                group.setProfilePicturePath(downloadUrl.toString());
+                mDatabase.child("group_access").child(getCurrentUID() + "/" + group.getGroupID()).setValue(group);
+                for(String userID : usersToAdd){
+                    mDatabase.child("group_access").child(userID + "/" + group.getGroupID()).setValue(group);
+                }
+            }
+        });
+
+
+
+
+    }
+
+    public void fetchUserFriends(final SelectForGroupAdapter adapter){
+        final String currentUID = getCurrentUID();
+
+
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("friends");
+
+        ref.child(currentUID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    User user = postSnapshot.getValue(User.class);
+                    if(!currentUID.equals(user.getUserID())) {
+                        adapter.addToUsers(user);
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
+
     public void searchUsers(final SelectFriendsAdapter adapter, String user){
         adapter.clearData();
         mDatabase.child("users").orderByChild("username").equalTo(user).addChildEventListener(new ChildEventListener() {
@@ -333,6 +402,26 @@ public class DataUtils {
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void fetchUserGroups(final GroupsAdapter adapter){
+        String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_access");
+        ref.child(currentUID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Group group = postSnapshot.getValue(Group.class);
+                    adapter.addToGroups(group);
+                }
             }
 
             @Override
@@ -385,7 +474,6 @@ public class DataUtils {
 
                     long date = entry.getUploadDate();
                     if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
-                        System.out.println("inside the if statement" + entry.getTitle());
                         entryMap.put(entry.getEntryID(), entry);
                     }
                 }
@@ -427,7 +515,6 @@ public class DataUtils {
 
                     long date = entry.getUploadDate();
                     if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
-                        System.out.println("inside the if statement" + entry.getTitle());
                         entryMap.put(entry.getEntryID(), entry);
                         entry.setImage(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.default_profile));
                     }
@@ -507,12 +594,11 @@ public class DataUtils {
      * For reading a single GeoEntry
      * @param path
      */
-    public void getFilePic(final ImageView image, String path, int drawableID) {
+    public void getFilePic(final ImageView image, String path, int drawableID, int type) {
 
-        System.out.println(path);
         Uri filePath = Uri.parse(path);
 
-        if(filePath != null){
+        if(type == IMAGE){
             StorageReference storageRef = mStorage.getReferenceFromUrl(filePath.toString());
             Glide.with(mContext)
                     .using(new FirebaseImageLoader())
@@ -524,6 +610,22 @@ public class DataUtils {
 
     }
 
+    /**
+     * For reading a single GeoEntry
+     */
+    public void getGroupPic(final ImageView image, int drawableID, String path) {
+
+        if(path != null){
+            StorageReference storageRef = mStorage.getReferenceFromUrl(path.toString());
+            Glide.with(mContext)
+                    .using(new FirebaseImageLoader())
+                    .load(storageRef)
+                    .into(image);
+        } else {
+            image.setImageResource(drawableID);
+        }
+
+    }
 
     /**
      * For reading a single GeoEntry
@@ -558,7 +660,6 @@ public class DataUtils {
         mDatabase.child("files").orderByChild("entryID").equalTo(id).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-//                System.out.println("datasnapshot : " + dataSnapshot.getKey());
                 GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
                 StorageReference storageRef = mStorage.getReferenceFromUrl(entry.getFilePath());
 

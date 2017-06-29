@@ -35,10 +35,7 @@ public class Files extends Fragment  {
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_files);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
-
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-
         mAdapter = new FileAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 

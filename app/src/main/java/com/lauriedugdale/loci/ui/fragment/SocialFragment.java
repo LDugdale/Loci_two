@@ -17,6 +17,7 @@ import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.activity.NotificationActivity;
 import com.lauriedugdale.loci.ui.activity.SelectFriend;
+import com.lauriedugdale.loci.ui.activity.creategroup.CreateGroup;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 import com.lauriedugdale.loci.ui.fragment.files.Files;
 import com.lauriedugdale.loci.ui.fragment.files.SharedFiles;
@@ -100,6 +101,12 @@ public class SocialFragment extends BaseFragment {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_notification) {
             Intent intent = new Intent(getActivity(), NotificationActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.action_add_group) {
+            Intent intent = new Intent(getActivity(), CreateGroup.class);
             startActivity(intent);
             return true;
         }
