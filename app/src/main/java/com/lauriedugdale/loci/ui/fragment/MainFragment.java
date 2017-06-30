@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
@@ -42,6 +43,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.vision.text.Text;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 import com.lauriedugdale.loci.EntryItem;
@@ -102,12 +104,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     private GeoEntry mCurrentEntry; // currently selected marker
 
-    // UI elements for displaying marker info
-    private RelativeLayout mInfoBar;
-    private TextView mInfoBarTitle;
-    private ImageView mInfoBarImage;
-    private TextView mInfoBarShowEntry;
-
     // time controls
     private final static String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
     private final static String DATE = "dd-MM-yyyy";
@@ -123,8 +119,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private FilterOptions mFilterOptions;
     private FilterOptions mTempFilterOptions;
 
-    private ImageView mArView;
-
+    private FrameLayout mMainLayout;
 
     /**
      * Used to return fragment for viewpager quickly
@@ -167,11 +162,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .addApi( LocationServices.API )
                 .build();
 
-        // connect the UI elements up
-        mInfoBar = (RelativeLayout) getActivity().findViewById(R.id.info_bar);
-        mInfoBarTitle = (TextView) getActivity().findViewById(R.id.info_bar_title);
-        mInfoBarImage = (ImageView) getActivity().findViewById(R.id.info_bar_type);
-        mInfoBarShowEntry = (TextView) getActivity().findViewById(R.id.info_bar_show_entry);
+        mMainLayout = (FrameLayout) getActivity().findViewById(R.id.main_layout);
     }
 
     @Override
@@ -192,16 +183,30 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         int id = item.getItemId();
 
         if (id == R.id.action_filter) {
-            showSelectFriendsPopup(mInfoBar);
+            showSelectFriendsPopup(mMainLayout);
         }
 
 
+        if (id == R.id.action_ar) {
+            Intent intent = new Intent(getActivity(), AugmentedActivity.class);
+            startActivity(intent);
+
+            return true;
+        }
         return false;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        setUpMapIfNeeded();
+    }
+
+    private void setUpMapIfNeeded() {
+        if (mMap != null) {
+            return;
+        }
         // get map fragment
         SupportMapFragment smf = ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map));
         smf.getMapAsync(this);
@@ -223,7 +228,19 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
         // configure cluster manager
         mClusterManager = new ClusterManager<EntryItem>(getActivity(), mMap);
-        mClusterManager.setRenderer(new EventIconRendered(getActivity().getApplicationContext(), googleMap, mClusterManager));
+        final EventIconRendered rendered = new EventIconRendered(getActivity().getApplicationContext(), googleMap, mClusterManager);
+        mClusterManager.setRenderer(rendered);
+
+        mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<EntryItem>() {
+            @Override
+            public boolean onClusterItemClick(EntryItem entryItem) {
+                System.out.println("onClusterItemClick");
+                checkDistance(entryItem.getPosition().latitude, entryItem.getPosition().longitude);
+                mCurrentEntry = entryItem.getGeoEntry();
+                showMarkerInfoPopup(mMainLayout);
+                return true;
+            }
+        });
 
         // setup listeners
         getMap().setOnCameraIdleListener(mClusterManager);
@@ -238,7 +255,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                System.out.println("onCameraIdle");
                 LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
                 mDataUtils.readAllEntries(bounds.southwest.latitude,
                         bounds.northeast.latitude,
@@ -249,35 +265,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 addEntryToMap();
             }
         };
-    }
-
-    /**
-     * Change map marker according to the file type they are representing
-     *
-     * @param entry the GeoEntry thats attached to the map marker
-     * @return
-     */
-    private MarkerOptions getMarkerForItem(GeoEntry entry) {
-
-        MarkerOptions mo = new MarkerOptions();
-        mo.position(new LatLng(entry.getLatitude(), entry.getLongitude())).title(entry.getTitle());
-        switch(entry.getFileType()){
-            case DataUtils.NO_MEDIA:
-                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.blank_marker ) ) );
-                break;
-            case DataUtils.IMAGE:
-                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.image_marker ) ) );
-
-                break;
-            case DataUtils.AUDIO:
-                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.audio_marker ) ) );
-                break;
-            default:
-                mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( getResources(), R.mipmap.blank_marker ) ) );
-                break;
-        }
-
-        return mo;
     }
 
     //Note that the type "Items" will be whatever type of object you're adding markers for so you'll
@@ -302,7 +289,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                         //Add the Marker to the Map and keep track of it with the HashMap
                         //getMarkerForItem just returns a MarkerOptions object
 
-                        EntryItem marker = new EntryItem(entry.getLatitude(), entry.getLongitude(), entry.getTitle(), entry.getFileType());
+                        EntryItem marker = new EntryItem(entry.getLatitude(), entry.getLongitude(), entry.getTitle(), entry.getFileType(), entry);
                         visibleMarkers.put(entry.getEntryID(), marker);
                         mClusterManager.addItem(marker);
                         mClusterManager.cluster();
@@ -326,9 +313,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                         it.remove();
                     }
                 }
-
-
-
             }
         }
     }
@@ -368,7 +352,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         getMap().animateCamera( CameraUpdateFactory.newCameraPosition( position ), null );
 
         getMap().setMapType( MAP_TYPES[curMapTypeIndex] );
-        getMap().setBuildingsEnabled(true);
+        getMap().getUiSettings().setCompassEnabled(false);
+        getMap().getUiSettings().setMapToolbarEnabled(false);
+        getMap().setBuildingsEnabled(false);
         getMap().setMyLocationEnabled(true);
         getMap().getUiSettings().setMyLocationButtonEnabled(false);
 
@@ -392,97 +378,21 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     @Override
     public void onMapClick(LatLng latLng) {
-        mInfoBar.setVisibility(View.INVISIBLE);
-
     }
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        checkDistance(marker.getPosition().latitude, marker.getPosition().longitude);
-        mCurrentEntry = (GeoEntry)marker.getTag();
-
-        GeoEntry geoMarker = (GeoEntry) marker.getTag();
-        setInfoBarImage(geoMarker.getFileType());
-
-        mInfoBarTitle.setText(geoMarker.getTitle());
-        mInfoBar.setVisibility(View.VISIBLE);
-        showEntry();
-
-        return true;
-    }
-
-    private void setInfoBarImage(int type){
-        // remove previous listener
-        mInfoBarImage.setOnClickListener(null);
-        switch(type){
-            case DataUtils.NO_MEDIA:
-                break;
-            case DataUtils.IMAGE:
-                mInfoBarImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_image));
-                showImage();
-                break;
-            case DataUtils.AUDIO:
-                mInfoBarImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_audiotrack));
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void showImage(){
-
-        if(!mIsWithinBounds){
-            return;
-        }
-
-        mInfoBarImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent startViewEntryIntent = new Intent(getActivity(), FullScreenActivity.class);
-                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
-                getActivity().startActivity(startViewEntryIntent);
-            }
-        });
-    }
-
-    private void playAudio(){
-
-        if(!mIsWithinBounds){
-            return;
-        }
-
-        mInfoBarImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
+        return false;
     }
 
     private float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
         float [] dist = new float[1];
         Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
         return dist[0];
-    }
-
-    private void showEntry(){
-
-        if(!mIsWithinBounds){
-            return;
-        }
-        mInfoBarShowEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent startViewEntryIntent = new Intent(getActivity(), getDestination());
-                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
-                getActivity().startActivity(startViewEntryIntent);
-            }
-        });
     }
 
     private Class getDestination(){
@@ -508,13 +418,73 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-
                     Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), markerLat, markerLng);
-
                     mIsWithinBounds = (distance <= MAXIMUM_DISTANCE);
                 }
             }
         });
+    }
+
+    public void showMarkerInfoPopup(View anchorView) {
+        View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_entry_info, null);
+
+        // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        int location[] = new int[2];
+
+        // Get the View's(the one that was clicked in the Fragment) location
+        anchorView.getLocationOnScreen(location);
+
+        // Using location, the PopupWindow will be displayed right under anchorView
+        popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
+
+        // connect time UI elements
+        TextView entryTitle = (TextView) popupView.findViewById(R.id.info_bar_title);
+        ImageView entryImage = (ImageView) popupView.findViewById(R.id.info_bar_type);
+        TextView showEntry = (TextView) popupView.findViewById(R.id.info_bar_show_entry);
+
+        setInfoBarImage(entryImage, mCurrentEntry.getFileType());
+        entryTitle.setText(mCurrentEntry.getTitle());
+
+        showEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                if(!mIsWithinBounds){
+//                    return;
+//                }
+
+                Intent startViewEntryIntent = new Intent(getActivity(), getDestination());
+                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
+                getActivity().startActivity(startViewEntryIntent);
+            }
+
+        });
+
+    }
+
+    private void setInfoBarImage(ImageView imageType, int type){
+        // remove previous listener
+        imageType.setOnClickListener(null);
+        switch(type){
+            case DataUtils.NO_MEDIA:
+                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_text));
+                break;
+            case DataUtils.IMAGE:
+                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_image));
+                break;
+            case DataUtils.AUDIO:
+                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_audiotrack));
+                break;
+            default:
+                break;
+        }
     }
 
     public void showSelectFriendsPopup(View anchorView) {
@@ -522,7 +492,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         // TODO check boxes for media types and date pickers to and from dates
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_filter, null);
 
-//        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
         final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
 
         // If the PopupWindow should be focusable
@@ -636,30 +606,4 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
         },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
     }
-
-    public void onCheckboxClicked(View view) {
-
-
-
-//        // is it checked
-//        boolean checked = ((CheckBox) view).isChecked();
-//
-//        // Check which checkbox was clicked
-//        switch(view.getId()) {
-//            case R.id.checkbox_image:
-//                if (checked){
-//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, true);
-//                } else {
-//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, false);                }
-//                break;
-//            case R.id.checkbox_audio:
-//                if (checked){
-//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, true);
-//                } else {
-//                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, false);
-//                }
-//                break;
-//        }
-    }
-
 }

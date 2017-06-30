@@ -152,7 +152,17 @@ public class DataUtils {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            GeoEntry file = new GeoEntry(uid, title, description, location.getLatitude(), location.getLongitude(), downloadUrl.toString(), type, getDateTime());
+
+                            GeoEntry file = new GeoEntry(uid,
+                                    title,
+                                    description,
+                                    location.getLatitude(),
+                                    location.getLongitude(),
+                                    location.getAltitude(),
+                                    downloadUrl.toString(),
+                                    type,
+                                    getDateTime());
+
                             DatabaseReference entryRef = mDatabase.child("files");
                             DatabaseReference pushEntryRef = entryRef.push();
                             file.setEntryID(pushEntryRef.getKey());
@@ -172,7 +182,16 @@ public class DataUtils {
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    GeoEntry file = new GeoEntry(uid, title, description, location.getLatitude(), location.getLongitude(), "", type, getDateTime());
+                    System.out.println("altitude : " + location.getAltitude());
+                    GeoEntry file = new GeoEntry(uid,
+                            title,
+                            description,
+                            location.getLatitude(),
+                            location.getLongitude(),
+                            location.getAltitude(),
+                            "",
+                            type,
+                            getDateTime());
                     DatabaseReference entryRef = mDatabase.child("files");
                     DatabaseReference pushEntryRef = entryRef.push();
                     file.setEntryID(pushEntryRef.getKey());

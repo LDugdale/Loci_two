@@ -32,6 +32,8 @@ public class EventIconRendered extends DefaultClusterRenderer<EntryItem> {
         markerOptions.title(item.getTitle());
         super.onBeforeClusterItemRendered(item, markerOptions);
     }
+
+
     /**
      * Change map marker according to the file type they are representing
      *

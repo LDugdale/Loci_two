@@ -15,6 +15,7 @@ public class GeoEntry implements Parcelable{
     private String description;
     private double latitude;
     private double longitude;
+    private double altitude;
     private String filePath;
     private int fileType;
     private String entryID;
@@ -31,6 +32,7 @@ public class GeoEntry implements Parcelable{
         description = in.readString();
         latitude = in.readDouble();
         longitude = in.readDouble();
+        altitude = in.readDouble();
         filePath = in.readString();
         fileType = in.readInt();
         entryID = in.readString();
@@ -38,12 +40,13 @@ public class GeoEntry implements Parcelable{
 
     }
 
-    public GeoEntry(String creator, String title, String description, double latitude, double longitude, String filePath, int fileType, long uploadDate) {
+    public GeoEntry(String creator, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate) {
         this.creator = creator;
         this.title = title;
         this.description = description;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.altitude = altitude;
         this.filePath = filePath;
         this.fileType = fileType;
         this.uploadDate = uploadDate;
@@ -67,6 +70,14 @@ public class GeoEntry implements Parcelable{
 
     public String getDescription() {
         return description;
+    }
+
+    public double getAltitude() {
+        return altitude;
+    }
+
+    public void setAltitude(double altitude) {
+        this.altitude = altitude;
     }
 
     public double getLatitude() {
@@ -113,6 +124,7 @@ public class GeoEntry implements Parcelable{
         dest.writeString(description);
         dest.writeDouble(latitude);
         dest.writeDouble(longitude);
+        dest.writeDouble(altitude);
         dest.writeString(filePath);
         dest.writeInt(fileType);
         dest.writeString(entryID);

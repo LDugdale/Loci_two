@@ -20,11 +20,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.services.LociLocationService;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.MainActivityAdapter;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
 
@@ -35,7 +33,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.Format;
 import java.text.ParseException;
@@ -94,9 +91,9 @@ public class MainActivity extends AppCompatActivity {
         // set initial fragment
         viewPager.setCurrentItem(1);
 
-        // start location service
-        Intent intent = new Intent(this, LociLocationService.class);
-        startService(intent);
+//        // start location service
+//        Intent intent = new Intent(this, LociLocationService.class);
+//        startService(intent);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -234,12 +231,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        if (id == R.id.action_ar) {
-            Intent intent = new Intent(this, AugmentedActivity.class);
-            startActivity(intent);
-
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
