@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -118,18 +119,17 @@ public class DataUtils {
         User user = new User(username, email, getDateTime());
         String currentUID = getCurrentUID();
         user.setUserID(currentUID);
-//        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-//                .setDisplayName(username)
-////                .setPhotoUri(Uri.parse("https://example.com/jane-q-user/profile.jpg"))
-//                .build();
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName(username)
+//                .setPhotoUri(Uri.parse("https://example.com/jane-q-user/profile.jpg"))
+                .build();
 
-//        mUser.updateProfile(profileUpdates);
+        mUser.updateProfile(profileUpdates);
         mDatabase.child("users").child(currentUID).setValue(user);
     }
 
     public void writeNewFile(final int permissions, final String title, final String description, final Uri path, final int type) {
         final String uid = getCurrentUID();
-
         StorageReference storageRef = mStorage.getReference();
 
         StorageReference ref = storageRef.child(getCurrentUID() + "/type/" +  + new Date().getTime());
@@ -155,6 +155,7 @@ public class DataUtils {
 
                             GeoEntry file = new GeoEntry(uid,
                                     title,
+                                    mUser.getDisplayName(),
                                     description,
                                     location.getLatitude(),
                                     location.getLongitude(),
@@ -184,6 +185,7 @@ public class DataUtils {
                 if (location != null) {
                     System.out.println("altitude : " + location.getAltitude());
                     GeoEntry file = new GeoEntry(uid,
+                            mUser.getDisplayName(),
                             title,
                             description,
                             location.getLatitude(),
@@ -643,7 +645,25 @@ public class DataUtils {
         } else {
             image.setImageResource(drawableID);
         }
+    }
 
+    /**
+     * For reading a single GeoEntry
+     */
+    public void getNonLoggedinProfilePic(String photoUrl, final ImageView image, int drawableID) {
+
+        if (mUser != null) {
+
+            if(photoUrl != null){
+                StorageReference storageRef = mStorage.getReferenceFromUrl(photoUrl);
+                Glide.with(mContext)
+                        .using(new FirebaseImageLoader())
+                        .load(storageRef)
+                        .into(image);
+            } else {
+                image.setImageResource(drawableID);
+            }
+        }
     }
 
     /**

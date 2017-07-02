@@ -11,6 +11,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -44,6 +45,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.text.Text;
+import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 import com.lauriedugdale.loci.EntryItem;
@@ -57,12 +59,17 @@ import com.lauriedugdale.loci.ui.activity.NotificationActivity;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
+import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
+import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -234,10 +241,18 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<EntryItem>() {
             @Override
             public boolean onClusterItemClick(EntryItem entryItem) {
-                System.out.println("onClusterItemClick");
                 checkDistance(entryItem.getPosition().latitude, entryItem.getPosition().longitude);
                 mCurrentEntry = entryItem.getGeoEntry();
                 showMarkerInfoPopup(mMainLayout);
+                return true;
+            }
+        });
+
+        mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<EntryItem>() {
+            @Override
+            public boolean onClusterClick(Cluster<EntryItem> cluster) {
+                ArrayList<EntryItem> clusterList = (ArrayList)cluster.getItems();
+                showClusterInfoPopup(mMainLayout, clusterList);
                 return true;
             }
         });
@@ -395,6 +410,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return dist[0];
     }
 
+    //TODO add to utils class remove from mapclusteradapter once this is done
     private Class getDestination(){
         Class destination = null;
         switch(mCurrentEntry.getFileType()){
@@ -425,10 +441,32 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         });
     }
 
+    public void showClusterInfoPopup(View anchorView, ArrayList<EntryItem> clusterList) {
+        View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_cluster_info, null);
+        // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+        int location[] = new int[2];
+        // Get the View's(the one that was clicked in the Fragment) location
+        anchorView.getLocationOnScreen(location);
+
+        popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
+
+        RecyclerView recyclerView = (RecyclerView) popupView.findViewById(R.id.rv_cluster);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(mLayoutManager);
+        MapClusterAdapter adapter = new MapClusterAdapter(getActivity(), clusterList);
+        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
+    }
+
     public void showMarkerInfoPopup(View anchorView) {
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_entry_info, null);
 
-        // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
         final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
 
         // If the PopupWindow should be focusable
@@ -483,6 +521,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_audiotrack));
                 break;
             default:
+                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_text));
                 break;
         }
     }

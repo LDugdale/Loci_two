@@ -54,7 +54,6 @@ public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdap
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
 
-
         // inflate second item layout & return that viewHolder
         contactView = inflater.inflate(R.layout.item_request_entry, parent, false);
 

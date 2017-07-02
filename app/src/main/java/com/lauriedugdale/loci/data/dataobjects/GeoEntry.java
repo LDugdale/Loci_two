@@ -11,6 +11,7 @@ import android.os.Parcelable;
 public class GeoEntry implements Parcelable{
 
     private String creator;
+    private String creatorName;
     private String title;
     private String description;
     private double latitude;
@@ -28,6 +29,7 @@ public class GeoEntry implements Parcelable{
 
     private GeoEntry(Parcel in) {
         creator = in.readString();
+        creatorName = in.readString();
         title = in.readString();
         description = in.readString();
         latitude = in.readDouble();
@@ -40,7 +42,7 @@ public class GeoEntry implements Parcelable{
 
     }
 
-    public GeoEntry(String creator, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate) {
+    public GeoEntry(String creator, String creatorName, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate) {
         this.creator = creator;
         this.title = title;
         this.description = description;
@@ -74,6 +76,14 @@ public class GeoEntry implements Parcelable{
 
     public double getAltitude() {
         return altitude;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
     }
 
     public void setAltitude(double altitude) {
@@ -120,6 +130,7 @@ public class GeoEntry implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(creator);
+        dest.writeString(creatorName);
         dest.writeString(title);
         dest.writeString(description);
         dest.writeDouble(latitude);

@@ -142,22 +142,9 @@ public class MainActivity extends AppCompatActivity {
                 switch (id){
                     case R.id.logout:
                         mAuth.signOut();
-
-                        // this listener will be called when there is change in firebase user session
-                        FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
-                            @Override
-                            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                                FirebaseUser user = firebaseAuth.getCurrentUser();
-                                if (user == null) {
-                                    // user auth state is changed - user is null
-                                    // launch login activity
-                                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                                }
-                            }
-                        };
-//                        finish();
+                        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                        finish();
                         break;
-
                 }
                 return true;
             }

@@ -14,6 +14,9 @@ import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class ImageEntryActivity extends AppCompatActivity {
     public static final String TAG = "ImageEntryActivity";
@@ -25,6 +28,10 @@ public class ImageEntryActivity extends AppCompatActivity {
     private TextView mTitle;
     private TextView mDescription;
     private ImageView mHeroImage;
+
+    private ImageView mAuthorPic;
+    private TextView mAuthor;
+    private TextView mDate;
 
 
     @Override
@@ -51,6 +58,7 @@ public class ImageEntryActivity extends AppCompatActivity {
         mDataUtils.readEntry(mHeroImage, mGeoEntry.getEntryID(), mGeoEntry.getFilePath());
         imageListener();
 
+        authorDetails();
 
     }
 
@@ -86,4 +94,16 @@ public class ImageEntryActivity extends AppCompatActivity {
         });
     }
 
+    public void authorDetails(){
+        mAuthorPic = (ImageView) findViewById(R.id.view_entry_author_pic);
+        mAuthor = (TextView) findViewById(R.id.view_entry_author);
+        mDate = (TextView) findViewById(R.id.view_entry_date);
+
+        mDataUtils.getNonLoggedinProfilePic(mGeoEntry.getFilePath(), mAuthorPic, R.drawable.default_profile);
+        mAuthor.setText(mGeoEntry.getCreatorName());
+
+        String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.UK).format(new Date( mGeoEntry.getUploadDate()));
+        mDate.setText(dateString);
+
+    }
 }
