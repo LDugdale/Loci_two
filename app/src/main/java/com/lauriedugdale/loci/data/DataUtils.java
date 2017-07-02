@@ -72,11 +72,10 @@ public class DataUtils {
     public static final int IMAGE = 101;
     public static final int AUDIO = 102;
 
+    // codes for permission access
     public static final int ANYONE = 200;
     public static final int FRIENDS = 201;
     public static final int NO_ONE = 202;
-
-
 
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -92,14 +91,12 @@ public class DataUtils {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
-    public String getCurrentUID() {
-        String uid = null;
-        if (mUser != null) {
-            uid = mUser.getUid();
-        }
-        return uid;
-    }
 
+    /**
+     * Get the date used for adding to entries in the database
+     *
+     * @return time in long format
+     */
     public long getDateTime(){
 
         Calendar c = Calendar.getInstance();
@@ -115,20 +112,33 @@ public class DataUtils {
         return dateInLong;
     }
 
-    public void writeNewUser(String username, String email) {
-        User user = new User(username, email, getDateTime());
-        String currentUID = getCurrentUID();
-        user.setUserID(currentUID);
-        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setDisplayName(username)
-//                .setPhotoUri(Uri.parse("https://example.com/jane-q-user/profile.jpg"))
-                .build();
-
-        mUser.updateProfile(profileUpdates);
-        mDatabase.child("users").child(currentUID).setValue(user);
+    /**
+     * Gets the user ID of rhe logged in User
+     * @return the user ID
+     */
+    public String getCurrentUID() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String uid = null;
+        if (user != null) {
+            uid = user.getUid();
+        }
+        return uid;
     }
 
-    public void writeNewFile(final int permissions, final String title, final String description, final Uri path, final int type) {
+    /**
+     * Writes a new user to the database
+     * @param username The username to be written
+     * @param email The email of the username to be written
+     */
+    public void writeNewUser(String username, String email) {
+        User user = new User(username, email, getDateTime());
+        FirebaseUser userAuth = FirebaseAuth.getInstance().getCurrentUser();
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(username).build();
+        userAuth.updateProfile(profileUpdates);
+        mDatabase.child("users").child(getCurrentUID()).setValue(user);
+    }
+
+    public void writeEntryWithFile(final int permissions, final String title, final String description, final Uri path, final int type) {
         final String uid = getCurrentUID();
         StorageReference storageRef = mStorage.getReference();
 
@@ -139,7 +149,7 @@ public class DataUtils {
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
+                // TODO Handle unsuccessful uploads
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -152,10 +162,9 @@ public class DataUtils {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-
                             GeoEntry file = new GeoEntry(uid,
-                                    title,
                                     mUser.getDisplayName(),
+                                    title,
                                     description,
                                     location.getLatitude(),
                                     location.getLongitude(),
@@ -176,14 +185,13 @@ public class DataUtils {
         });
     }
 
-    public void writeNewFile(final int permissions, final String title, final String description, final int type) {
+    public void writeEntry(final int permissions, final String title, final String description, final int type) {
         final String uid = getCurrentUID();
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    System.out.println("altitude : " + location.getAltitude());
                     GeoEntry file = new GeoEntry(uid,
                             mUser.getDisplayName(),
                             title,
@@ -650,20 +658,37 @@ public class DataUtils {
     /**
      * For reading a single GeoEntry
      */
-    public void getNonLoggedinProfilePic(String photoUrl, final ImageView image, int drawableID) {
+    public void getNonLoggedInProfilePic(String userID, final ImageView image, final int drawableID) {
 
-        if (mUser != null) {
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("users");
 
-            if(photoUrl != null){
-                StorageReference storageRef = mStorage.getReferenceFromUrl(photoUrl);
-                Glide.with(mContext)
-                        .using(new FirebaseImageLoader())
-                        .load(storageRef)
-                        .into(image);
-            } else {
-                image.setImageResource(drawableID);
+        ref.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+
+                String photoUrl = user.getProfilePath();
+                if(photoUrl != null){
+                    StorageReference storageRef = mStorage.getReferenceFromUrl(photoUrl);
+                    Glide.with(mContext)
+                            .using(new FirebaseImageLoader())
+                            .load(storageRef)
+                            .into(image);
+                } else {
+                    image.setImageResource(drawableID);
+                }
+
             }
-        }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+
+
     }
 
     /**

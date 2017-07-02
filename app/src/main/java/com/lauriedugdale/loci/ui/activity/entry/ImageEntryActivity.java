@@ -99,7 +99,7 @@ public class ImageEntryActivity extends AppCompatActivity {
         mAuthor = (TextView) findViewById(R.id.view_entry_author);
         mDate = (TextView) findViewById(R.id.view_entry_date);
 
-        mDataUtils.getNonLoggedinProfilePic(mGeoEntry.getFilePath(), mAuthorPic, R.drawable.default_profile);
+        mDataUtils.getNonLoggedInProfilePic(mGeoEntry.getCreator(), mAuthorPic, R.drawable.default_profile);
         mAuthor.setText(mGeoEntry.getCreatorName());
 
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.UK).format(new Date( mGeoEntry.getUploadDate()));

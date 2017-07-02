@@ -61,6 +61,7 @@ import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
 import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -410,23 +411,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return dist[0];
     }
 
-    //TODO add to utils class remove from mapclusteradapter once this is done
-    private Class getDestination(){
-        Class destination = null;
-        switch(mCurrentEntry.getFileType()){
-            case DataUtils.IMAGE:
-                destination = ImageEntryActivity.class;
-                break;
-            case DataUtils.AUDIO:
-                destination = AudioEntryActivity.class;
-                break;
-            default:
-                break;
-        }
-
-        return destination;
-    }
-
     private void checkDistance(final double markerLat, final double markerLng){
 
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -498,7 +482,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 //                    return;
 //                }
 
-                Intent startViewEntryIntent = new Intent(getActivity(), getDestination());
+                Intent startViewEntryIntent = new Intent(getActivity(), LocationUtils.getEntryDestinationClass(mCurrentEntry.getFileType()));
                 startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
                 getActivity().startActivity(startViewEntryIntent);
             }

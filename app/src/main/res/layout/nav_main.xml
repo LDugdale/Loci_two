@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="164dp"
-    tools:layout_gravity="bottom"
-    tools:background="@color/light_purple">
+    tools:layout_gravity="bottom">
 
     <!--<View-->
         <!--android:layout_width="match_parent"-->
@@ -68,7 +67,6 @@
         android:layout_marginBottom="21dp"
         android:layout_marginEnd="24dp"
         android:layout_gravity="end|bottom">
-
         <ImageView
             android:id="@+id/vst_end_background_image"
             android:layout_width="52dp"
@@ -81,8 +79,6 @@
             android:layout_height="32dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_file"/>
-
-
     </FrameLayout>
 
     <ImageView

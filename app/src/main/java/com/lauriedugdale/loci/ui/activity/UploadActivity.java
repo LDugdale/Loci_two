@@ -19,8 +19,6 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -29,7 +27,6 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -85,11 +82,9 @@ public class UploadActivity extends AppCompatActivity {
         mViewableSelection = (TextView) findViewById(R.id.viewable_selection);
 
         onViewableSelectionClick();
-
         selectImage();
         selectAudio();
         selectCamera();
-
         uploadEntry();
 
     }
@@ -124,8 +119,7 @@ public class UploadActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (mUploadData == null){
-
-                    mDataUtils.writeNewFile(
+                    mDataUtils.writeEntry(
                             mPermissionType,
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
@@ -135,8 +129,7 @@ public class UploadActivity extends AppCompatActivity {
 
                 } else {
 
-                    mDataUtils.writeNewFile(
-
+                    mDataUtils.writeEntryWithFile(
                             mPermissionType,
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
