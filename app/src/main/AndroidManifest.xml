@@ -75,7 +75,8 @@
             android:label="@string/title_activity_create_group"
             android:theme="@style/AppTheme" />
         <activity android:name=".ui.activity.creategroup.CreateGroup" />
-        <activity android:name=".ui.activity.entry.NoMediaActivity"></activity>
+        <activity android:name=".ui.activity.entry.NoMediaActivity" />
+        <activity android:name=".ui.activity.social.UserProfileActivity"></activity>
     </application>
 
 </manifest>
