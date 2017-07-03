@@ -18,6 +18,7 @@ import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,29 +73,11 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
         viewHolder.mShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent startViewEntryIntent = new Intent(mContext, getDestination(entry));
+                Intent startViewEntryIntent = new Intent(mContext, LocationUtils.getEntryDestinationClass(entry.getFileType()));
                 startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
                 mContext.startActivity(startViewEntryIntent);
             }
         });
-    }
-    private Class getDestination(GeoEntry entry){
-        Class destination = null;
-        switch(entry.getFileType()){
-            case DataUtils.IMAGE:
-                destination = ImageEntryActivity.class;
-                break;
-            case DataUtils.AUDIO:
-                destination = AudioEntryActivity.class;
-                break;
-            case DataUtils.NO_MEDIA:
-                destination = NoMediaActivity.class;
-                break;
-            default:
-                break;
-        }
-
-        return destination;
     }
 
     @Override

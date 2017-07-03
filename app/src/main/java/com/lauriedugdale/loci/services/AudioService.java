@@ -441,7 +441,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                         // Show our playback controls in the compat view
                         .setShowActionsInCompactView(1))
                 // Set the Notification color
-                .setColor(getResources().getColor(R.color.green))
+                .setColor(getResources().getColor(R.color.colorPrimary))
                 // Set the large and small icons
                 .setLargeIcon(largeIcon)
                 .setSmallIcon(android.R.drawable.stat_sys_headset)

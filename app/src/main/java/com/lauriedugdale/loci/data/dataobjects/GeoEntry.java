@@ -44,6 +44,7 @@ public class GeoEntry implements Parcelable{
 
     public GeoEntry(String creator, String creatorName, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate) {
         this.creator = creator;
+        this.creatorName = creatorName;
         this.title = title;
         this.description = description;
         this.latitude = latitude;
