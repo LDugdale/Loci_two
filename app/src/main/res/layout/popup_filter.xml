@@ -4,8 +4,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="center"
     android:gravity="center">
-    <!--xmlns:tools="http://schemas.android.com/tools"-->
-    <!--tools:context=".ui.activity.MainActivity"-->
+
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
