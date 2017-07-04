@@ -11,7 +11,6 @@ import android.widget.EditText;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 
 public class SelectFriend extends AppCompatActivity  {
 

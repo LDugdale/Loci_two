@@ -7,11 +7,11 @@ import android.support.v7.widget.RecyclerView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
+import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
 
 public class NotificationActivity extends AppCompatActivity {
 
-    private SelectFriendsAdapter mFriendAdapter;
+    private NotificationFriendsAdapter mFriendAdapter;
     private RecyclerView mFriendRecyclerView;
     private DataUtils mDataUtils;
 
@@ -25,8 +25,9 @@ public class NotificationActivity extends AppCompatActivity {
 
         mFriendRecyclerView = (RecyclerView) findViewById(R.id.rv_friend_requests);
         mFriendRecyclerView.setLayoutManager(mLayoutManager);
-        mFriendAdapter = new SelectFriendsAdapter(this);
+        mFriendAdapter = new NotificationFriendsAdapter(this);
         mFriendRecyclerView.setAdapter(mFriendAdapter);
+
         mDataUtils.fetchFriendRequests(mFriendAdapter);
 
     }

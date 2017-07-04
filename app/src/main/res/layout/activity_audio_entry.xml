@@ -12,6 +12,7 @@
         android:layout_height="200dp"
         android:padding="10dp"
         android:gravity="center_vertical">
+
         <!-- Player Footer -->
         <LinearLayout
             android:id="@+id/view_entry_player"

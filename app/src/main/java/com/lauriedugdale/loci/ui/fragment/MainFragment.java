@@ -154,7 +154,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         mFilterOptions = new FilterOptions();
 
-
         return view;
     }
 
@@ -366,7 +365,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .build();
 
         getMap().animateCamera( CameraUpdateFactory.newCameraPosition( position ), null );
-
         getMap().setMapType( MAP_TYPES[curMapTypeIndex] );
         getMap().getUiSettings().setCompassEnabled(false);
         getMap().getUiSettings().setMapToolbarEnabled(false);
@@ -405,6 +403,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return false;
     }
 
+    //TODO remove these methods and use the ones in location utils (getDistanceInMeters, checkDistance)
     private float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
         float [] dist = new float[1];
         Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
@@ -451,7 +450,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public void showMarkerInfoPopup(View anchorView) {
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_entry_info, null);
 
-        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
 
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
@@ -464,15 +463,27 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         anchorView.getLocationOnScreen(location);
 
         // Using location, the PopupWindow will be displayed right under anchorView
-        popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
+        popupWindow.showAtLocation(anchorView, Gravity.TOP, 50, 0);
 
         // connect time UI elements
         TextView entryTitle = (TextView) popupView.findViewById(R.id.info_bar_title);
         ImageView entryImage = (ImageView) popupView.findViewById(R.id.info_bar_type);
         TextView showEntry = (TextView) popupView.findViewById(R.id.info_bar_show_entry);
+        TextView entryDistance = (TextView) popupView.findViewById(R.id.info_bar_marker_distance);
+        TextView entryDate = (TextView) popupView.findViewById(R.id.info_bar_marker_date);
+        TextView entryAuthor = (TextView) popupView.findViewById(R.id.info_bar_marker_author);
 
+        // set type image
         setInfoBarImage(entryImage, mCurrentEntry.getFileType());
+        // set title
         entryTitle.setText(mCurrentEntry.getTitle());
+        // display distance
+        LocationUtils.displayDistance(entryDistance, getActivity(), mCurrentEntry.getLatitude(), mCurrentLocation.getLongitude());
+        // set date
+        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( mCurrentEntry.getUploadDate()));
+        entryDate.setText(dateString);
+        // set author
+        entryAuthor.setText(mCurrentEntry.getCreatorName());
 
         showEntry.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -628,5 +639,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             }
 
         },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    public void showSpecificEntries(){
+
     }
 }

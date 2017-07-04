@@ -7,6 +7,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.SparseBooleanArray;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -28,25 +29,22 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.dataobjects.FriendRequest;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
+import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
-import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialRequestAdapter;
+import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Created by mnt_x on 14/06/2017.
@@ -54,13 +52,11 @@ import java.util.Map;
 
 public class DataUtils {
 
-    // TODO check if friend before adding
-    // TODO change button when search for friend if already a friend
     // TODO write reject button - remove from database on reject
 
     // TODO switch to geofire api to query location more effectively
 
-    // TODO lower case everything
+    // TODO IMPROVE SEARCH
 
     // TODO stop location querying if only moved a little bit and expand the query parameter to just outside the screen view to allow for this
 
@@ -133,6 +129,8 @@ public class DataUtils {
     public void writeNewUser(String username, String email) {
         User user = new User(username, email, getDateTime());
         FirebaseUser userAuth = FirebaseAuth.getInstance().getCurrentUser();
+        user.setUserID(userAuth.getUid());
+        user.setDateJoined(getDateTime());
         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(username).build();
         userAuth.updateProfile(profileUpdates);
         mDatabase.child("users").child(getCurrentUID()).setValue(user);
@@ -222,11 +220,13 @@ public class DataUtils {
             mDatabase.child("file_permission").child(ownerID + "/" + fileID).setValue(file);
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference ref = database.getReference("friends");
-            ref.child(ownerID).addValueEventListener(new ValueEventListener() {
+            ref.child(getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                        UserFriend friend = postSnapshot.getValue(UserFriend.class);
+                        User friend = postSnapshot.getValue(User.class);
+                        System.out.println(friend.getUsername());
+                        System.out.println(friend.getUserID());
                         mDatabase.child("file_permission").child(friend.getUserID() + "/" + fileID).setValue(file);
                     }
                 }
@@ -235,32 +235,31 @@ public class DataUtils {
                 }
             });
         }
-
-
     }
 
-    public void fetchFriendRequests(final SelectFriendsAdapter adapter) {
+    public void fetchFriendRequests(final NotificationFriendsAdapter adapter) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference ref = database.getReference("users");
-
-        mDatabase.child("friend_requests").orderByChild(getCurrentUID()).equalTo(true).addChildEventListener(new ChildEventListener() {
+        mDatabase.child("friend_requests").child(getCurrentUID()).addChildEventListener(new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
                 String fromUser = dataSnapshot.getKey();
-                ref.child(fromUser).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        User user = dataSnapshot.getValue(User.class);
-                        adapter.addToUsers(user);
-                        adapter.notifyDataSetChanged();
+                if((boolean)dataSnapshot.getValue()) {
+                    ref.child(fromUser).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User user = dataSnapshot.getValue(User.class);
+                            adapter.addToUsers(user);
+                            adapter.notifyDataSetChanged();
 
-                    }
+                        }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                        }
+                    });
+                }
 
             }
 
@@ -291,11 +290,10 @@ public class DataUtils {
      * status true - pending
      * status false - accepted
      *
-     * @param fromUser
-     * @param fromUser
+     *
      * @param status
      */
-    public void addFriendRequest( String fromUser, String toUser, boolean status) {
+    public void addFriendRequest(final Button addButton, final String toUser, final boolean status) {
 //        {
 //            "friend_requests": {
 //                // user Ids who sent request
@@ -312,8 +310,38 @@ public class DataUtils {
 //            }
 //        }
 
-        // user 1 - current user - add the selected user to the current user entry
-        mDatabase.child("friend_requests").child(fromUser).child(toUser).setValue(status);
+        final String currentUID = getCurrentUID();
+
+
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("users");
+
+        ref.child(toUser).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User currentUser = dataSnapshot.getValue(User.class);
+                currentUser.getRequests().add(currentUID);
+
+                mDatabase.child("users").child(currentUser.getUserID()).setValue(currentUser);
+
+                mDatabase.child("friend_requests").child(toUser).child(currentUID).setValue(status).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        addButton.setText("Added");
+                    }
+                });
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+
+
     }
 
     public void addFriend(final User selectedUser){
@@ -333,7 +361,8 @@ public class DataUtils {
                 // user 2 - selected user - add the current user to the selected user entry
                 mDatabase.child("friends").child(selectedUser.getUserID() + "/" + currentUID).setValue(new UserFriend(currentUser, true));
 
-                addFriendRequest(selectedUser.getUserID(), currentUID, false);
+                mDatabase.child("friend_requests").child(currentUID).child(selectedUser.getUserID()).setValue(false);
+//                addFriendRequest(selectedUser.getUserID(), currentUID, false);
             }
 
             @Override
@@ -374,10 +403,6 @@ public class DataUtils {
                 }
             }
         });
-
-
-
-
     }
 
     public void fetchUserFriends(final SelectForGroupAdapter adapter){
@@ -396,7 +421,6 @@ public class DataUtils {
                     if(!currentUID.equals(user.getUserID())) {
                         adapter.addToUsers(user);
                     }
-
                 }
             }
 
@@ -489,6 +513,38 @@ public class DataUtils {
         });
     }
 
+    public void fetchProfileEntries(final FileAdapter adapter, String userID){
+        String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(currentUID).orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        ref.child("anyone").orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
 
     public void readAllEntries(double latitudeStart, double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final HashMap<String, GeoEntry> entryMap){
         String currentUID = getCurrentUID();
@@ -575,6 +631,26 @@ public class DataUtils {
 
     }
 
+
+    public void fetchProfileFiles(final FileAdapter adapter, String userID){
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("files");
+        ref.orderByChild("creator").equalTo(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                    // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
 
     public void fetchUserFiles(final FileAdapter adapter){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();

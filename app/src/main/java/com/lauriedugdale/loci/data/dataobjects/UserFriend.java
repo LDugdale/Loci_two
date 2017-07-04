@@ -17,6 +17,8 @@ public class UserFriend extends User {
 
     public UserFriend(User user, boolean isAccepted) {
         super(user.getUsername(), user.getEmail(), user.getDateJoined());
+        setUserID(user.getUserID());
+        setDateJoined(user.getDateJoined());
         this.isAccepted = isAccepted;
     }
 

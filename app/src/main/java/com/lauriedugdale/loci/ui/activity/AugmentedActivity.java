@@ -27,7 +27,6 @@ import android.widget.Toast;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.ui.ar.ARCamera;
 import com.lauriedugdale.loci.ui.ar.AROverlayView;
-import com.lauriedugdale.loci.ui.ar.EntrySurfaceView;
 
 public class AugmentedActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 

@@ -14,9 +14,13 @@ import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.NotificationActivity;
+import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 import com.lauriedugdale.loci.ui.fragment.SocialFragment;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
 /**
  * @author Laurie Dugdale
@@ -46,7 +50,7 @@ public class FriendsFragment extends Fragment implements SocialAdapter.SocialAda
         mRecyclerView.setLayoutManager(mLayoutManager);
 
 
-        SocialAdapter mAdapter = new SocialAdapter(getActivity(), this);
+        mAdapter = new SocialAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
         mDataUtils.fetchUserFriends(mAdapter);
@@ -59,7 +63,9 @@ public class FriendsFragment extends Fragment implements SocialAdapter.SocialAda
      * On click method when an item in the recyclerview is clicked this launches the ViewEntryActivity class
      * passes the Uri of the clicked entry
      */
-    public void onSocialClick(long date) {
-
+    public void onSocialClick(User user) {
+        Intent startViewEntryIntent = new Intent(getActivity(), UserProfileActivity.class);
+        startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, user);
+        getActivity().startActivity(startViewEntryIntent);
     }
 }

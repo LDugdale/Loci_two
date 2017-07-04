@@ -11,16 +11,14 @@ import android.view.View;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,9 +75,9 @@ public class AROverlayView extends View {
             Map.Entry pair = (Map.Entry) it.next();
             GeoEntry entry = (GeoEntry) pair.getValue();
 
-            float[] currentLocationInECEF = LocationUtilities.WSG84toECEF(mLocation.getLatitude(), mLocation.getLongitude(), mLocation.getAltitude());
-            float[] pointInECEF = LocationUtilities.WSG84toECEF(entry.getLatitude(), entry.getLongitude(), entry.getAltitude());
-            float[] pointInENU = LocationUtilities.ECEFtoENU(mLocation, currentLocationInECEF, pointInECEF);
+            float[] currentLocationInECEF = LocationUtils.WSG84toECEF(mLocation.getLatitude(), mLocation.getLongitude(), mLocation.getAltitude());
+            float[] pointInECEF = LocationUtils.WSG84toECEF(entry.getLatitude(), entry.getLongitude(), entry.getAltitude());
+            float[] pointInENU = LocationUtils.ECEFtoENU(mLocation, currentLocationInECEF, pointInECEF);
 
             float[] cameraCoordinateVector = new float[4];
             Matrix.multiplyMV(cameraCoordinateVector, 0, rotatedProjectionMatrix, 0, pointInENU, 0);

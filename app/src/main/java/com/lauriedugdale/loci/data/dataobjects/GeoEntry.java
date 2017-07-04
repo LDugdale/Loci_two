@@ -141,7 +141,6 @@ public class GeoEntry implements Parcelable{
         dest.writeInt(fileType);
         dest.writeString(entryID);
         dest.writeLong(uploadDate);
-
     }
 
     // After implementing the `Parcelable` interface, we need to create the

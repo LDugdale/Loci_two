@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.DataUtils;
 
@@ -36,7 +37,7 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
      * The interface that receives onClick messages.
      */
     public interface SocialAdapterOnClickHandler {
-        void onSocialClick(long date);
+        void onSocialClick(User user);
     }
 
     /**
@@ -64,10 +65,8 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
 
-
         // inflate second item layout & return that viewHolder
         contactView = inflater.inflate(R.layout.item_social_entry, parent, false);
-
 
         // Return a new holder instance
         return new ViewHolder(contactView);
@@ -100,12 +99,6 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
         return mUsers.size();
     }
 
-//    @Override
-//    public int getItemViewType(int position) {
-//        if (position == 0) return 1;
-//        else return 2;
-//    }
-
     /**
      * CLASS
      * Used to cache the views within the layout for quick access
@@ -129,9 +122,8 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
 
         @Override
         public void onClick(View v) {
-
-            // call the onClick method for the mClickHandler variable
-//            mClickHandler.onClick(id);
+            int pos = getAdapterPosition();
+            mClickHandler.onSocialClick(mUsers.get(pos));
         }
     }
 }

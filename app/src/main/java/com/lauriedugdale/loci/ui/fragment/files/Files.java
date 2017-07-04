@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
@@ -36,7 +37,7 @@ public class Files extends Fragment  {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_files);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FileAdapter(getActivity());
+        mAdapter = new FileAdapter(getActivity(), AccessPermission.OWNER);
         mRecyclerView.setAdapter(mAdapter);
 
         // TODO sort out duplication issue or make singlevalueeventlistner trigger twice when switching between fragments

@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
@@ -30,20 +31,23 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private Context mContext;
     private List<GeoEntry> mFiles;
     private DataUtils mDataUtils;
+    private AccessPermission mAccess;
 
     /**
      * Entry adapter constructor
      *
      * @param context
      */
-    public FileAdapter(Context context) {
+    public FileAdapter(Context context, AccessPermission access) {
         this.mContext = context;
         mFiles = new ArrayList<GeoEntry>();
         mDataUtils = new DataUtils(context);
+        mAccess = access;
     }
 
     public void addToFiles(GeoEntry entry){
         mFiles.add(entry);
+        notifyDataSetChanged();
     }
 
     public void clearData(){

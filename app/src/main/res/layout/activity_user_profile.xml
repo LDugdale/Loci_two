@@ -11,28 +11,50 @@
         android:id="@+id/profile_picture"
         android:layout_width="0dp"
         android:layout_height="200dp"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_user_files"
+        android:layout_width="401dp"
+        android:layout_height="324dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/relativeLayout"
+        app:layout_constraintVertical_bias="0.0" />
 
     <RelativeLayout
-        android:layout_width="368dp"
+        android:id="@+id/relativeLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp">
+        android:layout_marginTop="0dp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:background="@color/colorPrimary"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_picture">
 
         <TextView
             android:id="@+id/profile_username"
-            android:text="profile"
-            android:textSize="@dimen/h1"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="profile"
+            android:textSize="@dimen/h1" />
+
+        <ImageView
+            android:id="@+id/locate_all"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_my_location"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true" />
 
     </RelativeLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        tools:layout_editor_absoluteY="95dp"
-        tools:layout_editor_absoluteX="172dp" />
 
 </android.support.constraint.ConstraintLayout>

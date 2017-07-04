@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by mnt_x on 23/06/2017.
+ * Created by mnt_x on 22/06/2017.
  */
 
-public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdapter.ViewHolder> {
+public class NotificationFriendsAdapter extends RecyclerView.Adapter<NotificationFriendsAdapter.ViewHolder> {
+
+
     // Store the context and cursor for easy access
     private Context mContext;
     private List<User> mUsers;
@@ -31,7 +33,7 @@ public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdap
      *
      * @param context
      */
-    public SocialRequestAdapter(Context context) {
+    public NotificationFriendsAdapter(Context context) {
         this.mContext = context;
         mUsers = new ArrayList<User>();
         mDataUtils = new DataUtils(context);
@@ -46,27 +48,33 @@ public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdap
         notifyDataSetChanged();
     }
 
+    public void removeEntry(int position){
+        mUsers.remove(position);
+        notifyItemRemoved(position);
+    }
+
     @Override
     /**
      * Inflates a layout depending on its position and returns a ViewHolder
      */
-    public SocialRequestAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public NotificationFriendsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
+
 
         // inflate second item layout & return that viewHolder
         contactView = inflater.inflate(R.layout.item_request_entry, parent, false);
 
 
         // Return a new holder instance
-        return new SocialRequestAdapter.ViewHolder(contactView);
+        return new NotificationFriendsAdapter.ViewHolder(contactView);
     }
 
     @Override
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(SocialRequestAdapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(NotificationFriendsAdapter.ViewHolder viewHolder, final int position) {
 
         final User user = mUsers.get(position);
 
@@ -80,6 +88,7 @@ public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdap
             @Override
             public void onClick(View v) {
                 mDataUtils.addFriend(user);
+                removeEntry(position);
             }
         });
     }
@@ -106,14 +115,18 @@ public class SocialRequestAdapter extends RecyclerView.Adapter<SocialRequestAdap
         public TextView mName;
         public ImageView mProfilePic;
         public Button mAddButton;
+        public Button mRejectButton;
+
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             // Find the UI elements
-            mName = (TextView) itemView.findViewById(R.id.ise_name);
-            mProfilePic = (ImageView) itemView.findViewById(R.id.ise_profile_pic);
-            mAddButton = (Button) itemView.findViewById(R.id.add_user_button);
+            mName = (TextView) itemView.findViewById(R.id.ire_name);
+            mProfilePic = (ImageView) itemView.findViewById(R.id.ire_profile_pic);
+            mAddButton = (Button) itemView.findViewById(R.id.ire_accept_button);
+            mRejectButton = (Button) itemView.findViewById(R.id.ire_reject_button);
+
         }
     }
 }
