@@ -24,6 +24,7 @@ import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.services.LociLocationService;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
 import com.lauriedugdale.loci.ui.adapter.MainActivityAdapter;
+import com.lauriedugdale.loci.ui.fragment.MainFragment;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
 
 import android.support.v4.view.ViewPager;
@@ -42,12 +43,16 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     private DrawerLayout mDrawerLayout;
     private Toolbar mToolbar;
 
     private TextView mUsername;
     private TextView mEmail;
     private ImageView mMenuProfileImage;
+
+    private ViewPager mViewPager;
 
     private Context mContext = this;
 
@@ -80,16 +85,16 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         //find view pager and Adapter for managing fragments
-        ViewPager viewPager = (ViewPager) findViewById(R.id.am_view_pager);
+        mViewPager = (ViewPager) findViewById(R.id.am_view_pager);
         MainActivityAdapter adapter = new MainActivityAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
+        mViewPager.setAdapter(adapter);
 
         // find navigation tabs and start listeners
         LociNavView tabsView = (LociNavView) findViewById(R.id.am_loci_tabs);
-        tabsView.setUpWithViewPager(viewPager, this);
+        tabsView.setUpWithViewPager(mViewPager, this);
 
         // set initial fragment
-        viewPager.setCurrentItem(1);
+        mViewPager.setCurrentItem(1);
 
 //        // start location service
 //        Intent intent = new Intent(this, LociLocationService.class);
@@ -99,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
 
         initNavigationDrawer();
-
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             public void setUpWithViewPager(final ViewPager viewPager, final Context context) {
                 viewPager.addOnPageChangeListener(this);
@@ -128,6 +132,10 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public ViewPager getViewPager() {
+        return mViewPager;
     }
 
     public void initNavigationDrawer() {

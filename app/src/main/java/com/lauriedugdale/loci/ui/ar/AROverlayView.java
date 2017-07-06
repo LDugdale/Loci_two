@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by mnt_x on 29/06/2017.
+ * @author Laurie Dugdale
  */
 
 public class AROverlayView extends View {
@@ -87,6 +87,7 @@ public class AROverlayView extends View {
             if (cameraCoordinateVector[2] < 0) {
                 float x  = (0.5f + cameraCoordinateVector[0]/cameraCoordinateVector[3]) * canvas.getWidth();
                 float y = (0.5f - cameraCoordinateVector[1]/cameraCoordinateVector[3]) * canvas.getHeight();
+
 
                 canvas.drawCircle(x, y, radius, paint);
                 canvas.drawText(entry.getTitle(), x - (30 * entry.getTitle().length() / 2), y - 80, paint);

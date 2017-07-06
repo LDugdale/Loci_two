@@ -1,9 +1,10 @@
 package com.lauriedugdale.loci.ui.fragment;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
+import android.content.IntentFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
@@ -11,6 +12,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -25,9 +27,7 @@ import android.widget.DatePicker;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,40 +37,30 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.vision.text.Text;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
-import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.EventIconRendered;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
-import com.lauriedugdale.loci.ui.activity.NotificationActivity;
-import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
-import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
-import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
+import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -121,13 +111,73 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private TextView mDisplayToDate;
     private DatePickerDialog mFromTimePicker;
     private DatePickerDialog mToTimePicker;
-    private Button mFilterButton;
 
     // filter variables
     private FilterOptions mFilterOptions;
     private FilterOptions mTempFilterOptions;
 
     private FrameLayout mMainLayout;
+
+    private String mCurrentlyDisplaying;
+    private TextView mViewingName;
+    private ImageView mViewingClose;
+    private FrameLayout mViewingWindow;
+    private User mUser;
+    private GeoEntry mEntry;
+    private boolean mFirstIdle;
+
+
+
+    private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if("user_entries".equals(intent.getAction())) {
+                mCurrentlyDisplaying = "user_entries";
+                mUser = intent.getParcelableExtra("user");
+                clearMap();
+                getSpecificEntries();
+                mFirstIdle = true;
+                ((MainActivity)getActivity()).getViewPager().setCurrentItem(1);
+                setupCurrentlyViewing();
+            }
+            if("single_entry".equals(intent.getAction())) {
+                mCurrentlyDisplaying = "single_entry";
+                mEntry = intent.getParcelableExtra("entry");
+                clearMap();
+                addEntry();
+                ((MainActivity)getActivity()).getViewPager().setCurrentItem(1);
+                setupCurrentlyViewing();
+            }
+        }
+    };
+
+    public void clearMap(){
+        visibleMarkers = new HashMap<String, EntryItem>();
+        mEntryMap = new HashMap<String, GeoEntry>();
+        mClusterManager.clearItems();
+        mClusterManager.cluster();
+    }
+
+    public void setupCurrentlyViewing(){
+        if (mCurrentlyDisplaying.equals("user_entries")){
+            mViewingName.setText(mUser.getUsername());
+        } else  if (mCurrentlyDisplaying.equals("single_entry")){
+            mViewingName.setText(mEntry.getTitle());
+        }
+
+        mViewingClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mViewingWindow.setVisibility(View.INVISIBLE);
+                mCurrentlyDisplaying ="all";
+                getAllEntries();
+            }
+        });
+
+        mViewingWindow.setVisibility(View.VISIBLE);
+    }
+
 
     /**
      * Used to return fragment for viewpager quickly
@@ -154,6 +204,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         mFilterOptions = new FilterOptions();
 
+        mCurrentlyDisplaying = "all";
+
+        super.onCreate(savedInstanceState);
+        IntentFilter filter = new IntentFilter("user_entries");
+        filter.addAction("single_entry");
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mDataReceiver, filter);
+
         return view;
     }
 
@@ -170,6 +227,10 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .build();
 
         mMainLayout = (FrameLayout) getActivity().findViewById(R.id.main_layout);
+        mViewingWindow = (FrameLayout) getActivity().findViewById(R.id.currently_viewing);
+        mViewingName = (TextView) getActivity().findViewById(R.id.currently_viewing_text);
+        mViewingClose = (ImageView) getActivity().findViewById(R.id.currently_viewing_close);
+
     }
 
     @Override
@@ -212,6 +273,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     private void setUpMapIfNeeded() {
         if (mMap != null) {
+            getAllEntries();
             return;
         }
         // get map fragment
@@ -270,25 +332,76 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-                mDataUtils.readAllEntries(bounds.southwest.latitude,
-                        bounds.northeast.latitude,
-                        mFilterOptions.getNumericalFromDate(),
-                        mFilterOptions.getNumericalToDate(),
-                        mFilterOptions.getCheckedTypes(),
-                        mEntryMap);
-                addEntryToMap();
+                getAllEntries();
+                addAllEntriesToMap();
+                getBounds();
             }
         };
     }
 
-    //Note that the type "Items" will be whatever type of object you're adding markers for so you'll
-    //likely want to create a List of whatever type of items you're trying to add to the map and edit this appropriately
-    //Your "Item" class will need at least a unique id, latitude and longitude.
-    private void addEntryToMap() {
+    private void getAllEntries(){
+        if(mCurrentlyDisplaying.equals("all")) {
+
+            LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+            mDataUtils.readAllEntries(bounds.southwest.latitude,
+                    bounds.northeast.latitude,
+                    mFilterOptions.getNumericalFromDate(),
+                    mFilterOptions.getNumericalToDate(),
+                    mFilterOptions.getCheckedTypes(),
+                    mEntryMap);
+        }
+    }
+
+    private void getSpecificEntries(){
+
+        if (mCurrentlyDisplaying.equals("user_entries")){
+            mDataUtils.readUserEntries(mUser.getUserID(),
+                    mFilterOptions.getNumericalFromDate(),
+                    mFilterOptions.getNumericalToDate(),
+                    mFilterOptions.getCheckedTypes(),
+                    mEntryMap);
+        }
+    }
+
+    private void getBounds(){
+
+        if (mCurrentlyDisplaying.equals("all") || !mFirstIdle){
+            return;
+        }
+
+        if (mEntryMap.isEmpty()){
+            return;
+        }
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        for (Map.Entry e: mEntryMap.entrySet()) {
+            GeoEntry entry = (GeoEntry) e.getValue();
+            bounds.include(new LatLng(entry.getLatitude(), entry.getLongitude()));
+
+        }
+        getMap().animateCamera( CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
+        mFirstIdle = false;
+    }
+
+    private void addEntry(){
+        EntryItem marker = new EntryItem(mEntry.getLatitude(), mEntry.getLongitude(), mEntry.getTitle(), mEntry.getFileType(), mEntry);
+        mClusterManager.addItem(marker);
+        mClusterManager.cluster();
+
+        CameraPosition position = CameraPosition.builder()
+                .target( new LatLng( mEntry.getLatitude(),
+                        mEntry.getLongitude() ) )
+                .zoom( 16f )
+                .bearing( 0.0f )
+                .tilt( 0.3f )
+                .build();
+
+        getMap().animateCamera( CameraUpdateFactory.newCameraPosition( position ) );
+    }
+
+    private void addAllEntriesToMap() {
 
         if(this.mMap != null) {
-            //This is the current user-viewable region of the map
+            //This is the current viewable region of the map
             LatLngBounds bounds = this.mMap.getProjection().getVisibleRegion().latLngBounds;
 
             //Loop through all the items that are available to be placed on the map
@@ -297,35 +410,24 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 Map.Entry pair = (Map.Entry)it.next();
                 GeoEntry entry = (GeoEntry) pair.getValue();
 
-
                 if(bounds.contains(new LatLng(entry.getLatitude(), entry.getLongitude()))) {
-                    //If the item isn't already being displayed
                     if(!visibleMarkers.containsKey(entry.getEntryID())) {
-                        //Add the Marker to the Map and keep track of it with the HashMap
-                        //getMarkerForItem just returns a MarkerOptions object
 
                         EntryItem marker = new EntryItem(entry.getLatitude(), entry.getLongitude(), entry.getTitle(), entry.getFileType(), entry);
                         visibleMarkers.put(entry.getEntryID(), marker);
                         mClusterManager.addItem(marker);
                         mClusterManager.cluster();
-
-
-
                     }
                 } else {
                     //If the course was previously on screen
                     if(visibleMarkers.containsKey(entry.getEntryID())) {
-                        //1. Remove the Marker from the GoogleMap
-//                        visibleMarkers.get(entry.getEntryID()).remove();
                         mClusterManager.removeItem(visibleMarkers.get(entry.getEntryID()));
                         mClusterManager.cluster();
-
-                        visibleMarkers.remove(entry.getEntryID());
-
-                        //2. Remove the reference to the Marker from the HashMap
                         visibleMarkers.remove(entry.getEntryID());
                         // remove from iterator
-                        it.remove();
+                        if (mCurrentlyDisplaying == "all") {
+                            it.remove();
+                        }
                     }
                 }
             }
@@ -364,7 +466,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .tilt( 0.3f )
                 .build();
 
-        getMap().animateCamera( CameraUpdateFactory.newCameraPosition( position ), null );
+        if(mCurrentlyDisplaying.equals("all")) {
+            getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position), null);
+        }
         getMap().setMapType( MAP_TYPES[curMapTypeIndex] );
         getMap().getUiSettings().setCompassEnabled(false);
         getMap().getUiSettings().setMapToolbarEnabled(false);
@@ -423,6 +527,29 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             }
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public void showClusterInfoPopup(View anchorView, ArrayList<EntryItem> clusterList) {
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_cluster_info, null);

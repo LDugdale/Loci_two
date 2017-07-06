@@ -1,6 +1,7 @@
 package com.lauriedugdale.loci.ui.activity.social;
 
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -60,8 +61,14 @@ public class UserProfileActivity extends AppCompatActivity {
         mLocateAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                Intent intent = new Intent("user_entries");
+                intent.putExtra("user", mUser);
+                LocalBroadcastManager.getInstance(UserProfileActivity.this).sendBroadcast(intent);
 
+                Intent aIntent = new Intent(getApplicationContext(), MainActivity.class);
+                aIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+                startActivity(aIntent);
             }
         });
     }

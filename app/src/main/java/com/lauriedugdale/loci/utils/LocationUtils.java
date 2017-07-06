@@ -18,7 +18,7 @@ import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
  * @author Laurie Dugdale
  */
 
-public class LocationUtils {
+public final class LocationUtils {
 
     private final static double WGS84_A = 6378137.0;                  // WGS 84 semi-major axis constant in meters
     private final static double WGS84_E2 = 0.00669437999014;          // square of WGS 84 eccentricity

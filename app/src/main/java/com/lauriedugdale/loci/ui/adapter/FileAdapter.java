@@ -1,6 +1,8 @@
 package com.lauriedugdale.loci.ui.adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,8 @@ import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.ui.activity.MainActivity;
+import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +100,19 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         }
         // set file picture
         mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryImage, entry.getFileType());
+
+        viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent("single_entry");
+                intent.putExtra("entry", mFiles.get(position));
+                LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+
+                Intent aIntent = new Intent(mContext, MainActivity.class);
+                aIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                mContext.startActivity(aIntent);
+            }
+        });
     }
 
     @Override
@@ -118,6 +135,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         // The UI elements
         public TextView mTitle;
         public ImageView mFilePic;
+        public ImageView mLocateFile;
 
 
         public ViewHolder(View itemView) {
@@ -126,6 +144,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             // Find the UI elements
             mTitle = (TextView) itemView.findViewById(R.id.if_name);
             mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
+            mLocateFile = (ImageView) itemView.findViewById(R.id.if_locate_file);
         }
     }
 }
