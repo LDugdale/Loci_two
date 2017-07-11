@@ -13,8 +13,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,8 +41,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.lauriedugdale.loci.EntryItem;
@@ -51,14 +49,13 @@ import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
-import com.lauriedugdale.loci.utils.LocationUtils;
+import com.lauriedugdale.loci.utils.PopupUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -75,9 +72,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMarkerClickListener {
 
-    private static float MAXIMUM_DISTANCE = 50.0f; //maximum distance
-    private boolean mIsWithinBounds; // check if markers is within MAXIMUM_DISTANCE
-
+    private static final String TAG = MainFragment.class.getSimpleName();
     // location variables
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
@@ -100,8 +95,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
     private FusedLocationProviderClient mFusedLocationClient; // used for getting the current lcoation
 
-    private GeoEntry mCurrentEntry; // currently selected marker
-
     // time controls
     private final static String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
     private final static String DATE = "dd-MM-yyyy";
@@ -123,31 +116,62 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private ImageView mViewingClose;
     private FrameLayout mViewingWindow;
     private User mUser;
+    private Group mGroup;
     private GeoEntry mEntry;
+    private ArrayList<GeoEntry> mGeofenceList;
     private boolean mFirstIdle;
+    private boolean mDisplayingCustomEntries;
 
 
 
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "received localbroadcast intent - " + intent.getAction());
+            clearMap();
+            mDisplayingCustomEntries = true;
 
             if("user_entries".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "user_entries";
                 mUser = intent.getParcelableExtra("user");
-                clearMap();
                 getSpecificEntries();
                 mFirstIdle = true;
                 ((MainActivity)getActivity()).getViewPager().setCurrentItem(1);
                 setupCurrentlyViewing();
             }
+            if("group_entries".equals(intent.getAction())) {
+                mCurrentlyDisplaying = "group_entries";
+                mGroup = intent.getParcelableExtra("group");
+                getSpecificEntries();
+                mFirstIdle = true;
+                if(((MainActivity)getActivity()) != null) {
+                    ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
+                }
+                setupCurrentlyViewing();
+            }
             if("single_entry".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "single_entry";
                 mEntry = intent.getParcelableExtra("entry");
-                clearMap();
                 addEntry();
-                ((MainActivity)getActivity()).getViewPager().setCurrentItem(1);
-                setupCurrentlyViewing();
+                if(((MainActivity)getActivity()) != null){
+                    ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
+                    setupCurrentlyViewing();
+                }
+            }
+            if("geofence_entries".equals(intent.getAction())) {
+                mCurrentlyDisplaying = "geofence_entries";
+                mGeofenceList = intent.getParcelableArrayListExtra("entries");
+                for (GeoEntry e : mGeofenceList){
+                    mEntryMap.put(e.getEntryID(), e);
+                }
+                addAllEntriesToMap();
+
+                getBounds();
+                mFirstIdle = true;
+                if(((MainActivity)getActivity()) != null) {
+                    ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
+                    setupCurrentlyViewing();
+                }
             }
         }
     };
@@ -160,16 +184,22 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     }
 
     public void setupCurrentlyViewing(){
+
         if (mCurrentlyDisplaying.equals("user_entries")){
             mViewingName.setText(mUser.getUsername());
-        } else  if (mCurrentlyDisplaying.equals("single_entry")){
+        } else if (mCurrentlyDisplaying.equals("single_entry")){
             mViewingName.setText(mEntry.getTitle());
+        } else if (mCurrentlyDisplaying.equals("geofence_entries")){
+            mViewingName.setText("Nearby entries");
+        } else if (mCurrentlyDisplaying.equals("group_entries")){
+            mViewingName.setText(mGroup.getGroupName());
         }
 
         mViewingClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mViewingWindow.setVisibility(View.INVISIBLE);
+                mDisplayingCustomEntries = false;
                 mCurrentlyDisplaying ="all";
                 getAllEntries();
             }
@@ -192,10 +222,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return mMap;
     }
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         // instantiate inital variables
         mDataUtils = new DataUtils(getActivity());
@@ -203,13 +232,20 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mEntryMap = new HashMap<String, GeoEntry>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         mFilterOptions = new FilterOptions();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+
+        mMainLayout = (FrameLayout) view.findViewById(R.id.main_layout);
+        mViewingWindow = (FrameLayout) view.findViewById(R.id.currently_viewing);
+        mViewingName = (TextView) view.findViewById(R.id.currently_viewing_text);
+        mViewingClose = (ImageView) view.findViewById(R.id.currently_viewing_close);
+
 
         mCurrentlyDisplaying = "all";
-
-        super.onCreate(savedInstanceState);
-        IntentFilter filter = new IntentFilter("user_entries");
-        filter.addAction("single_entry");
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mDataReceiver, filter);
 
         return view;
     }
@@ -225,12 +261,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                 .addOnConnectionFailedListener( this )
                 .addApi( LocationServices.API )
                 .build();
-
-        mMainLayout = (FrameLayout) getActivity().findViewById(R.id.main_layout);
-        mViewingWindow = (FrameLayout) getActivity().findViewById(R.id.currently_viewing);
-        mViewingName = (TextView) getActivity().findViewById(R.id.currently_viewing_text);
-        mViewingClose = (ImageView) getActivity().findViewById(R.id.currently_viewing_close);
-
     }
 
     @Override
@@ -251,7 +281,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         int id = item.getItemId();
 
         if (id == R.id.action_filter) {
-            showSelectFriendsPopup(mMainLayout);
+            showFilterPopup(mMainLayout);
         }
 
 
@@ -268,7 +298,26 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     public void onResume() {
         super.onResume();
 
+        IntentFilter filter = new IntentFilter("user_entries");
+        filter.addAction("group_entries");
+        filter.addAction("geofence_entries");
+        filter.addAction("single_entry");
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mDataReceiver, filter);
+
         setUpMapIfNeeded();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+//        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mDataReceiver);
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
     }
 
     private void setUpMapIfNeeded() {
@@ -303,9 +352,8 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<EntryItem>() {
             @Override
             public boolean onClusterItemClick(EntryItem entryItem) {
-                checkDistance(entryItem.getPosition().latitude, entryItem.getPosition().longitude);
-                mCurrentEntry = entryItem.getGeoEntry();
-                showMarkerInfoPopup(mMainLayout);
+                GeoEntry currentEntry = entryItem.getGeoEntry();
+                PopupUtils.showMarkerInfoPopup(getActivity(), mMainLayout, currentEntry, mDisplayingCustomEntries);
                 return true;
             }
         });
@@ -314,7 +362,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             @Override
             public boolean onClusterClick(Cluster<EntryItem> cluster) {
                 ArrayList<EntryItem> clusterList = (ArrayList)cluster.getItems();
-                showClusterInfoPopup(mMainLayout, clusterList);
+                PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, clusterList, mDisplayingCustomEntries);
                 return true;
             }
         });
@@ -332,6 +380,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
+                mClusterManager.cluster();
                 getAllEntries();
                 addAllEntriesToMap();
                 getBounds();
@@ -360,6 +409,12 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                     mFilterOptions.getNumericalToDate(),
                     mFilterOptions.getCheckedTypes(),
                     mEntryMap);
+        } else if (mCurrentlyDisplaying.equals("group_entries")){
+            mDataUtils.readGroupEntries(mGroup.getGroupID(),
+                    mFilterOptions.getNumericalFromDate(),
+                    mFilterOptions.getNumericalToDate(),
+                    mFilterOptions.getCheckedTypes(),
+                    mEntryMap);
         }
     }
 
@@ -372,13 +427,26 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         if (mEntryMap.isEmpty()){
             return;
         }
+
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for (Map.Entry e: mEntryMap.entrySet()) {
             GeoEntry entry = (GeoEntry) e.getValue();
             bounds.include(new LatLng(entry.getLatitude(), entry.getLongitude()));
-
         }
-        getMap().animateCamera( CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
+        getMap().animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50), 1000, new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                if (mCurrentlyDisplaying.equals("geofence_entries")) {
+                    PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, mGeofenceList, mDisplayingCustomEntries);
+                }
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
         mFirstIdle = false;
     }
 
@@ -507,148 +575,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         return false;
     }
 
-    //TODO remove these methods and use the ones in location utils (getDistanceInMeters, checkDistance)
-    private float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
-        float [] dist = new float[1];
-        Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
-        return dist[0];
-    }
-
-    private void checkDistance(final double markerLat, final double markerLng){
-
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                // Got last known location. In some rare situations this can be null.
-                if (location != null) {
-                    Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), markerLat, markerLng);
-                    mIsWithinBounds = (distance <= MAXIMUM_DISTANCE);
-                }
-            }
-        });
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void showClusterInfoPopup(View anchorView, ArrayList<EntryItem> clusterList) {
-        View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_cluster_info, null);
-        // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
-        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
-        // If the PopupWindow should be focusable
-        popupWindow.setFocusable(true);
-        // If you need the PopupWindow to dismiss when when touched outside
-        popupWindow.setBackgroundDrawable(new ColorDrawable());
-        int location[] = new int[2];
-        // Get the View's(the one that was clicked in the Fragment) location
-        anchorView.getLocationOnScreen(location);
-
-        popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
-
-        RecyclerView recyclerView = (RecyclerView) popupView.findViewById(R.id.rv_cluster);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(mLayoutManager);
-        MapClusterAdapter adapter = new MapClusterAdapter(getActivity(), clusterList);
-        recyclerView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
-    }
-
-    public void showMarkerInfoPopup(View anchorView) {
-        View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_map_entry_info, null);
-
-        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
-
-        // If the PopupWindow should be focusable
-        popupWindow.setFocusable(true);
-        // If you need the PopupWindow to dismiss when when touched outside
-        popupWindow.setBackgroundDrawable(new ColorDrawable());
-
-        int location[] = new int[2];
-
-        // Get the View's(the one that was clicked in the Fragment) location
-        anchorView.getLocationOnScreen(location);
-
-        // Using location, the PopupWindow will be displayed right under anchorView
-        popupWindow.showAtLocation(anchorView, Gravity.TOP, 50, 0);
-
-        // connect time UI elements
-        TextView entryTitle = (TextView) popupView.findViewById(R.id.info_bar_title);
-        ImageView entryImage = (ImageView) popupView.findViewById(R.id.info_bar_type);
-        TextView showEntry = (TextView) popupView.findViewById(R.id.info_bar_show_entry);
-        TextView entryDistance = (TextView) popupView.findViewById(R.id.info_bar_marker_distance);
-        TextView entryDate = (TextView) popupView.findViewById(R.id.info_bar_marker_date);
-        TextView entryAuthor = (TextView) popupView.findViewById(R.id.info_bar_marker_author);
-
-        // set type image
-        setInfoBarImage(entryImage, mCurrentEntry.getFileType());
-        // set title
-        entryTitle.setText(mCurrentEntry.getTitle());
-        // display distance
-        LocationUtils.displayDistance(entryDistance, getActivity(), mCurrentEntry.getLatitude(), mCurrentLocation.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( mCurrentEntry.getUploadDate()));
-        entryDate.setText(dateString);
-        // set author
-        entryAuthor.setText(mCurrentEntry.getCreatorName());
-
-        showEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-//                if(!mIsWithinBounds){
-//                    return;
-//                }
-
-                Intent startViewEntryIntent = new Intent(getActivity(), LocationUtils.getEntryDestinationClass(mCurrentEntry.getFileType()));
-                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, mCurrentEntry);
-                getActivity().startActivity(startViewEntryIntent);
-            }
-
-        });
-
-    }
-
-    private void setInfoBarImage(ImageView imageType, int type){
-        // remove previous listener
-        imageType.setOnClickListener(null);
-        switch(type){
-            case DataUtils.NO_MEDIA:
-                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_text));
-                break;
-            case DataUtils.IMAGE:
-                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_image));
-                break;
-            case DataUtils.AUDIO:
-                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_audiotrack));
-                break;
-            default:
-                imageType.setImageDrawable(getResources().getDrawable(R.drawable.ic_text));
-                break;
-        }
-    }
-
-    public void showSelectFriendsPopup(View anchorView) {
+    public void showFilterPopup(View anchorView) {
 
         // TODO check boxes for media types and date pickers to and from dates
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_filter, null);
@@ -766,9 +693,5 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             }
 
         },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
-    }
-
-    public void showSpecificEntries(){
-
     }
 }

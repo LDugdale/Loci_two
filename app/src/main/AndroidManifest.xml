@@ -3,7 +3,7 @@
     package="com.lauriedugdale.loci">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -71,12 +71,20 @@
         <!-- android:theme="@style/AppTheme" /> -->
         <activity android:name=".ui.activity.SelectFriend" />
         <activity android:name=".ui.activity.NotificationActivity" />
-        <activity android:name=".ui.activity.AugmentedActivity" />
+        <activity
+            android:name=".ui.activity.AugmentedActivity"
+            android:parentActivityName=".ui.activity.MainActivity">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.lauriedugdale.loci.ui.activity.MainActivity" />
+        </activity>
         <activity
             android:name=".ui.CreateGroup"
             android:label="@string/title_activity_create_group"
             android:theme="@style/AppTheme" />
-        <activity android:name=".ui.activity.creategroup.CreateGroup" />
+        <activity android:name=".ui.activity.social.CreateGroup" />
         <activity android:name=".ui.activity.entry.NoMediaActivity" />
         <activity android:name=".ui.activity.social.UserProfileActivity" />
 
@@ -86,7 +94,9 @@
             android:exported="true" />
         <service
             android:name=".services.GeofenceIntentService"
-            android:exported="false"></service>
+            android:exported="false" />
+
+        <activity android:name=".ui.activity.social.GroupProfileActivity"></activity>
     </application>
 
 </manifest>

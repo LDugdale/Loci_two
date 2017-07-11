@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/transparent_white"
     android:layout_gravity="top"
     android:id="@+id/info_bar">
 
@@ -81,6 +81,7 @@
             android:background="@color/colorPrimary">
 
             <TextView
+                android:visibility="gone"
                 android:id="@+id/info_bar_show_entry"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

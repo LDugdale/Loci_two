@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.DataUtils;
 
@@ -20,7 +19,7 @@ import java.util.List;
  * Created by mnt_x on 21/06/2017.
  */
 
-public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder> {
+public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
 
 
     // Store the context and cursor for easy access
@@ -46,7 +45,7 @@ public class SocialAdapter extends RecyclerView.Adapter<SocialAdapter.ViewHolder
      * @param context
      * @param clickHandler
      */
-    public SocialAdapter(Context context, SocialAdapterOnClickHandler clickHandler) {
+    public FriendsAdapter(Context context, SocialAdapterOnClickHandler clickHandler) {
         this.mContext = context;
         this.mClickHandler = clickHandler;
         mUsers = new ArrayList<User>();

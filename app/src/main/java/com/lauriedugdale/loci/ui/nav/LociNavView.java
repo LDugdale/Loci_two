@@ -78,8 +78,8 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
 
         mIndicator = findViewById(R.id.vst_indicator_image);
 
-        mCenterColor = ContextCompat.getColor(getContext(), R.color.white);
-        mSideColor = ContextCompat.getColor(getContext(), R.color.white);
+        mCenterColor = ContextCompat.getColor(getContext(), R.color.colorPrimary);
+        mSideColor = ContextCompat.getColor(getContext(), R.color.colorPrimary);
 
         mArgbEvaluator = new ArgbEvaluator();
         mIndicatorTranslationX = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
@@ -91,7 +91,7 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
 
             @Override
             public void onGlobalLayout() {
-                mEndViewsTranslationX = (int) ((mBottomImage.getX() - mStartImage.getX()) - mIndicatorTranslationX);
+                mEndViewsTranslationX = (int) ((mBottomImage.getX() - mStartImage.getX() - 25) - mIndicatorTranslationX);
                 mBottomImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 mCenterTranslationY = getHeight() - mBottomImage.getBottom();

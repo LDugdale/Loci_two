@@ -2,7 +2,9 @@ package com.lauriedugdale.loci.ui.activity;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,18 +17,35 @@ import android.location.LocationProvider;
 import android.opengl.Matrix;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
 import com.lauriedugdale.loci.ui.ar.ARCamera;
 import com.lauriedugdale.loci.ui.ar.AROverlayView;
+import com.lauriedugdale.loci.utils.LocationUtils;
+import com.lauriedugdale.loci.utils.PopupUtils;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class AugmentedActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
@@ -36,14 +55,13 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
     private AROverlayView arOverlayView;
     private Camera camera;
     private ARCamera arCamera;
-    private TextView tvCurrentLocation;
 
     private SensorManager sensorManager;
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
     public static final int REQUEST_LOCATION_PERMISSIONS_CODE = 0;
 
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
-    private static final long MIN_TIME_BW_UPDATES = 0;//1000 * 60 * 1; // 1 minute
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1000; // 10 meters
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 10;//1000 * 60 * 1; // 1 minute
 
     private LocationManager locationManager;
     public Location location;
@@ -59,8 +77,18 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
         sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
         cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
-        tvCurrentLocation = (TextView) findViewById(R.id.tv_current_location);
         arOverlayView = new AROverlayView(this);
+
+        // my_child_toolbar is defined in the layout file
+        Toolbar myChildToolbar =
+                (Toolbar) findViewById(R.id.ar_toolbar);
+        setSupportActionBar(myChildToolbar);
+
+        // Get a support ActionBar corresponding to this toolbar
+        ActionBar ab = getSupportActionBar();
+
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -227,10 +255,23 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
     private void updateLatestLocation() {
         if (arOverlayView !=null) {
             arOverlayView.updateCurrentLocation(location);
-            tvCurrentLocation.setText(String.format("lat: %s \nlon: %s \naltitude: %s \n",
-                    location.getLatitude(), location.getLongitude(), location.getAltitude()));
         }
     }
+
+    public void displaySelectEntries(ArrayList<CameraPoint> entries){
+
+        ArrayList<GeoEntry> entryList = new ArrayList<>();
+
+        if (entries.size() == 1){
+            PopupUtils.showMarkerInfoPopup(this, this.surfaceView, entries.get(0).getEntry(), false);
+        } else {
+            for (CameraPoint cp : entries){
+                entryList.add(cp.getEntry());
+            }
+            PopupUtils.showClusterInfoPopup(this, this.surfaceView, entryList, false);
+        }
+    }
+
 
     @Override
     public void onLocationChanged(Location location) {
@@ -252,65 +293,3 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
 
     }
 }
-//    private static final String TAG = "AugmentedActivity";
-//    private static boolean DEBUG = false;
-//    private SensorManager mSensorManager;
-//    private Sensor mSensor;
-//    private EntrySurfaceView mEntrySurfaceView;
-//
-//    private float[] mGravity;
-//    private float[] mGeomagnetic;
-//
-//    private float mR[] = new float[9];
-//    private float mI[] = new float[9];
-//    private float mResults[] = new float[3];
-//    private static final float ALPHA = 0.25f;
-//    private float[] mGravSensorVals;
-//    private float[] mMagSensorVals;
-//    private static float mAzimuth;
-//    private static float mPitch;
-//    private static float mRoll;
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_augmented);
-//
-//        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-//        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-//
-//        mEntrySurfaceView = (EntrySurfaceView) findViewById(R.id.entrySurfaceView);
-//    }
-//
-//
-//    private final SensorEventListener mListener = new SensorEventListener() {
-//        public void onSensorChanged(SensorEvent event) {
-//            mEntrySurfaceView.setOffset(event.values[0]);
-//            mEntrySurfaceView.setY(event.values[1]);
-////            System.out.println(event.values[2]);
-//            mEntrySurfaceView.invalidate();
-//        }
-//
-//        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-//        }
-//    };
-//
-//
-//    @Override
-//    protected void onResume() {
-//        if (DEBUG)
-//            Log.d(TAG, "onResume");
-//        super.onResume();
-//        mSensorManager.registerListener(mListener, mSensor,
-//                SensorManager.SENSOR_DELAY_GAME);
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        if (DEBUG)
-//            Log.d(TAG, "onStop");
-////        mSensorManager.unregisterListener(mListener);
-//        super.onStop();
-//    }
-//
-//}

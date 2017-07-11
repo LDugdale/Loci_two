@@ -13,7 +13,6 @@ import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
 
 /**
  * Created by mnt_x on 26/06/2017.

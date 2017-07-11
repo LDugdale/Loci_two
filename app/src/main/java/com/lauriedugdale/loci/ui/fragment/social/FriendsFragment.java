@@ -7,28 +7,23 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.ui.activity.NotificationActivity;
 import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
+import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
 import com.lauriedugdale.loci.ui.fragment.SocialFragment;
-import com.lauriedugdale.loci.utils.LocationUtils;
 
 /**
  * @author Laurie Dugdale
  */
 
-public class FriendsFragment extends Fragment implements SocialAdapter.SocialAdapterOnClickHandler {
+public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAdapterOnClickHandler {
 
-    private SocialAdapter mAdapter;
+    private FriendsAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private DataUtils mDataUtils;
 
@@ -50,7 +45,7 @@ public class FriendsFragment extends Fragment implements SocialAdapter.SocialAda
         mRecyclerView.setLayoutManager(mLayoutManager);
 
 
-        mAdapter = new SocialAdapter(getActivity(), this);
+        mAdapter = new FriendsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
         mDataUtils.fetchUserFriends(mAdapter);

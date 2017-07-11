@@ -1,5 +1,6 @@
 package com.lauriedugdale.loci.ui.fragment.social;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,9 +12,10 @@ import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.Group;
+import com.lauriedugdale.loci.ui.activity.social.GroupProfileActivity;
+import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
-import com.lauriedugdale.loci.ui.fragment.SocialFragment;
 
 /**
  * Created by mnt_x on 27/06/2017.
@@ -56,8 +58,10 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
      * On click method when an item in the recyclerview is clicked this launches the ViewEntryActivity class
      * passes the Uri of the clicked entry
      */
-    public void onSocialClick(long date) {
-
+    public void onGroupClick(Group group) {
+        Intent startViewEntryIntent = new Intent(getActivity(), GroupProfileActivity.class);
+        startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, group);
+        getActivity().startActivity(startViewEntryIntent);
     }
 
 }

@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
@@ -27,6 +28,9 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.Group;
+import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
+import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -62,11 +66,17 @@ public class UploadActivity extends AppCompatActivity {
 
     private int mPermissionType;
 
+    // Recyclerview
+    private FetchGroupsAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+
+    private Group mSelectedGroup;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
-
 
         mDataUtils = new DataUtils(this);
         mPermissionType = DataUtils.ANYONE;
@@ -123,7 +133,8 @@ public class UploadActivity extends AppCompatActivity {
                             mPermissionType,
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
-                            mUploadType
+                            mUploadType,
+                            mSelectedGroup.getGroupID()
                     );
                     finish();
 
@@ -134,7 +145,8 @@ public class UploadActivity extends AppCompatActivity {
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
                             mUploadData,
-                            mUploadType
+                            mUploadType,
+                            mSelectedGroup.getGroupID()
                     );
                     finish();
                 }
@@ -298,7 +310,7 @@ public class UploadActivity extends AppCompatActivity {
     public void showSelectFriendsPopup(View anchorView) {
 
 
-        View popupView = getLayoutInflater().inflate(R.layout.popup_viewable, null);
+        final View popupView = getLayoutInflater().inflate(R.layout.popup_viewable, null);
 
 //        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
         final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
@@ -315,26 +327,41 @@ public class UploadActivity extends AppCompatActivity {
 
         // Using location, the PopupWindow will be displayed right under anchorView
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
-    }
 
-    public void onRadioButtonClicked(View view) {
-        // Is the button now checked?
-        boolean checked = ((RadioButton) view).isChecked();
+        TextView done = (TextView) popupView.findViewById(R.id.done);
 
-        // Check which radio button was clicked
-        switch(view.getId()) {
-            case R.id.radio_anyone:
-                if (checked)
-                    mPermissionType = DataUtils.ANYONE;
-                    break;
-            case R.id.radio_friends:
-                if (checked)
-                    mPermissionType = DataUtils.FRIENDS;
-                    break;
-            case R.id.radio_none:
-                if (checked)
-                    mPermissionType = DataUtils.NO_ONE;
-                    break;
-        }
+        mRecyclerView = (RecyclerView) popupView.findViewById(R.id.rv_select_group);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new FetchGroupsAdapter(this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        mDataUtils.fetchUserGroups(mAdapter);
+
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSelectedGroup = mAdapter.getSelectedGroup();
+                String groupName = mSelectedGroup.getGroupName();
+
+                switch(groupName){
+                    case "Everyone":
+                        mPermissionType = DataUtils.ANYONE;
+                        break;
+                    case "Friends":
+                        mPermissionType = DataUtils.FRIENDS;
+                        break;
+                    case "Just me":
+                        mPermissionType = DataUtils.NO_ONE;
+                        break;
+                    default:
+                        mPermissionType = DataUtils.GROUP;
+                        break;
+                }
+
+                mViewableSelection.setText(groupName);
+                popupWindow.dismiss();
+            }
+        });
     }
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.lauriedugdale.loci.ui.activity.creategroup.CreateGroup">
+    tools:context="com.lauriedugdale.loci.ui.activity.social.CreateGroup">
 
     <ImageView
         android:id="@+id/add_group_profile_pic"

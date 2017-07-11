@@ -1,44 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white"
-    android:padding="16dp">
+    android:background="@color/white">
 
-
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <RadioButton
-            android:id="@+id/radio_anyone"
-            android:onClick="onRadioButtonClicked"
-            android:text="@string/entry_viewable_anoyone"
-            android:layout_margin="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <RadioButton
-            android:id="@+id/radio_friends"
-            android:onClick="onRadioButtonClicked"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/entry_viewable_friends"/>
-        <RadioButton
-            android:id="@+id/radio_none"
-            android:onClick="onRadioButtonClicked"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/entry_viewable_none"/>
-    </RadioGroup>
-
-    <View
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_select_group"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.5"
-        android:background="@color/black"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/done"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="0dp"
+        app:layout_constraintRight_toRightOf="parent" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/done"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:textColor="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:background="@color/colorPrimary"
+        android:text="@string/done"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <!--<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="vertical">-->
+        <!--<RadioButton-->
+            <!--android:id="@+id/radio_anyone"-->
+            <!--android:onClick="onRadioButtonClicked"-->
+            <!--android:text="@string/entry_viewable_anoyone"-->
+            <!--android:layout_margin="16dp"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"/>-->
+        <!--<RadioButton-->
+            <!--android:id="@+id/radio_friends"-->
+            <!--android:onClick="onRadioButtonClicked"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="16dp"-->
+            <!--android:text="@string/entry_viewable_friends"/>-->
+        <!--<RadioButton-->
+            <!--android:id="@+id/radio_none"-->
+            <!--android:onClick="onRadioButtonClicked"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="16dp"-->
+            <!--android:text="@string/entry_viewable_none"/>-->
+    <!--</RadioGroup>-->
+
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:alpha="0.5"-->
+        <!--android:background="@color/black"/>-->
+
+</android.support.constraint.ConstraintLayout>

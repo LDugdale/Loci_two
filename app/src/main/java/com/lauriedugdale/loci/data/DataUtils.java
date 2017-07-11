@@ -1,7 +1,6 @@
 package com.lauriedugdale.loci.data;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.icu.util.Calendar;
 import android.location.Location;
 import android.net.Uri;
@@ -28,19 +27,21 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
+import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
 import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
+import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +73,8 @@ public class DataUtils {
     public static final int ANYONE = 200;
     public static final int FRIENDS = 201;
     public static final int NO_ONE = 202;
+    public static final int GROUP = 203;
+
 
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -136,7 +139,7 @@ public class DataUtils {
         mDatabase.child("users").child(getCurrentUID()).setValue(user);
     }
 
-    public void writeEntryWithFile(final int permissions, final String title, final String description, final Uri path, final int type) {
+    public void writeEntryWithFile(final int permissions, final String title, final String description, final Uri path, final int type, final String groupID) {
         final String uid = getCurrentUID();
         StorageReference storageRef = mStorage.getReference();
 
@@ -166,7 +169,7 @@ public class DataUtils {
                                     description,
                                     location.getLatitude(),
                                     location.getLongitude(),
-                                    location.getAltitude(),
+                                    0,
                                     downloadUrl.toString(),
                                     type,
                                     getDateTime());
@@ -175,7 +178,7 @@ public class DataUtils {
                             DatabaseReference pushEntryRef = entryRef.push();
                             file.setEntryID(pushEntryRef.getKey());
                             pushEntryRef.setValue(file);
-                            writeAccessPermissionFriends(permissions, uid, file);
+                            writeAccessPermissionFriends(permissions, uid, file, groupID);
                         }
                     }
                 });
@@ -183,7 +186,7 @@ public class DataUtils {
         });
     }
 
-    public void writeEntry(final int permissions, final String title, final String description, final int type) {
+    public void writeEntry(final int permissions, final String title, final String description, final int type, final String groupID) {
         final String uid = getCurrentUID();
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
@@ -196,7 +199,7 @@ public class DataUtils {
                             description,
                             location.getLatitude(),
                             location.getLongitude(),
-                            location.getAltitude(),
+                            0,
                             "",
                             type,
                             getDateTime());
@@ -204,20 +207,20 @@ public class DataUtils {
                     DatabaseReference pushEntryRef = entryRef.push();
                     file.setEntryID(pushEntryRef.getKey());
                     pushEntryRef.setValue(file);
-                    writeAccessPermissionFriends(permissions, uid, file);
+                    writeAccessPermissionFriends(permissions, uid, file, groupID);
                 }
             }
         });
     }
 
-    public void writeAccessPermissionFriends(final int permissions, String ownerID, final GeoEntry file){
-        final String fileID = file.getEntryID();
+    public void writeAccessPermissionFriends(final int permissions, String ownerID, final GeoEntry file, String groupID){
+        final String entryID = file.getEntryID();
         if (permissions == ANYONE) {
-            mDatabase.child("file_permission").child("anyone/" + fileID).setValue(file);
+            mDatabase.child("file_permission").child("anyone/" + entryID).setValue(file);
         } else if (permissions ==  NO_ONE) {
-            mDatabase.child("file_permission").child(ownerID + "/" + fileID).setValue(file);
+            mDatabase.child("file_permission").child(ownerID + "/" + entryID).setValue(file);
         } else if (permissions == FRIENDS) {
-            mDatabase.child("file_permission").child(ownerID + "/" + fileID).setValue(file);
+            mDatabase.child("file_permission").child(ownerID + "/" + entryID).setValue(file);
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference ref = database.getReference("friends");
             ref.child(getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -225,15 +228,16 @@ public class DataUtils {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         User friend = postSnapshot.getValue(User.class);
-                        System.out.println(friend.getUsername());
-                        System.out.println(friend.getUserID());
-                        mDatabase.child("file_permission").child(friend.getUserID() + "/" + fileID).setValue(file);
+                        mDatabase.child("file_permission").child(friend.getUserID() + "/" + entryID).setValue(file);
                     }
                 }
+
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                 }
             });
+        } else {
+            mDatabase.child("group_files").child(groupID + "/" + entryID).setValue(file);
         }
     }
 
@@ -372,7 +376,25 @@ public class DataUtils {
 
     }
 
-    public void createGroup(final HashSet<String> usersToAdd, String groupName, Uri path){
+    public void createGroupWithoutPic(final HashSet<String> usersToAdd, String groupName){
+
+        // add group to group
+        final Group group = new Group(groupName);
+        DatabaseReference entryRef = mDatabase.child("groups");
+        DatabaseReference pushEntryRef = entryRef.push();
+        group.setGroupID(pushEntryRef.getKey());
+        pushEntryRef.setValue(group);
+
+        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+        mDatabase.child("groups").child(group.getGroupID()).setValue(group);
+        mDatabase.child("group_access").child(getCurrentUID() + "/" + group.getGroupID()).setValue(group);
+        for(String userID : usersToAdd){
+            mDatabase.child("group_access").child(userID + "/" + group.getGroupID()).setValue(group);
+        }
+
+    }
+
+    public void createGroupWithPic(final HashSet<String> usersToAdd, String groupName, Uri path){
 
         // add group to group
         final Group group = new Group(groupName);
@@ -403,6 +425,28 @@ public class DataUtils {
                 }
             }
         });
+    }
+
+    public void fetchUserGroups(final FetchGroupsAdapter adapter){
+        final String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_access");
+
+        ref.child(currentUID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Group group = postSnapshot.getValue(Group.class);
+                    adapter.addToGroups(group);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
     }
 
     public void fetchUserFriends(final SelectForGroupAdapter adapter){
@@ -481,7 +525,7 @@ public class DataUtils {
         });
     }
 
-    public void fetchUserFriends(final SocialAdapter adapter){
+    public void fetchUserFriends(final FriendsAdapter adapter){
 
         mDatabase.child("friends").child(getCurrentUID()).addChildEventListener(new ChildEventListener() {
 
@@ -505,6 +549,24 @@ public class DataUtils {
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
             }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void fetchGroupProfileEntries(final FileAdapter adapter, String groupID){
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_files");
+        ref.child(groupID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                }
+            }
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
@@ -584,6 +646,29 @@ public class DataUtils {
             }
         });
     }
+    public void readGroupEntries(String groupID, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final HashMap<String, GeoEntry> entryMap){
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_files");
+        ref.child(groupID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                        entryMap.put(entry.getEntryID(), entry);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
 
     public void readUserEntries(String userID, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final HashMap<String, GeoEntry> entryMap){
         String currentUID = getCurrentUID();
@@ -626,21 +711,20 @@ public class DataUtils {
         });
     }
 
-    public void readAllEntriesForAR(double latitudeStart, double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final HashMap<String, GeoEntry> entryMap){
+    public void readAllEntriesForAR(final double latitudeStart, final double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final ArrayList<CameraPoint> entryList){
         String currentUID = getCurrentUID();
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("file_permission");
+        final DatabaseReference ref = database.getReference("file_permission");
         ref.child(currentUID).orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-
                     long date = entry.getUploadDate();
                     if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
-                        entryMap.put(entry.getEntryID(), entry);
-                        entry.setImage(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.default_profile));
+                        System.out.println("GETTING TITLE : " + entry.getTitle());
+                        entryList.add(new CameraPoint(entry));
                     }
                 }
             }
@@ -657,8 +741,8 @@ public class DataUtils {
                     GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
                     long date = entry.getUploadDate();
                     if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
-                        entryMap.put(entry.getEntryID(), entry);
-                        entry.setImage(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.default_profile));
+                        System.out.println("GETTING TITLE : " + entry.getTitle());
+                        entryList.add(new CameraPoint(entry));
                     }
                 }
             }
@@ -667,7 +751,6 @@ public class DataUtils {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
     }
 
 

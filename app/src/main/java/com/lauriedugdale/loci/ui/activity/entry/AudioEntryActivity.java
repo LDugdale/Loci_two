@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -18,8 +20,9 @@ import com.lauriedugdale.loci.services.AudioService;
 import com.lauriedugdale.loci.audio.AudioUtilities;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.ui.fragment.EntryFragment;
 
-public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener {
+public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener, EntryFragment.OnFragmentInteractionListener  {
 
     // audio player controls
     private ImageButton mBtnPlay;
@@ -28,10 +31,6 @@ public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer
     private SeekBar mSongProgressBar;
     private TextView mSongCurrentDurationLabel;
     private TextView mSongTotalDurationLabel;
-
-
-    private TextView mTitle;
-    private TextView mDescription;
 
     // Media Player
     private MediaPlayer mMediaPlayer;
@@ -80,15 +79,6 @@ public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer
         mSongProgressBar = (SeekBar) findViewById(R.id.songProgressBar);
         mSongCurrentDurationLabel = (TextView) findViewById(R.id.songCurrentDurationLabel);
         mSongTotalDurationLabel = (TextView) findViewById(R.id.songTotalDurationLabel);
-        mTitle = (TextView) findViewById(R.id.view_entry_title);
-        mDescription = (TextView) findViewById(R.id.view_entry_description);
-
-        // set description and title
-        mTitle.setText(mGeoEntry.getTitle());
-        mDescription.setText(mGeoEntry.getDescription());
-        // start the AudioService and pass it the current GeoEntry
-
-
 
         Intent playerIntent = new Intent(this, AudioService.class);
         playerIntent.putExtra("entry", mGeoEntry);
@@ -99,6 +89,18 @@ public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer
         playButton();
         forwardButton();
         backwardButton();
+
+        if (findViewById(R.id.fragment_container) != null) {
+            if (savedInstanceState != null) {
+                return;
+            }
+
+            Fragment entryFragment = new EntryFragment();
+
+            entryFragment.setArguments(getIntent().getExtras());
+
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, entryFragment).commit();
+        }
     }
 
     /**
@@ -193,8 +195,8 @@ public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer
 
     /**
      * Function to play a song
-     * */
-
+     *
+     */
     public void playSong() {
         // Play song
         try {
@@ -298,5 +300,9 @@ public class AudioEntryActivity extends AppCompatActivity implements MediaPlayer
     }
 
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
 }
 

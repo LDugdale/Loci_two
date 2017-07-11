@@ -2,6 +2,7 @@ package com.lauriedugdale.loci.utils;
 
 import android.content.Context;
 import android.location.Location;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -22,6 +23,12 @@ public final class LocationUtils {
 
     private final static double WGS84_A = 6378137.0;                  // WGS 84 semi-major axis constant in meters
     private final static double WGS84_E2 = 0.00669437999014;          // square of WGS 84 eccentricity
+
+    public final static float MAXIMUM_DISTANCE = 50.0f; //maximum distance a used can select a marker
+
+    // prevent instantiation
+    private LocationUtils(){}
+
 
     public static float[] WSG84toECEF(double latitude, double longitude, double altitude) {
         double radLat = Math.toRadians(latitude);
@@ -111,5 +118,32 @@ public final class LocationUtils {
         distance = Math.round(distance * 100d) / 100d;
         return distance + unit;
 
+    }
+
+    public static float getDistanceInMeters(double lat1, double lng1, double lat2, double lng2) {
+        float [] dist = new float[1];
+        Location.distanceBetween(lat1, lng1, lat2, lng2, dist);
+        return dist[0];
+    }
+
+
+    public static void checkDistance(Context context, final TextView textView, final double markerLat, final double markerLng){
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                // Got last known location. In some rare situations this can be null.
+                if (location != null) {
+                    boolean isWithinBounds;
+                    Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), markerLat, markerLng);
+                    isWithinBounds = (distance <= MAXIMUM_DISTANCE);
+                    if (isWithinBounds){
+                        textView.setVisibility(View.VISIBLE);
+                    } else {
+                        textView.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
     }
 }

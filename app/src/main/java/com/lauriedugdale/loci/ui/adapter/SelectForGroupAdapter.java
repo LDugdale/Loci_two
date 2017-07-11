@@ -85,7 +85,6 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
     public void onBindViewHolder(SelectForGroupAdapter.ViewHolder viewHolder, int position) {
 
         final User user = mUsers.get(position);
-        System.out.println("name : " + user.getUsername());
         // set username
         viewHolder.mName.setText(user.getUsername());
 

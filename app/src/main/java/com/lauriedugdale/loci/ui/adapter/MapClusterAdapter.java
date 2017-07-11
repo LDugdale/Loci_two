@@ -31,16 +31,29 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
 
     // Store the context and cursor for easy access
     private Context mContext;
-    private ArrayList<EntryItem> mEntries;
+    private ArrayList<EntryItem> mEntryItems;
+    private ArrayList<GeoEntry> mGeoEntries;
+    private DataType type;
+
+    private enum DataType {
+        EntryItem,
+        GeoEntry
+    }
 
     /**
      * Entry adapter constructor
      *
      * @param context
      */
-    public MapClusterAdapter(Context context, ArrayList<EntryItem> clusterList) {
+    public MapClusterAdapter(Context context, ArrayList<?> clusterList) {
         this.mContext = context;
-        mEntries = clusterList;
+        if(clusterList != null && clusterList.get(0) instanceof EntryItem) {
+            mEntryItems = (ArrayList<EntryItem>) clusterList;
+            type = DataType.EntryItem;
+        } else if (clusterList != null && clusterList.get(0) instanceof GeoEntry){
+            mGeoEntries = (ArrayList<GeoEntry>) clusterList;
+            type = DataType.GeoEntry;
+        }
     }
 
     @Override
@@ -64,15 +77,24 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
      * Populates data into the layout through the viewholder
      */
     public void onBindViewHolder(MapClusterAdapter.ViewHolder viewHolder, int position) {
-        System.out.println("this is the position" + position);
-        final EntryItem clusterItem = mEntries.get(position);
-        final GeoEntry entry = clusterItem.getGeoEntry();
-        System.out.println("entry title for cluster view = " +entry.getTitle() );
+
+        GeoEntry e = new GeoEntry();
+        if (type == DataType.EntryItem) {
+            EntryItem clusterItem = mEntryItems.get(position);
+            e = clusterItem.getGeoEntry();
+        } else {
+            e = mGeoEntries.get(position);
+        }
+
+        final GeoEntry entry = e;
         viewHolder.mTitle.setText(entry.getTitle());
+
+        LocationUtils.checkDistance(mContext, viewHolder.mShowEntry, entry.getLatitude(), entry.getLongitude());
 
         viewHolder.mShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                System.out.println("ENTRY HERE !! : " + entry.getTitle());
                 Intent startViewEntryIntent = new Intent(mContext, LocationUtils.getEntryDestinationClass(entry.getFileType()));
                 startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
                 mContext.startActivity(startViewEntryIntent);
@@ -85,10 +107,17 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
      * return the total count of items in the list
      */
     public int getItemCount() {
-        if (mEntries == null) {
-            return 0;
+        if (type == DataType.EntryItem) {
+            if (mEntryItems == null) {
+                return 0;
+            }
+            return mEntryItems.size();
+        } else {
+            if (mGeoEntries == null) {
+                return 0;
+            }
+            return mGeoEntries.size();
         }
-        return mEntries.size();
     }
 
     /**

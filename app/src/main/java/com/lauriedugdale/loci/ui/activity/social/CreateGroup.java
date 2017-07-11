@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.activity.creategroup;
+package com.lauriedugdale.loci.ui.activity.social;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -22,8 +22,6 @@ import android.widget.ImageView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.ui.activity.UploadActivity;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 
 import java.io.FileNotFoundException;
@@ -97,13 +95,19 @@ public class CreateGroup extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if(mGroupName.getText().toString().length() < 1 ){
-//                    return;
-//                }
 
-                mDataUtils.createGroup(mAdapter.getCheckedItems(),
-                                    mGroupName.getText().toString(),
-                                    mUploadData);
+                if(mGroupName.getText().toString().length() < 1 ){
+                    return;
+                }
+
+                if (mUploadData == null){
+                    mDataUtils.createGroupWithoutPic(mAdapter.getCheckedItems(),
+                            mGroupName.getText().toString());
+                } else {
+                    mDataUtils.createGroupWithPic(mAdapter.getCheckedItems(),
+                            mGroupName.getText().toString(),
+                            mUploadData);
+                }
             }
 
         });

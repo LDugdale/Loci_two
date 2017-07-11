@@ -37,7 +37,7 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
      * The interface that receives onClick messages.
      */
     public interface GroupAdapterOnClickHandler {
-        void onSocialClick(long date);
+        void onGroupClick(Group group);
     }
 
     /**
@@ -66,10 +66,8 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
 
-
         // inflate second item layout & return that viewHolder
         contactView = inflater.inflate(R.layout.item_groups, parent, false);
-
 
         // Return a new holder instance
         return new GroupsAdapter.ViewHolder(contactView);
@@ -90,7 +88,6 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
         mDataUtils.getGroupPic(viewHolder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
     }
 
-
     @Override
     /**
      * return the total count of items in the list
@@ -101,12 +98,6 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
         }
         return mGroups.size();
     }
-
-//    @Override
-//    public int getItemViewType(int position) {
-//        if (position == 0) return 1;
-//        else return 2;
-//    }
 
     /**
      * CLASS
@@ -131,9 +122,8 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
 
         @Override
         public void onClick(View v) {
-
-            // call the onClick method for the mClickHandler variable
-//            mClickHandler.onClick(id);
+            int pos = getAdapterPosition();
+            mClickHandler.onGroupClick(mGroups.get(pos));
         }
     }
 }

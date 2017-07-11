@@ -2,11 +2,8 @@ package com.lauriedugdale.loci.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,13 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.activity.NotificationActivity;
-import com.lauriedugdale.loci.ui.activity.SelectFriend;
-import com.lauriedugdale.loci.ui.activity.creategroup.CreateGroup;
-import com.lauriedugdale.loci.ui.adapter.SocialAdapter;
-import com.lauriedugdale.loci.ui.fragment.files.Files;
-import com.lauriedugdale.loci.ui.fragment.files.SharedFiles;
+import com.lauriedugdale.loci.ui.activity.social.CreateGroup;
 import com.lauriedugdale.loci.ui.fragment.social.FriendsFragment;
 import com.lauriedugdale.loci.ui.fragment.social.GroupsFragment;
 

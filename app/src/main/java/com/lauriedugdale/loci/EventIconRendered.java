@@ -2,12 +2,15 @@ package com.lauriedugdale.loci;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.lauriedugdale.loci.data.DataUtils;
@@ -33,6 +36,16 @@ public class EventIconRendered extends DefaultClusterRenderer<EntryItem> {
         super.onBeforeClusterItemRendered(item, markerOptions);
     }
 
+    @Override
+    protected boolean shouldRenderAsCluster(Cluster<EntryItem> cluster) {
+        // render when theres more than one marker
+        return cluster.getSize() > 1;
+    }
+
+    @Override
+    protected int getColor(int clusterSize) {
+        return ContextCompat.getColor(mContext, R.color.colorPrimary);
+    }
 
     /**
      * Change map marker according to the file type they are representing

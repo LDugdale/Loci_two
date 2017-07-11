@@ -1,10 +1,13 @@
 package com.lauriedugdale.loci.data.dataobjects;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by mnt_x on 28/06/2017.
  */
 
-public class Group {
+public class Group implements Parcelable{
 
     private String groupName;
     private String groupID;
@@ -50,4 +53,42 @@ public class Group {
     public void setGroupDescription(String groupDescription) {
         this.groupDescription = groupDescription;
     }
+
+    /*
+     * Parcelable code
+     */
+    private Group(Parcel in) {
+        groupName = in.readString();
+        groupID = in.readString();
+        groupDescription = in.readString();
+        profilePicturePath = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(groupName);
+        dest.writeString(groupID);
+        dest.writeString(groupDescription);
+        dest.writeString(profilePicturePath);
+
+    }
+
+    public static final Parcelable.Creator<Group> CREATOR
+            = new Parcelable.Creator<Group>() {
+
+        @Override
+        public Group createFromParcel(Parcel in) {
+            return new Group(in);
+        }
+
+        @Override
+        public Group[] newArray(int size) {
+            return new Group[size];
+        }
+    };
 }
