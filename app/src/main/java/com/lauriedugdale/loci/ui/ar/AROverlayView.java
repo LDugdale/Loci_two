@@ -92,7 +92,6 @@ public class AROverlayView extends View {
         mImage = BitmapFactory.decodeResource( mContext.getResources(), R.mipmap.image_ar_marker );
         mBlank = BitmapFactory.decodeResource( mContext.getResources(), R.mipmap.blank_ar_marker );
 
-
         mPartition = mMulti.getWidth();
         mRadius = mPartition / 2;
     }

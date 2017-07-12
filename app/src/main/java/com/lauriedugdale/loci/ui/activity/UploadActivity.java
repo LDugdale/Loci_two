@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.SQLOutput;
 
 public class UploadActivity extends AppCompatActivity {
 
@@ -77,6 +78,8 @@ public class UploadActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
+
+        mSelectedGroup = new Group("Everyone");
 
         mDataUtils = new DataUtils(this);
         mPermissionType = DataUtils.ANYONE;
@@ -343,6 +346,8 @@ public class UploadActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mSelectedGroup = mAdapter.getSelectedGroup();
                 String groupName = mSelectedGroup.getGroupName();
+
+                System.out.println("THIS IS THE GROUP NAME : " + groupName);
 
                 switch(groupName){
                     case "Everyone":
