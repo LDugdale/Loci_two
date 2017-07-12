@@ -21,7 +21,9 @@ import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by mnt_x on 30/06/2017.
@@ -87,14 +89,21 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
         }
 
         final GeoEntry entry = e;
+        // Set Title
         viewHolder.mTitle.setText(entry.getTitle());
-
+        // Set distance
+        LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
+        // set date
+        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
+        viewHolder.mDate.setText(dateString);
+        // set author
+        viewHolder.mAuthor.setText(entry.getCreatorName());
+        // check distance, if its too far away hide the show entry button
         LocationUtils.checkDistance(mContext, viewHolder.mShowEntry, entry.getLatitude(), entry.getLongitude());
-
+        // add action listner
         viewHolder.mShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("ENTRY HERE !! : " + entry.getTitle());
                 Intent startViewEntryIntent = new Intent(mContext, LocationUtils.getEntryDestinationClass(entry.getFileType()));
                 startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
                 mContext.startActivity(startViewEntryIntent);
@@ -127,9 +136,13 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
     class ViewHolder extends RecyclerView.ViewHolder{
 
         // The UI elements
+        public TextView mDistance;
+        public TextView mDate;
         public TextView mTitle;
         public TextView mShowEntry;
         public ImageView mEntryType;
+        public TextView mAuthor;
+
 
 
         public ViewHolder(View itemView) {
@@ -139,6 +152,10 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
             mTitle = (TextView) itemView.findViewById(R.id.cluster_info_bar_title);
             mShowEntry = (TextView) itemView.findViewById(R.id.cluster_info_bar_show_entry);
             mEntryType = (ImageView) itemView.findViewById(R.id.cluster_info_bar_type);
+            mDistance = (TextView) itemView.findViewById(R.id.cluster_info_bar_marker_distance);
+            mDate = (TextView) itemView.findViewById(R.id.cluster_info_bar_marker_date);
+            mAuthor = (TextView) itemView.findViewById(R.id.cluster_info_bar_marker_author);
+
         }
     }
 }

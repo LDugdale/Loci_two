@@ -43,6 +43,7 @@
 
         <TextView
             android:id="@+id/profile_username"
+            android:textColor="@color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="profile"
@@ -52,7 +53,7 @@
             android:id="@+id/locate_all"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/ic_my_location"
+            android:src="@drawable/ic_my_location_white"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true" />
 

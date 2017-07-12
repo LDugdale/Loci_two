@@ -30,7 +30,7 @@ public final class LocationUtils {
     private LocationUtils(){}
 
 
-    public static float[] WSG84toECEF(double latitude, double longitude, double altitude) {
+    public static float[] WGS84toECEF(double latitude, double longitude, double altitude) {
         double radLat = Math.toRadians(latitude);
         double radLon = Math.toRadians(longitude);
 

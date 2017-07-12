@@ -18,7 +18,7 @@
                 <TextView
                     android:text="distance"
                     android:scrollbarSize="@dimen/p"
-                    android:id="@+id/info_bar_marker_distance"
+                    android:id="@+id/cluster_info_bar_marker_distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"
@@ -28,7 +28,7 @@
 
                 <TextView
                     android:text="date"
-                    android:id="@+id/info_bar_marker_date"
+                    android:id="@+id/cluster_info_bar_marker_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"
@@ -60,7 +60,7 @@
 
 
                 <TextView
-                    android:id="@+id/info_bar_marker_author"
+                    android:id="@+id/cluster_info_bar_marker_author"
                     android:text="author"
                     android:textSize="@dimen/p"
                     android:alpha="0.8"

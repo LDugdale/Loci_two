@@ -56,16 +56,15 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private DrawerLayout mDrawerLayout;
-    private Toolbar mToolbar;
+    private DrawerLayout mDrawerLayout; // the application drawer for the side menu
+    private Toolbar mToolbar; // the main toolbar
 
-    private TextView mUsername;
-    private TextView mEmail;
-    private ImageView mMenuProfileImage;
+    private TextView mUsername; // Current logged in username
+    private TextView mEmail; // Current logged in email
+    private ImageView mMenuProfileImage; // Current logged in profile
 
     private ViewPager mViewPager;
-
-    private Context mContext = this;
+    private MainActivityAdapter mAdapter;
 
     private FirebaseAuth mAuth;
 
@@ -78,27 +77,12 @@ public class MainActivity extends AppCompatActivity {
 
         mDataUtils = new DataUtils(this);
 
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HHmmss", Locale.UK);
-        String currentDateandTime = sdf.format(c.getTime());
-        Long dateInLong = 0L;
-        try {
-            Date date = sdf.parse(currentDateandTime);
-            dateInLong = date.getTime();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        Date date = new Date(dateInLong);
-        Format format = new SimpleDateFormat("yyyyMMdd HHmmss", Locale.UK);
-
-        format.format(date);
         mAuth = FirebaseAuth.getInstance();
 
         //find view pager and Adapter for managing fragments
         mViewPager = (ViewPager) findViewById(R.id.am_view_pager);
-        MainActivityAdapter adapter = new MainActivityAdapter(getSupportFragmentManager());
-        mViewPager.setAdapter(adapter);
+        mAdapter = new MainActivityAdapter(getSupportFragmentManager());
+        mViewPager.setAdapter(mAdapter);
 
         // find navigation tabs and start listeners
         LociNavView tabsView = (LociNavView) findViewById(R.id.am_loci_tabs);
@@ -113,78 +97,58 @@ public class MainActivity extends AppCompatActivity {
 
         // check for intent from geofence notification
         if(getIntent().hasExtra("list")) {
-
             // get the GeoEntry to display info on this page
             ArrayList<GeoEntry> geofenceEntries = getIntent().getParcelableArrayListExtra("list");
             broadcastLocationsOnReceive(geofenceEntries);
         }
 
+        // Find the toolbar and initialise the navigation drawer
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-
         initNavigationDrawer();
-        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-
-            public void setUpWithViewPager(final ViewPager viewPager, final Context context) {
-                viewPager.addOnPageChangeListener(this);
-            }
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                if (position == 0) {
-                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
-                    mToolbar.getBackground().setAlpha((int) (positionOffset * 100));
-                } else if (position == 1){
-                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
-                    mToolbar.getBackground().setAlpha(90);
-                } else if (position == 2){
-                    mToolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
-
-                }
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
     }
 
+    /**
+     * When the main activity receives a geofence intent from the notifications this method is called
+     * to send the MainFragment, the data needed to display the markers or the Entry View.
+     * TODO consider using an interface instead of a LocalBroadcast
+     * @param geofenceEntries
+     */
     public void broadcastLocationsOnReceive(final ArrayList<GeoEntry> geofenceEntries){
 
         //TODO There is a bug here where sending geofence_entries doesnt work as it fires before the rest of the main fragment ui is loaded. Putting it inside the location on successlistener causes a delay and allows it to work but this is not ideal.
+        // Get the last location
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
         fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                // Got last known location.
+
+                // If there is only one entry in the list
                 if(geofenceEntries.size() == 1) {
                     Log.d(TAG, "Sending geofence single_entry");
+
                     final GeoEntry entry = geofenceEntries.get(0);
                     if (location != null) {
                         Float distance = LocationUtils.getDistanceInMeters(location.getLatitude(),
                                 location.getLongitude(),
                                 entry.getLatitude(),
                                 entry.getLongitude());
-                        // if marker is within distance go direct to the entry
+                        // If marker is within distance go direct to the entry
                         if (distance <= LocationUtils.MAXIMUM_DISTANCE){
                             Intent startViewEntryIntent = new Intent(MainActivity.this, LocationUtils.getEntryDestinationClass(entry.getFileType()));
                             startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
                             startActivity(startViewEntryIntent);
-                        // else show the marker on the map
+                        // Else show the marker on the map
                         } else {
                             Intent intent = new Intent("single_entry");
                             intent.putExtra("entry", entry);
                             LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(intent);
                         }
                     }
+                // Else if there is more that one entry in the list, pass all the information straight to the main fragment
                 } else {
                     Log.d(TAG, "Sending geofence_entries");
+
                     Intent intent = new Intent("geofence_entries");
                     intent.putExtra("entries", geofenceEntries);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(intent);
@@ -193,10 +157,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Getter for ViewPager
+     * used by MainFragment to set the page number when a broadcast is received
+     * @return
+     */
     public ViewPager getViewPager() {
         return mViewPager;
     }
 
+    /**
+     * Initialises the navigation drawer and
+     */
     public void initNavigationDrawer() {
 
         NavigationView navigationView = (NavigationView)findViewById(R.id.navigation_view);
@@ -205,7 +177,6 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(MenuItem menuItem) {
 
                 int id = menuItem.getItemId();
-
                 switch (id){
                     case R.id.logout:
                         mAuth.signOut();
@@ -223,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
         mEmail = (TextView)header.findViewById(R.id.tv_email);
         mMenuProfileImage = (ImageView) header.findViewById(R.id.menu_profile_image);
 
+        // Fetch the profile picture for the currently logged in user to display in the nav drawer
         mDataUtils.getProfilePic(mMenuProfileImage, R.drawable.default_profile);
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -265,27 +237,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_add_friend) {
-            Intent intent = new Intent(this, SelectFriend.class);
-            startActivity(intent);
-
-            return true;
-        }
-
-
-        return super.onOptionsItemSelected(item);
     }
 }

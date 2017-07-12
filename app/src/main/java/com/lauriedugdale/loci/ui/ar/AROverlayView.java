@@ -12,7 +12,6 @@ import android.opengl.Matrix;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.SphericalUtil;
@@ -160,8 +159,8 @@ public class AROverlayView extends View {
         for(CameraPoint e : mEntryList) {
             GeoEntry entry = e.getEntry();
 
-            float[] currentLocationInECEF = LocationUtils.WSG84toECEF(mLocation.getLatitude(), mLocation.getLongitude(), 0);
-            float[] pointInECEF = LocationUtils.WSG84toECEF(entry.getLatitude(), entry.getLongitude(), entry.getAltitude());
+            float[] currentLocationInECEF = LocationUtils.WGS84toECEF(mLocation.getLatitude(), mLocation.getLongitude(), 0);
+            float[] pointInECEF = LocationUtils.WGS84toECEF(entry.getLatitude(), entry.getLongitude(), entry.getAltitude());
             float[] pointInENU = LocationUtils.ECEFtoENU(mLocation, currentLocationInECEF, pointInECEF);
 
             float[] cameraCoordinateVector = new float[4];
