@@ -19,9 +19,12 @@ import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by mnt_x on 26/06/2017.
@@ -101,6 +104,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         // set file picture
         mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryImage, entry.getFileType());
 
+        // Set distance
+        LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
+        // set date
+        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
+        viewHolder.mDate.setText(dateString);
+        // set author
+        viewHolder.mAuthor.setText(entry.getCreatorName());
+
         viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,9 +144,13 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     class ViewHolder extends RecyclerView.ViewHolder{
 
         // The UI elements
+        public TextView mDistance;
+        public TextView mDate;
         public TextView mTitle;
         public ImageView mFilePic;
         public ImageView mLocateFile;
+        public TextView mAuthor;
+
 
 
         public ViewHolder(View itemView) {
@@ -145,6 +160,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             mTitle = (TextView) itemView.findViewById(R.id.if_name);
             mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
             mLocateFile = (ImageView) itemView.findViewById(R.id.if_locate_file);
+            mDistance = (TextView) itemView.findViewById(R.id.info_bar_marker_distance);
+            mDate = (TextView) itemView.findViewById(R.id.info_bar_marker_date);
+            mAuthor = (TextView) itemView.findViewById(R.id.info_bar_marker_author);
         }
     }
 }

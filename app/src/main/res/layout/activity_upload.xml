@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:background="@color/white"
-    android:paddingTop="50dp"
     tools:context="com.lauriedugdale.loci.ui.activity.UploadActivity">
 
     <LinearLayout
@@ -16,8 +15,17 @@
         android:gravity="right"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="32dp"
         android:layout_alignParentTop="true">
+
+        <TextView
+            android:id="@+id/viewable_selection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/entry_viewable_anoyone"
+            android:textSize="@dimen/p" />
 
         <ImageView
             android:id="@+id/au_image_picker"
@@ -45,36 +53,13 @@
 
     </LinearLayout>
 
-    <RelativeLayout
-        android:id="@+id/viewable_wrapper"
-        android:layout_below="@+id/au_media_picker_wrapper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp">
-
-        <TextView
-            android:id="@+id/viewable_title"
-            android:text="@string/entry_viewable_title"
-            android:textSize="@dimen/h3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/viewable_selection"
-            android:textSize="@dimen/p"
-            android:layout_below="@id/viewable_title"
-            android:text="@string/entry_viewable_anoyone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </RelativeLayout>
-
 
     <RelativeLayout
         android:id="@+id/au_text_entry_wrapper"
-        android:layout_below="@id/viewable_wrapper"
+        android:layout_below="@id/au_media_picker_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginLeft="16dp">
 
@@ -82,6 +67,7 @@
             android:id="@+id/au_entry_title_wrapper"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textCapSentences"
             android:layout_alignParentTop="true">
 
             <EditText
@@ -89,7 +75,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/entry_title"
-                android:inputType="textEmailAddress"
+                android:inputType="textCapSentences"
                 android:textColor="@android:color/black"
                 android:textColorHint="@android:color/white"
                 android:textSize="@dimen/h2"/>
@@ -97,6 +83,8 @@
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
+            android:id="@+id/au_entry_description_wrapper"
+            android:inputType="textCapSentences"
             android:layout_below="@id/au_entry_title_wrapper"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -104,7 +92,7 @@
             <EditText
                 android:id="@+id/au_entry_description"
                 android:hint="@string/entry_description"
-                android:scrollbarSize="@dimen/p"
+                android:scrollbarSize="@dimen/h4"
                 android:layout_width="match_parent"
                 android:height="300dp"
                 android:gravity="top"
@@ -115,6 +103,12 @@
                 android:inputType="textMultiLine"
                 android:textSize="@dimen/p"/>
         </android.support.design.widget.TextInputLayout>
+
+<!--        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignBottom="@id/au_entry_description_wrapper"
+            android:background="@color/colorPrimary"/>-->
 
     </RelativeLayout>
 

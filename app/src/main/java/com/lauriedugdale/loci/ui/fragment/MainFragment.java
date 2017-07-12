@@ -45,6 +45,7 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
+import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.EventIconRendered;
 import com.lauriedugdale.loci.data.DataUtils;
@@ -55,6 +56,7 @@ import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
+import com.lauriedugdale.loci.ui.activity.SelectFriend;
 import com.lauriedugdale.loci.utils.PopupUtils;
 
 import java.util.ArrayList;
@@ -167,9 +169,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                     mEntryMap.put(e.getEntryID(), e);
                 }
                 addAllEntriesToMap();
-
                 getBounds();
                 mFirstIdle = true;
+
                 if(((MainActivity)getActivity()) != null) {
                     ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
                     setupCurrentlyViewing();
@@ -290,9 +292,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         if (id == R.id.action_ar) {
             Intent intent = new Intent(getActivity(), AugmentedActivity.class);
             startActivity(intent);
-
             return true;
         }
+
         return false;
     }
 
@@ -398,8 +400,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             public void onCameraIdle() {
                 mClusterManager.cluster();
                 getAllEntries();
-                addAllEntriesToMap();
-                getBounds();
             }
         };
     }
@@ -413,7 +413,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                     mFilterOptions.getNumericalFromDate(),
                     mFilterOptions.getNumericalToDate(),
                     mFilterOptions.getCheckedTypes(),
-                    mEntryMap);
+                    mEntryMap,
+                    new EntriesDownloadedListener() {
+                        @Override
+                        public void onEntriesFetched() {
+                            addAllEntriesToMap();
+                        }
+                    });
         }
     }
 
@@ -424,13 +430,28 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                     mFilterOptions.getNumericalFromDate(),
                     mFilterOptions.getNumericalToDate(),
                     mFilterOptions.getCheckedTypes(),
-                    mEntryMap);
+                    mEntryMap,
+                    new EntriesDownloadedListener() {
+                        @Override
+                        public void onEntriesFetched() {
+                            addAllEntriesToMap();
+                            getBounds();
+
+                        }
+                    });
         } else if (mCurrentlyDisplaying.equals("group_entries")){
             mDataUtils.readGroupEntries(mGroup.getGroupID(),
                     mFilterOptions.getNumericalFromDate(),
                     mFilterOptions.getNumericalToDate(),
                     mFilterOptions.getCheckedTypes(),
-                    mEntryMap);
+                    mEntryMap,
+                    new EntriesDownloadedListener() {
+                        @Override
+                        public void onEntriesFetched() {
+                            addAllEntriesToMap();
+                            getBounds();
+                        }
+                    });
         }
     }
 
