@@ -5,15 +5,21 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.Comment;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
+import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,10 +33,14 @@ public class EntryFragment extends Fragment {
 
     private TextView mTitle;
     private TextView mDescription;
-
     private ImageView mAuthorPic;
     private TextView mAuthor;
     private TextView mDate;
+    private EditText mComment;
+    private ImageView mSend;
+
+    private RecyclerView mRecyclerView;
+    private CommentsAdapter mAdapter;
 
     private OnFragmentInteractionListener mListener;
 
@@ -55,6 +65,19 @@ public class EntryFragment extends Fragment {
         mAuthorPic = (ImageView) view.findViewById(R.id.view_entry_author_pic);
         mAuthor = (TextView) view.findViewById(R.id.view_entry_author);
         mDate = (TextView) view.findViewById(R.id.view_entry_date);
+        mComment = (EditText) view.findViewById(R.id.view_entry_comments);
+        mSend = (ImageView) view.findViewById(R.id.view_entry_send);
+        mDataUtils = new DataUtils(getActivity());
+
+        // Set up the recycler view
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_friends);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new CommentsAdapter(getActivity());
+        mRecyclerView.setAdapter(mAdapter);
+
+//        mDataUtils.fetchUserFriends(mAdapter);
+
 
         // set description and title
         mTitle.setText(mGeoEntry.getTitle());
@@ -69,6 +92,18 @@ public class EntryFragment extends Fragment {
         mDate.setText(dateString);
 
         return view;
+    }
+
+    public void sendComment(){
+        mSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDataUtils.addComment(new Comment(mComment.getText().toString(),
+                        mDataUtils.getCurrentUID(),
+                        mDataUtils.getCurrentUsername(),
+                        mDataUtils.getDateTime()));
+            }
+        });
     }
 
     @Override

@@ -29,10 +29,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
+import com.lauriedugdale.loci.data.dataobjects.Comment;
+import com.lauriedugdale.loci.data.dataobjects.Comments;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
+import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
@@ -123,6 +126,14 @@ public class DataUtils {
             uid = user.getUid();
         }
         return uid;
+    }
+
+    /**
+     * Gets the user ID of rhe logged in User
+     * @return the user ID
+     */
+    public String getCurrentUsername() {
+        return "";
     }
 
     /**
@@ -958,5 +969,33 @@ public class DataUtils {
 
     }
 
+    public void addComment(Comment comment) {
+
+        DatabaseReference entryRef = mDatabase.child("comments");
+        DatabaseReference pushEntryRef = entryRef.push();
+        comment.setCommentID(pushEntryRef.getKey());
+        pushEntryRef.setValue(comment);
+    }
+
+    public void getComments(CommentsAdapter adapter){
+
+        final String currentUID = getCurrentUID();
+
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("users");
+
+        ref.child(currentUID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User currentUser = dataSnapshot.getValue(User.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
 
 }

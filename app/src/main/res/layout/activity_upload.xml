@@ -102,6 +102,7 @@
                 android:background="@color/white"
                 android:inputType="textMultiLine"
                 android:textSize="@dimen/p"/>
+
         </android.support.design.widget.TextInputLayout>
 
 <!--        <View
