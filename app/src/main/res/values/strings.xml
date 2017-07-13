@@ -63,6 +63,9 @@
 
     <string name="entry_title">Title</string>
     <string name="entry_description">Description</string>
+    <string name="entry_comment_title">Comments</string>
+    <string name="entry_comment">Comment</string>
+
 
     <string name="entry_viewable_title">Who can see?</string>
     <string name="entry_viewable_anoyone">Everyone</string>
@@ -85,8 +88,5 @@
     <string name="action_mark_all_read">Mark All as Read</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="title_activity_create_group">CreateGroup</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

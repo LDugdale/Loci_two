@@ -41,10 +41,7 @@ public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAd
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_friends);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
-
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-
         mAdapter = new FriendsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
