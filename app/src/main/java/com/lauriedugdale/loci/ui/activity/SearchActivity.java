@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.ui.adapter.search.SearchFilesSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchGroupsSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;
 
@@ -23,12 +24,14 @@ public class SearchActivity extends AppCompatActivity {
     private ImageView mClose;
     private EditText mSearch;
 
-//    private SelectFriendsAdapter mAdapter;
+    // private SelectFriendsAdapter mAdapter;
     private SectionedRecyclerViewAdapter mSectionAdapter;
     private RecyclerView mRecyclerView;
     private DataUtils mDataUtils;
     private SearchUsersSection mUsersSection;
     private SearchGroupsSection mGroupsSection;
+    private SearchFilesSection mFilesSection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +46,12 @@ public class SearchActivity extends AppCompatActivity {
         // Add user section
         mUsersSection = new SearchUsersSection(this);
         mSectionAdapter.addSection(mUsersSection);
-        // add group section
+        // Add group section
         mGroupsSection = new SearchGroupsSection(this);
         mSectionAdapter.addSection(mGroupsSection);
+        // Add files section
+        mFilesSection = new SearchFilesSection(this);
+        mSectionAdapter.addSection(mFilesSection);
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_search_friends);

@@ -89,4 +89,8 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="title_activity_create_group">CreateGroup</string>
 
+    <string name="group_section_name">Groups</string>
+    <string name="friends_section_name">Friends</string>
+    <string name="entry_section_name">Entries</string>
+
 </resources>
