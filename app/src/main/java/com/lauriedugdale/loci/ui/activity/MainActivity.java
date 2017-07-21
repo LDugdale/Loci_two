@@ -37,11 +37,13 @@ import com.lauriedugdale.loci.ui.nav.LociNavView;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mUsername; // Current logged in username
     private TextView mEmail; // Current logged in email
     private ImageView mMenuProfileImage; // Current logged in profile
-
+    private TextView mSearch;
     private ViewPager mViewPager;
     private MainActivityAdapter mAdapter;
 
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.am_view_pager);
         mAdapter = new MainActivityAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mAdapter);
+        mSearch = (TextView) findViewById(R.id.main_search);
 
         // find navigation tabs and start listeners
         LociNavView tabsView = (LociNavView) findViewById(R.id.am_loci_tabs);
@@ -94,6 +97,14 @@ public class MainActivity extends AppCompatActivity {
         // start geofence service
         Intent intent = new Intent(this, GeoFencingService.class);
         startService(intent);
+
+        mSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // check for intent from geofence notification
         if(getIntent().hasExtra("list")) {
@@ -238,6 +249,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.main, menu);
+
+
         return true;
     }
 }

@@ -14,6 +14,9 @@
     <dimen name="nav_header_vertical_spacing">16dp</dimen>
     <dimen name="nav_header_height">160dp</dimen>
 
+    <dimen name="profile_pic_width">48dp</dimen>
+
+
     <dimen name="profile_width">75dp</dimen>
     <dimen name="profile_height">75dp</dimen>
 </resources>

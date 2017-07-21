@@ -11,7 +11,7 @@ import android.widget.EditText;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
-
+//TODO REMOVE CLASS AND ASSOCIATED XML
 public class SelectFriend extends AppCompatActivity  {
 
     private SelectFriendsAdapter mAdapter;
@@ -23,26 +23,26 @@ public class SelectFriend extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_friend);
 
-        mDataUtils = new DataUtils(this);
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.rv_select_friends);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new SelectFriendsAdapter(this);
-        mRecyclerView.setAdapter(mAdapter);
-
-        Button enterButton = (Button) findViewById(R.id.search_user_button);
-        enterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText enterUsername = (EditText) findViewById(R.id.enter_username);
-
-                String username = enterUsername.getText().toString();
-
-                mDataUtils.searchUsers(mAdapter, username);
-
-            }
-        });
+//        mDataUtils = new DataUtils(this);
+//
+//        mRecyclerView = (RecyclerView) findViewById(R.id.rv_select_friends);
+//        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+//        mRecyclerView.setLayoutManager(mLayoutManager);
+//        mAdapter = new SelectFriendsAdapter(this);
+//        mRecyclerView.setAdapter(mAdapter);
+//
+//        Button enterButton = (Button) findViewById(R.id.search_user_button);
+//        enterButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                EditText enterUsername = (EditText) findViewById(R.id.enter_username);
+//
+//                String username = enterUsername.getText().toString();
+//
+//                mDataUtils.searchUsers(mAdapter, username);
+//
+//            }
+//        });
 
 
     }

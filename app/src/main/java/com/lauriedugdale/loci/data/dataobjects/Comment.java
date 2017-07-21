@@ -6,21 +6,31 @@ package com.lauriedugdale.loci.data.dataobjects;
 
 public class Comment {
 
+    private String entryID;
     private String commentID;
     private String comment;
     private String commentAuthorID;
     private String commentAuthorName;
-    private String dateTimePosted;
+    private long dateTimePosted;
     private String commentMediaPath;
 
     public Comment(){
     }
 
-    public Comment(String comment, String commentAuthorID, String commentAuthorName, long dateTimePosted) {
+    public Comment(String entryID, String comment, String commentAuthorID, String commentAuthorName, long dateTimePosted) {
+        this.entryID = entryID;
         this.comment = comment;
         this.commentAuthorID = commentAuthorID;
         this.commentAuthorName = commentAuthorName;
         this.dateTimePosted = dateTimePosted;
+    }
+
+    public String getEntryID() {
+        return entryID;
+    }
+
+    public void setEntryID(String entryID) {
+        this.entryID = entryID;
     }
 
     public String getCommentID() {
@@ -55,11 +65,11 @@ public class Comment {
         this.commentAuthorName = commentAuthorName;
     }
 
-    public String getDateTimePosted() {
+    public long getDateTimePosted() {
         return dateTimePosted;
     }
 
-    public void setDateTimePosted(String dateTimePosted) {
+    public void setDateTimePosted(long dateTimePosted) {
         this.dateTimePosted = dateTimePosted;
     }
 

@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Created by mnt_x on 23/06/2017.
  */
-
+//TODO REMOVE THIS AND THE ASSOCIATED XML FILES
 public class SelectFriendsAdapter extends RecyclerView.Adapter<SelectFriendsAdapter.ViewHolder> {
     // Store the context and cursor for easy access
     private Context mContext;

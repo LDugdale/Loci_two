@@ -96,7 +96,8 @@
             android:name=".services.GeofenceIntentService"
             android:exported="false" />
 
-        <activity android:name=".ui.activity.social.GroupProfileActivity"></activity>
+        <activity android:name=".ui.activity.social.GroupProfileActivity" />
+        <activity android:name=".ui.activity.SearchActivity"></activity>
     </application>
 
 </manifest>

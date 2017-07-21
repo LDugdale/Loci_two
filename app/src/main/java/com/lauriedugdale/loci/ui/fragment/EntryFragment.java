@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
@@ -70,14 +71,24 @@ public class EntryFragment extends Fragment {
         mDataUtils = new DataUtils(getActivity());
 
         // Set up the recycler view
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_friends);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_comments);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new CommentsAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 
-//        mDataUtils.fetchUserFriends(mAdapter);
+        // if description is empty hide it
+        if (mDescription.getText() == null || mDescription.getText().equals("")){
+            mDescription.setVisibility(View.GONE);
+        }
 
+        // add comments to adapter
+        mDataUtils.getComments(mAdapter, mGeoEntry.getEntryID(), new EntriesDownloadedListener() {
+            @Override
+            public void onEntriesFetched() {
+
+            }
+        });
 
         // set description and title
         mTitle.setText(mGeoEntry.getTitle());
@@ -91,6 +102,8 @@ public class EntryFragment extends Fragment {
         String dateString = new SimpleDateFormat("MM/dd/yyyy", Locale.UK).format(new Date( mGeoEntry.getUploadDate()));
         mDate.setText(dateString);
 
+        sendComment();
+
         return view;
     }
 
@@ -98,10 +111,15 @@ public class EntryFragment extends Fragment {
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDataUtils.addComment(new Comment(mComment.getText().toString(),
-                        mDataUtils.getCurrentUID(),
-                        mDataUtils.getCurrentUsername(),
-                        mDataUtils.getDateTime()));
+                mDataUtils.addComment(
+                        new Comment(
+                            mGeoEntry.getEntryID(),
+                            mComment.getText().toString(),
+                            mDataUtils.getCurrentUID(),
+                            mDataUtils.getCurrentUsername(),
+                            mDataUtils.getDateTime()),
+                        mGeoEntry.getEntryID()
+                        );
             }
         });
     }

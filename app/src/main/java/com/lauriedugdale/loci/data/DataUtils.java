@@ -30,7 +30,6 @@ import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
-import com.lauriedugdale.loci.data.dataobjects.Comments;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
@@ -43,6 +42,8 @@ import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectFriendsAdapter;
+import com.lauriedugdale.loci.ui.adapter.search.SearchGroupsSection;
+import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -50,6 +51,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+
+import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 /**
  * Created by mnt_x on 14/06/2017.
@@ -133,7 +136,12 @@ public class DataUtils {
      * @return the user ID
      */
     public String getCurrentUsername() {
-        return "";
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String username = null;
+        if (user != null) {
+            username = user.getDisplayName();
+        }
+        return username;
     }
 
     /**
@@ -485,38 +493,6 @@ public class DataUtils {
 
     }
 
-    public void searchUsers(final SelectFriendsAdapter adapter, String user){
-        adapter.clearData();
-        mDatabase.child("users").orderByChild("username").equalTo(user).addChildEventListener(new ChildEventListener() {
-
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-
-                User user = dataSnapshot.getValue(User.class);
-                adapter.addToUsers(user);
-
-                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
-                adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-    }
-
     public void fetchUserGroups(final GroupsAdapter adapter){
         String currentUID = getCurrentUID();
         // Get a reference to our posts
@@ -525,6 +501,7 @@ public class DataUtils {
         ref.child(currentUID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println(dataSnapshot);
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     Group group = postSnapshot.getValue(Group.class);
                     adapter.addToGroups(group);
@@ -969,26 +946,73 @@ public class DataUtils {
 
     }
 
-    public void addComment(Comment comment) {
+    public void addComment(Comment comment, String entryID) {
 
-        DatabaseReference entryRef = mDatabase.child("comments");
+        DatabaseReference entryRef = mDatabase.child("comments/" + entryID);
         DatabaseReference pushEntryRef = entryRef.push();
         comment.setCommentID(pushEntryRef.getKey());
         pushEntryRef.setValue(comment);
     }
 
-    public void getComments(CommentsAdapter adapter){
+    public void getComments(final CommentsAdapter adapter, String entryID, final EntriesDownloadedListener listener) {
 
-        final String currentUID = getCurrentUID();
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("comments");
 
-        // Get a reference to our posts
+        ref.child(entryID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                adapter.clearData();
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Comment comment = postSnapshot.getValue(Comment.class);
+                    adapter.addToComments(comment);
+                }
+                listener.onEntriesFetched();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
+
+
+    public void search(final SectionedRecyclerViewAdapter adapter, final SearchUsersSection usersSection, final SearchGroupsSection groupsSection, String soFar){
+
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("users");
 
-        ref.child(currentUID).addValueEventListener(new ValueEventListener() {
+        ref.orderByChild("username").startAt(soFar).endAt(soFar + "\uf8ff").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                User currentUser = dataSnapshot.getValue(User.class);
+                usersSection.clearData();
+                adapter.notifyDataSetChanged();
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    User user = postSnapshot.getValue(User.class);
+                    usersSection.addToUsers(user);
+                }
+                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        ref = database.getReference("groups");
+        ref.orderByChild("groupName").startAt(soFar).endAt(soFar + "\uf8ff").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                groupsSection.clearData();
+                adapter.notifyDataSetChanged();
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Group group = postSnapshot.getValue(Group.class);
+                    groupsSection.addToGroups(group);
+                }
+                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                adapter.notifyDataSetChanged();
             }
 
             @Override

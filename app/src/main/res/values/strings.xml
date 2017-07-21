@@ -34,7 +34,7 @@
     <string name="forgot_password_msg">We just need your registered Email Id to sent you password reset instructions.</string>
 
 
-    <string name="show_entry">Show more</string>
+    <string name="show_entry">Open</string>
     <string name="title_activity_nav_draw">NavDraw</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
