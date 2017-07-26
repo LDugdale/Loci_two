@@ -7,7 +7,10 @@ import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.SphericalUtil;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
@@ -25,6 +28,8 @@ public final class LocationUtils {
     private final static double WGS84_E2 = 0.00669437999014;          // square of WGS 84 eccentricity
 
     public final static float MAXIMUM_DISTANCE = 50.0f; //maximum distance a used can select a marker
+
+    public final static double QUERY_RADIUS = 1609.34;
 
     // prevent instantiation
     private LocationUtils(){}
@@ -145,5 +150,13 @@ public final class LocationUtils {
                 }
             }
         });
+    }
+
+    public static LatLngBounds toBounds(double latitutude, double longitude, double radius) {
+
+        LatLng center = new LatLng(latitutude, longitude);
+        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
+        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
+        return new LatLngBounds(southwest, northeast);
     }
 }

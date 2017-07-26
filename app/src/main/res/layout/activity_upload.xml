@@ -8,24 +8,30 @@
     android:background="@color/white"
     tools:context="com.lauriedugdale.loci.ui.activity.upload.UploadActivity">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/white"
+            android:elevation="1dp"/>
+        <View
+            android:id="@+id/separator_toolbar"
+            android:background="@color/colorPrimary"
+            android:layout_width="368dp"
+            android:layout_height="1dp"
+            android:layout_alignBottom="@id/toolbar"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"/>
 
         <android.support.v4.view.ViewPager
             android:id="@+id/au_view_pager"
+            android:paddingTop="?attr/actionBarSize"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/am_loci_tabs"
-            android:layout_alignParentStart="true"/>
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true" />
 
 
-        <!--<com.lauriedugdale.loci.ui.nav.LociNavView-->
-            <!--android:id="@+id/am_loci_tabs"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentBottom="true"/>-->
-
-    </RelativeLayout>
 
 </RelativeLayout>

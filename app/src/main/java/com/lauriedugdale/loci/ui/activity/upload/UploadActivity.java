@@ -4,8 +4,10 @@ import android.net.Uri;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.Group;
@@ -29,6 +31,19 @@ public class UploadActivity extends AppCompatActivity implements UploadPageOneFr
 
         // set initial fragment
         mViewPager.setCurrentItem(0);
+
+        // my_child_toolbar is defined in the layout file
+        Toolbar myChildToolbar =
+                (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(myChildToolbar);
+
+        // Get a support ActionBar corresponding to this toolbar
+        ActionBar ab = getSupportActionBar();
+
+        ab.setTitle("Post entry");
+
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
     }
 
     /**

@@ -183,19 +183,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
 
-                int id = menuItem.getItemId();
-                switch (id){
+            int id = menuItem.getItemId();
+            switch (id){
 
-                    case R.id.edit_profile:
-                        startActivity(new Intent(MainActivity.this, ProfileSettingsActivity.class));
-                        break;
-                    case R.id.logout:
-                        mAuth.signOut();
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                        finish();
-                        break;
-                }
-                return true;
+                case R.id.edit_profile:
+                    startActivity(new Intent(MainActivity.this, ProfileSettingsActivity.class));
+                    break;
+                case R.id.user_files:
+                    startActivity(new Intent(MainActivity.this, UserFilesActivity.class));
+                    break;
+                case R.id.logout:
+                    mAuth.signOut();
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
+                    break;
+            }
+            return true;
             }
         });
 

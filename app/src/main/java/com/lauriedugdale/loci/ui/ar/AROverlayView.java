@@ -282,19 +282,12 @@ public class AROverlayView extends View {
     }
 
     public void entriesQuery(){
-        LatLng newLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-        LatLngBounds bounds = toBounds(newLatLng, 1609.34);
+        LatLngBounds bounds = LocationUtils.toBounds(mLocation.getLatitude(), mLocation.getLongitude(), 1609.34);
         mDataUtils.readAllEntriesForAR(bounds.southwest.latitude,
                 bounds.northeast.latitude,
                 mFilterOptions.getNumericalFromDate(),
                 mFilterOptions.getNumericalToDate(),
                 mFilterOptions.getCheckedTypes(),
                 mEntryList);
-    }
-
-    public LatLngBounds toBounds(LatLng center, double radius) {
-        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
-        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
-        return new LatLngBounds(southwest, northeast);
     }
 }

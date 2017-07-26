@@ -5,6 +5,12 @@
             android:id="@+id/edit_profile"
             android:title="Edit Profile"
             android:icon="@drawable/ic_edit"/>
+
+        <item
+            android:id="@+id/user_files"
+            android:title="Your entries"
+            android:icon="@drawable/ic_file"/>
+
         <item
             android:id="@+id/logout"
             android:title="Logout"

@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import com.lauriedugdale.loci.ui.fragment.SocialFragment;
 import com.lauriedugdale.loci.ui.fragment.MainFragment;
-import com.lauriedugdale.loci.ui.fragment.FilesFragment;
+import com.lauriedugdale.loci.ui.fragment.NearMeFragment;
 
 /**
  * Adapter for managing the Main Activity fragments
@@ -27,7 +27,7 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
             case 1:
                 return MainFragment.create();
             case 2:
-                return FilesFragment.create();
+                return NearMeFragment.create();
 
         }
 

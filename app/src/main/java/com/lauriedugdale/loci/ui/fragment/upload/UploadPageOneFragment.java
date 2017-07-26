@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -26,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -64,6 +67,9 @@ public class UploadPageOneFragment extends Fragment {
 
     // chosen media upload
     private int mChosenTask;
+    private LinearLayout mChosenUploadWrapper;
+    private ImageView mImageUpload;
+    private TextView mUploadTitle;
 
     private DataUtils mDataUtils;
 
@@ -101,6 +107,9 @@ public class UploadPageOneFragment extends Fragment {
         mTitle = (EditText) view.findViewById(R.id.au_entry_title);
         mDescription = (EditText) view.findViewById(R.id.au_entry_description);
         mViewableSelection = (TextView) view.findViewById(R.id.viewable_selection);
+        mChosenUploadWrapper = (LinearLayout) view.findViewById(R.id.upload_info_wrapper);
+        mImageUpload = (ImageView) view.findViewById(R.id.uploaded_image);
+        mUploadTitle = (TextView) view.findViewById(R.id.filename);
 
         onViewableSelectionClick();
         selectImage();
@@ -238,7 +247,10 @@ public class UploadPageOneFragment extends Fragment {
             e.printStackTrace();
         }
 
-        mUploadData = Uri.parse(destination.toURI().toString());
+        String path = destination.toURI().toString();
+
+
+        mUploadData = Uri.parse(path);
         mUploadType = DataUtils.IMAGE;
     }
 
@@ -246,11 +258,63 @@ public class UploadPageOneFragment extends Fragment {
     private void onSelectFromGalleryResult(Intent data) {
         mUploadData = data.getData();
         mUploadType = DataUtils.IMAGE;
+
+        Uri uri = data.getData();
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+            // Log.d(TAG, String.valueOf(bitmap));
+
+            mImageUpload.setImageBitmap(bitmap);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        displayUploadedMedia(getFilename(data), bitmap);
     }
 
     private void onSelectAudioResult(Intent data) {
         mUploadData = data.getData();
         mUploadType = DataUtils.AUDIO;
+
+        displayUploadedMedia(getFilename(data), null);
+
+
+    }
+
+
+    private void displayUploadedMedia(String path, Bitmap bitmap){
+        String filename = path.substring(path.lastIndexOf("/")+1);
+
+        mUploadTitle.setText(filename);
+        if (bitmap != null) {
+            mImageUpload.setImageBitmap(bitmap);
+        }
+    }
+
+    private String getFilename(Intent data){
+
+        Uri uri = data.getData();
+        String uriString = uri.toString();
+        File myFile = new File(uriString);
+        String displayName = null;
+
+        if (uriString.startsWith("content://")) {
+            Cursor cursor = null;
+            try {
+                cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        } else if (uriString.startsWith("file://")) {
+            displayName = myFile.getName();
+        }
+
+        return  displayName;
     }
 
     public boolean checkPermission() {

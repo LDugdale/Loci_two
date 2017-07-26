@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -27,33 +28,31 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.GeofencingUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GeoFencingService extends Service implements OnCompleteListener<Void> {
-
+    //TODO This class has two purposes - providing location to the "NearMeFragment" and Geofencing consider splitting
     //TODO Close this class shutting down all the open API connections
     //TODO Find a way to fetch location when app is not running
     //TODO mark in database an entry has been viewed
     public static final String TAG = "GeoFencingService";
 
-    private static final long INTERVAL = 10000;
-    private static final long FASTEST_INTERVAL = 5000;
+    private static final long INTERVAL = 100000;
+    private static final long FASTEST_INTERVAL = 50000;
 
-    GoogleApiClient googleApiClient = null;
+    GoogleApiClient mGogleApiClient = null;
 
-    /**
-     * Provides access to the Geofencing API.
-     */
+    // Provides access to the geofencing api
     private GeofencingClient mGeofencingClient;
     private ArrayList<Geofence> mGeofenceList; // List of geofences used
     private PendingIntent mGeofencePendingIntent; // Used when requesting to add or remove geofences
 
     private DataUtils mDataUtils;
     private Bundle mGeoEntries;
-
 
     public GeoFencingService() {
     }
@@ -67,7 +66,7 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
         mGeofencePendingIntent = null;
         mGeoEntries = new Bundle();
 
-        googleApiClient = new GoogleApiClient.Builder(this)
+        mGogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
@@ -89,7 +88,7 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
                     }
                 }).build();
 
-        googleApiClient.connect();
+        mGogleApiClient.connect();
 
 
         mGeofencingClient = LocationServices.getGeofencingClient(this);
@@ -115,11 +114,17 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
                     .setInterval(INTERVAL)
                     .setFastestInterval(FASTEST_INTERVAL)
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient,
+
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGogleApiClient,
                     locationRequest, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             Log.d(TAG, "location update lat/long " + location.getLatitude() + "" + location.getLongitude());
+
+                            Intent intent = new Intent("location_update");
+                            intent.putExtra("latitude", location.getLatitude());
+                            intent.putExtra("longitude", location.getLongitude());
+                            LocalBroadcastManager.getInstance(GeoFencingService.this).sendBroadcast(intent);
                         }
                     });
 
