@@ -83,7 +83,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+        mDataUtils.getNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
     }
 
 

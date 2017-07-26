@@ -13,10 +13,11 @@ public class User implements Parcelable {
 
     private String userID;
     private String username;
+    private String bio;
+    private String queryUsername;
     private String email;
     private String profilePath;
     private long dateJoined;
-    private List<String> requests = new ArrayList<String>();
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -24,7 +25,17 @@ public class User implements Parcelable {
 
     public User(String username, String email, long dateJoined) {
         this.username = username;
+        this.queryUsername = username.toUpperCase();
         this.email = email;
+        this.dateJoined = dateJoined;
+    }
+
+    public String getQueryUsername() {
+        return queryUsername;
+    }
+
+    public void setQueryUsername(String queryUsername) {
+        this.queryUsername = queryUsername;
     }
 
     public String getUsername() {
@@ -67,20 +78,25 @@ public class User implements Parcelable {
         this.dateJoined = dateJoined;
     }
 
-    public List<String> getRequests() {
-        return requests;
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 
     /*
-     * Parcelable code
-     */
+         * Parcelable code
+         */
     private User(Parcel in) {
         userID = in.readString();
         username = in.readString();
+        bio = in.readString();
+        queryUsername = in.readString();
         email = in.readString();
         profilePath = in.readString();
         dateJoined = in.readLong();
-        requests = in.createStringArrayList();
     }
 
     @Override
@@ -92,11 +108,11 @@ public class User implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(userID);
         dest.writeString(username);
+        dest.writeString(bio);
+        dest.writeString(queryUsername);
         dest.writeString(email);
         dest.writeString(profilePath);
         dest.writeLong(dateJoined);
-        dest.writeStringList(requests);
-
     }
 
     public static final Parcelable.Creator<User> CREATOR

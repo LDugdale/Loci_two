@@ -1,12 +1,8 @@
 package com.lauriedugdale.loci.ui.activity;
 
-import android.content.Context;
 import android.content.Intent;
-import android.icu.util.Calendar;
 import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,7 +13,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,31 +23,24 @@ import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.services.GeoFencingService;
-import com.lauriedugdale.loci.services.LociLocationService;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
-import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
-import com.lauriedugdale.loci.ui.adapter.MainActivityAdapter;
+import com.lauriedugdale.loci.ui.activity.settings.ProfileSettingsActivity;
+import com.lauriedugdale.loci.ui.adapter.pageradapter.MainActivityAdapter;
 import com.lauriedugdale.loci.ui.fragment.MainFragment;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.text.Format;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import java.util.HashSet;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     private DataUtils mDataUtils;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,11 +102,18 @@ public class MainActivity extends AppCompatActivity {
             broadcastLocationsOnReceive(geofenceEntries);
         }
 
+
+
         // Find the toolbar and initialise the navigation drawer
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         initNavigationDrawer();
     }
+
+    public void displayToMap(){
+        LocalBroadcastManager.getInstance(this).sendBroadcast(getIntent());
+    }
+
 
     /**
      * When the main activity receives a geofence intent from the notifications this method is called
@@ -189,9 +185,13 @@ public class MainActivity extends AppCompatActivity {
 
                 int id = menuItem.getItemId();
                 switch (id){
+
+                    case R.id.edit_profile:
+                        startActivity(new Intent(MainActivity.this, ProfileSettingsActivity.class));
+                        break;
                     case R.id.logout:
                         mAuth.signOut();
-                        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
                         finish();
                         break;
                 }

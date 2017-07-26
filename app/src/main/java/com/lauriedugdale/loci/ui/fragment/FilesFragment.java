@@ -74,7 +74,6 @@ public class FilesFragment extends BaseFragment {
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem addFriendItem = menu.findItem(R.id.action_add_friend);
         MenuItem notificationItem = menu.findItem(R.id.action_notification);
         MenuItem filterItem = menu.findItem(R.id.action_filter);
         MenuItem locationItem = menu.findItem(R.id.action_location);
@@ -85,7 +84,6 @@ public class FilesFragment extends BaseFragment {
         filterItem.setVisible(false);
         locationItem.setVisible(false);
         arItem.setVisible(false);
-        addFriendItem.setVisible(false);
         notificationItem.setVisible(false);
     }
 

@@ -14,7 +14,6 @@ import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.activity.social.GroupProfileActivity;
-import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
 
 /**
@@ -44,11 +43,10 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
 
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-
         mAdapter = new GroupsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchUserGroups(mAdapter);
+        mDataUtils.fetchUserAcessibleGroups(mAdapter);
         return view;
     }
 

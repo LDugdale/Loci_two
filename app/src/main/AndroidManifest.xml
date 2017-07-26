@@ -50,7 +50,7 @@
             android:name=".ui.activity.auth.ResetPasswordActivity"
             android:theme="@style/FullScreenTheme" />
         <activity
-            android:name=".ui.activity.UploadActivity"
+            android:name=".ui.activity.upload.UploadActivity"
             android:theme="@style/FullScreenTheme" />
         <activity
             android:name=".ui.activity.entry.ImageEntryActivity"
@@ -86,7 +86,9 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".ui.activity.social.CreateGroup" />
         <activity android:name=".ui.activity.entry.NoMediaActivity" />
-        <activity android:name=".ui.activity.social.UserProfileActivity" />
+        <activity
+            android:name=".ui.activity.social.UserProfileActivity"
+            android:parentActivityName=".ui.activity.MainActivity" />
 
         <service
             android:name=".services.GeoFencingService"
@@ -97,7 +99,12 @@
             android:exported="false" />
 
         <activity android:name=".ui.activity.social.GroupProfileActivity" />
-        <activity android:name=".ui.activity.SearchActivity"></activity>
+        <activity android:name=".ui.activity.SearchActivity" />
+        <activity
+            android:name=".ui.activity.settings.GroupSettingsActivity"
+            android:label="@string/title_activity_group_settings"
+            android:theme="@style/AppTheme" />
+        <activity android:name=".ui.activity.settings.ProfileSettingsActivity"></activity>
     </application>
 
 </manifest>

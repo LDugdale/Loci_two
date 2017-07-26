@@ -17,13 +17,6 @@
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/action_add_friend"
-        android:orderInCategory="400"
-        android:title="Filter"
-        android:icon="@drawable/ic_add_circle"
-        app:showAsAction="ifRoom"/>
-
-    <item
         android:id="@+id/action_notification"
         android:orderInCategory="400"
         android:title="Filter"

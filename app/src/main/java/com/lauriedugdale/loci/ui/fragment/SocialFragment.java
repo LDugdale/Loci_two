@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.ui.activity.NotificationActivity;
-import com.lauriedugdale.loci.ui.activity.SelectFriend;
 import com.lauriedugdale.loci.ui.activity.social.CreateGroup;
 import com.lauriedugdale.loci.ui.fragment.social.FriendsFragment;
 import com.lauriedugdale.loci.ui.fragment.social.GroupsFragment;
@@ -104,12 +103,6 @@ public class SocialFragment extends BaseFragment {
             return true;
         }
 
-
-        if (id == R.id.action_add_friend) {
-            Intent intent = new Intent(getActivity(), SelectFriend.class);
-            startActivity(intent);
-            return true;
-        }
         return false;
     }
 }

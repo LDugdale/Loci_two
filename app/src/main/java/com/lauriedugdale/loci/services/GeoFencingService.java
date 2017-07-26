@@ -149,7 +149,6 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
 
 
     public void retrieveEntries(){
-
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("file_permission");
         ref.child(mDataUtils.getCurrentUID()).addValueEventListener(new ValueEventListener() {

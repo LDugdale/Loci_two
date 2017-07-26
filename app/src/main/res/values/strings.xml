@@ -54,10 +54,12 @@
     </string-array>
 
     <string name="enter_group_name">Group name</string>
+    <string name="private_group">Make group private</string>
 
     <string name="search">Search</string>
     <string name="search_input">Enter username</string>
-    <string name="add_user">add</string>
+    <string name="add_user">Add</string>
+    <string name="join_group">Join</string>
     <string name="accept_user">Accept</string>
     <string name="reject_user">Reject</string>
 
@@ -72,14 +74,18 @@
     <string name="entry_viewable_friends">Just Friends</string>
     <string name="entry_viewable_none">Only me</string>
 
+    <string name="drag_marker_notice">Drag the marker!</string>
     <string name="done">Done</string>
 
     <string name="filter_title">Filter search results</string>
     <string name="type_filter_title">Choose media type</string>
     <string name="date_filter_title">Choose date</string>
     <string name="add_filters">Apply</string>
-    <string name="friend_filter">Filter by your friends</string>
-    <string name="group_filter">Filter by your groups</string>
+    <string name="filter_everyone">All</string>
+    <string name="filter_friends">Friends</string>
+    <string name="filter_groups">Groups</string>
+    <string name="filter_user">Just me</string>
+
 
     <string name="activity_title_about_us">About Us</string>
     <string name="activity_title_privacy_policy">Privacy Policy</string>
@@ -90,7 +96,17 @@
     <string name="title_activity_create_group">CreateGroup</string>
 
     <string name="group_section_name">Groups</string>
-    <string name="friends_section_name">Friends</string>
+    <string name="friends_section_name">Users</string>
     <string name="entry_section_name">Entries</string>
+    <string name="title_activity_group_settings">GroupSettingsActivity</string>
+
+    // Group settings
+    <string name="who_joins">Who can join?</string>
+    <string name="everyone">Everyone</string>
+    <string name="invite">Invite only</string>
+    <string name="admins">Admins only</string>
+    <string name="select_admins">Select group admins</string>
+    <string name="upload_image">Upload picture</string>
+    <string name="who_posts">Who can post?</string>
 
 </resources>

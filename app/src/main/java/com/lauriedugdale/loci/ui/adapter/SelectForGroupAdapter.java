@@ -16,6 +16,7 @@ import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
     private List<User> mUsers;
     private DataUtils mDataUtils;
 
-    private HashSet<String> mCheckedItems;
+    private HashMap<String, String> mCheckedItems;
 
 
     /**
@@ -44,7 +45,7 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
         mUsers = new ArrayList<User>();
         mDataUtils = new DataUtils(context);
 
-        mCheckedItems = new HashSet<String>();
+        mCheckedItems = new HashMap<String, String>();
     }
 
     public void addToUsers(User user){
@@ -57,7 +58,7 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
         notifyDataSetChanged();
     }
 
-    public HashSet<String> getCheckedItems() {
+    public HashMap<String, String> getCheckedItems() {
         return mCheckedItems;
     }
 
@@ -90,11 +91,17 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
 
         mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
+        if (mCheckedItems.containsKey(user.getUserID())){
+            viewHolder.mCheckedItem.setChecked(true);
+        } else {
+            viewHolder.mCheckedItem.setChecked(false);
+        }
+
         viewHolder.mCheckedItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    mCheckedItems.add(user.getUserID());
+                    mCheckedItems.put(user.getUserID(), user.getUsername());
                 } else {
                     mCheckedItems.remove(user.getUserID());
                 }

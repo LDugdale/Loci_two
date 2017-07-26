@@ -15,10 +15,9 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.ui.activity.UploadActivity;
+import com.lauriedugdale.loci.ui.activity.upload.UploadActivity;
 
 /**
  * logic behind the navigation buttons.

@@ -1,10 +1,12 @@
 package com.lauriedugdale.loci.ui.fragment;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.icu.text.SimpleDateFormat;
@@ -13,6 +15,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -24,10 +27,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -56,7 +61,7 @@ import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.ui.activity.SelectFriend;
+import com.lauriedugdale.loci.utils.FilterView;
 import com.lauriedugdale.loci.utils.PopupUtils;
 
 import java.util.ArrayList;
@@ -69,7 +74,7 @@ import java.util.Map;
  * Created by mnt_x on 28/05/2017.
  */
 
-public class MainFragment extends BaseFragment implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,
+public class MainFragment extends BaseFragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMapLongClickListener,
@@ -83,11 +88,11 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private Location mCurrentLocation;
 
     // potential map types its possible to display
-    private final int[] MAP_TYPES = { GoogleMap.MAP_TYPE_SATELLITE,
+    private final int[] MAP_TYPES = {GoogleMap.MAP_TYPE_SATELLITE,
             GoogleMap.MAP_TYPE_NORMAL,
             GoogleMap.MAP_TYPE_HYBRID,
             GoogleMap.MAP_TYPE_TERRAIN,
-            GoogleMap.MAP_TYPE_NONE };
+            GoogleMap.MAP_TYPE_NONE};
 
     private int curMapTypeIndex = 1; // chosen map type from MAP_TYPES
 
@@ -125,7 +130,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     private ArrayList<GeoEntry> mGeofenceList;
     private boolean mFirstIdle;
     private boolean mDisplayingCustomEntries;
-
+    private EntryItem mMarker;
 
 
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
@@ -135,67 +140,55 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             clearMap();
             mDisplayingCustomEntries = true;
 
-            if("user_entries".equals(intent.getAction())) {
+            if ("user_entries".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "user_entries";
-                mUser = intent.getParcelableExtra("user");
+                mUser = intent.getParcelableExtra("user_entries");
                 getSpecificEntries();
                 mFirstIdle = true;
-                ((MainActivity)getActivity()).getViewPager().setCurrentItem(1);
                 setupCurrentlyViewing();
             }
-            if("group_entries".equals(intent.getAction())) {
+            if ("group_entries".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "group_entries";
                 mGroup = intent.getParcelableExtra("group");
                 getSpecificEntries();
                 mFirstIdle = true;
-                if(((MainActivity)getActivity()) != null) {
-                    ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
-                }
                 setupCurrentlyViewing();
             }
-            if("single_entry".equals(intent.getAction())) {
+            if ("single_entry".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "single_entry";
                 mEntry = intent.getParcelableExtra("entry");
                 addEntry();
-                if(((MainActivity)getActivity()) != null){
-                    ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
-                    setupCurrentlyViewing();
-                }
+                setupCurrentlyViewing();
             }
-            if("geofence_entries".equals(intent.getAction())) {
+            if ("geofence_entries".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "geofence_entries";
                 mGeofenceList = intent.getParcelableArrayListExtra("entries");
-                for (GeoEntry e : mGeofenceList){
+                for (GeoEntry e : mGeofenceList) {
                     mEntryMap.put(e.getEntryID(), e);
                 }
                 addAllEntriesToMap();
                 getBounds();
-                mFirstIdle = true;
 
-                if(((MainActivity)getActivity()) != null) {
-                    ((MainActivity) getActivity()).getViewPager().setCurrentItem(1);
-                    setupCurrentlyViewing();
-                }
             }
         }
     };
 
-    public void clearMap(){
+    public void clearMap() {
         visibleMarkers = new HashMap<String, EntryItem>();
         mEntryMap = new HashMap<String, GeoEntry>();
+        getMap().clear();
         mClusterManager.clearItems();
         mClusterManager.cluster();
     }
 
-    public void setupCurrentlyViewing(){
-
-        if (mCurrentlyDisplaying.equals("user_entries")){
+    public void setupCurrentlyViewing() {
+        if (mCurrentlyDisplaying.equals("user_entries")) {
             mViewingName.setText(mUser.getUsername());
-        } else if (mCurrentlyDisplaying.equals("single_entry")){
+        } else if (mCurrentlyDisplaying.equals("single_entry")) {
             mViewingName.setText(mEntry.getTitle());
-        } else if (mCurrentlyDisplaying.equals("geofence_entries")){
+        } else if (mCurrentlyDisplaying.equals("geofence_entries")) {
             mViewingName.setText("Nearby entries");
-        } else if (mCurrentlyDisplaying.equals("group_entries")){
+        } else if (mCurrentlyDisplaying.equals("group_entries")) {
             mViewingName.setText(mGroup.getGroupName());
         }
 
@@ -204,7 +197,11 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             public void onClick(View v) {
                 mViewingWindow.setVisibility(View.INVISIBLE);
                 mDisplayingCustomEntries = false;
-                mCurrentlyDisplaying ="all";
+                mCurrentlyDisplaying = "all";
+                if (mMarker != null) {
+                    mClusterManager.removeItem(mMarker);
+                    mClusterManager.cluster();
+                }
                 getAllEntries();
             }
         });
@@ -217,7 +214,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
      * Used to return fragment for viewpager quickly
      * @return
      */
-    public static MainFragment create(){
+    public static MainFragment create() {
         return new MainFragment();
     }
 
@@ -248,7 +245,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mViewingName = (TextView) view.findViewById(R.id.currently_viewing_text);
         mViewingClose = (ImageView) view.findViewById(R.id.currently_viewing_close);
 
-
         mCurrentlyDisplaying = "all";
 
         return view;
@@ -260,22 +256,20 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         setHasOptionsMenu(true);
 
         // set up google maps API
-        mGoogleApiClient = new GoogleApiClient.Builder( getActivity() )
-                .addConnectionCallbacks( this )
-                .addOnConnectionFailedListener( this )
-                .addApi( LocationServices.API )
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
                 .build();
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem addFriendItem = menu.findItem(R.id.action_add_friend);
         MenuItem notificationItem = menu.findItem(R.id.action_notification);
         MenuItem addGroupItem = menu.findItem(R.id.action_add_group);
 
         addGroupItem.setVisible(false);
-        addFriendItem.setVisible(false);
         notificationItem.setVisible(false);
     }
 
@@ -288,6 +282,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             showFilterPopup(mMainLayout);
         }
 
+        if (id == R.id.action_location) {
+            getMap().animateCamera(CameraUpdateFactory.newCameraPosition(setCameraPosition(mCurrentLocation)), null);
+        }
 
         if (id == R.id.action_ar) {
             Intent intent = new Intent(getActivity(), AugmentedActivity.class);
@@ -314,8 +311,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     @Override
     public void onPause() {
         super.onPause();
-//        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mDataReceiver);
-
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mDataReceiver);
     }
 
     @Override
@@ -379,7 +375,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<EntryItem>() {
             @Override
             public boolean onClusterClick(Cluster<EntryItem> cluster) {
-                ArrayList<EntryItem> clusterList = (ArrayList)cluster.getItems();
+                ArrayList<EntryItem> clusterList = (ArrayList) cluster.getItems();
                 PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, clusterList, mDisplayingCustomEntries);
                 return true;
             }
@@ -392,6 +388,8 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         getMap().setOnMapLongClickListener(this);
         getMap().setOnInfoWindowClickListener(this);
         getMap().setOnMapClickListener(this);
+
+        ((MainActivity) getActivity()).displayToMap();
     }
 
     private GoogleMap.OnCameraIdleListener getCameraIdleListener() {
@@ -404,15 +402,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         };
     }
 
-    private void getAllEntries(){
-        if(mCurrentlyDisplaying.equals("all")) {
+    private void getAllEntries() {
+        if (mCurrentlyDisplaying.equals("all")) {
 
             LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
             mDataUtils.readAllEntries(bounds.southwest.latitude,
                     bounds.northeast.latitude,
-                    mFilterOptions.getNumericalFromDate(),
-                    mFilterOptions.getNumericalToDate(),
-                    mFilterOptions.getCheckedTypes(),
+                    mFilterOptions,
                     mEntryMap,
                     new EntriesDownloadedListener() {
                         @Override
@@ -423,27 +419,24 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         }
     }
 
-    private void getSpecificEntries(){
+    private void getSpecificEntries() {
 
-        if (mCurrentlyDisplaying.equals("user_entries")){
+        if (mCurrentlyDisplaying.equals("user_entries")) {
             mDataUtils.readUserEntries(mUser.getUserID(),
-                    mFilterOptions.getNumericalFromDate(),
-                    mFilterOptions.getNumericalToDate(),
-                    mFilterOptions.getCheckedTypes(),
+                    mFilterOptions,
                     mEntryMap,
                     new EntriesDownloadedListener() {
                         @Override
                         public void onEntriesFetched() {
+
                             addAllEntriesToMap();
                             getBounds();
 
                         }
                     });
-        } else if (mCurrentlyDisplaying.equals("group_entries")){
+        } else if (mCurrentlyDisplaying.equals("group_entries")) {
             mDataUtils.readGroupEntries(mGroup.getGroupID(),
-                    mFilterOptions.getNumericalFromDate(),
-                    mFilterOptions.getNumericalToDate(),
-                    mFilterOptions.getCheckedTypes(),
+                    mFilterOptions,
                     mEntryMap,
                     new EntriesDownloadedListener() {
                         @Override
@@ -455,18 +448,18 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         }
     }
 
-    private void getBounds(){
+    private void getBounds() {
 
-        if (mCurrentlyDisplaying.equals("all") || !mFirstIdle){
+        if (mCurrentlyDisplaying.equals("all") || !mFirstIdle) {
             return;
         }
 
-        if (mEntryMap.isEmpty()){
+        if (mEntryMap.isEmpty()) {
             return;
         }
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-        for (Map.Entry e: mEntryMap.entrySet()) {
+        for (Map.Entry e : mEntryMap.entrySet()) {
             GeoEntry entry = (GeoEntry) e.getValue();
             bounds.include(new LatLng(entry.getLatitude(), entry.getLongitude()));
         }
@@ -487,36 +480,36 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         mFirstIdle = false;
     }
 
-    private void addEntry(){
-        EntryItem marker = new EntryItem(mEntry.getLatitude(), mEntry.getLongitude(), mEntry.getTitle(), mEntry.getFileType(), mEntry);
-        mClusterManager.addItem(marker);
+    private void addEntry() {
+        mMarker = new EntryItem(mEntry.getLatitude(), mEntry.getLongitude(), mEntry.getTitle(), mEntry.getFileType(), mEntry);
+        mClusterManager.addItem(mMarker);
         mClusterManager.cluster();
 
         CameraPosition position = CameraPosition.builder()
-                .target( new LatLng( mEntry.getLatitude(),
-                        mEntry.getLongitude() ) )
-                .zoom( 16f )
-                .bearing( 0.0f )
-                .tilt( 0.3f )
+                .target(new LatLng(mEntry.getLatitude(),
+                        mEntry.getLongitude()))
+                .zoom(16f)
+                .bearing(0.0f)
+                .tilt(0.3f)
                 .build();
 
-        getMap().animateCamera( CameraUpdateFactory.newCameraPosition( position ) );
+        getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position));
     }
 
     private void addAllEntriesToMap() {
 
-        if(this.mMap != null) {
+        if (this.mMap != null) {
             //This is the current viewable region of the map
             LatLngBounds bounds = this.mMap.getProjection().getVisibleRegion().latLngBounds;
 
             //Loop through all the items that are available to be placed on the map
             Iterator it = mEntryMap.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
+                Map.Entry pair = (Map.Entry) it.next();
                 GeoEntry entry = (GeoEntry) pair.getValue();
 
-                if(bounds.contains(new LatLng(entry.getLatitude(), entry.getLongitude()))) {
-                    if(!visibleMarkers.containsKey(entry.getEntryID())) {
+                if (bounds.contains(new LatLng(entry.getLatitude(), entry.getLongitude()))) {
+                    if (!visibleMarkers.containsKey(entry.getEntryID())) {
 
                         EntryItem marker = new EntryItem(entry.getLatitude(), entry.getLongitude(), entry.getTitle(), entry.getFileType(), entry);
                         visibleMarkers.put(entry.getEntryID(), marker);
@@ -525,7 +518,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
                     }
                 } else {
                     //If the course was previously on screen
-                    if(visibleMarkers.containsKey(entry.getEntryID())) {
+                    if (visibleMarkers.containsKey(entry.getEntryID())) {
                         mClusterManager.removeItem(visibleMarkers.get(entry.getEntryID()));
                         mClusterManager.cluster();
                         visibleMarkers.remove(entry.getEntryID());
@@ -548,28 +541,37 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
     @Override
     public void onStop() {
         super.onStop();
-        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+
         mCurrentLocation = LocationServices
                 .FusedLocationApi
-                .getLastLocation( mGoogleApiClient );
+                .getLastLocation(mGoogleApiClient);
 
-        initCamera( mCurrentLocation );
+        if (mCurrentLocation != null) {
+            initCamera(mCurrentLocation);
+        }
     }
 
-    private void initCamera( Location location ) {
+    private CameraPosition setCameraPosition(Location location){
         CameraPosition position = CameraPosition.builder()
                 .target( new LatLng( location.getLatitude(),
                         location.getLongitude() ) )
                 .zoom( 16f )
                 .bearing( 0.0f )
-                .tilt( 0.3f )
+                .tilt( 0f )
                 .build();
+        return position;
+    }
+
+    private void initCamera( Location location ) {
+
+        CameraPosition position = setCameraPosition(location);
 
         if(mCurrentlyDisplaying.equals("all")) {
             getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position), null);
@@ -580,8 +582,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
         getMap().setBuildingsEnabled(false);
         getMap().setMyLocationEnabled(true);
         getMap().getUiSettings().setMyLocationButtonEnabled(false);
-
-//        getMap().getUiSettings().setZoomControlsEnabled( true );
     }
 
     @Override
@@ -639,9 +639,31 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
         final CheckBox checkBoxImage = (CheckBox) popupView.findViewById(R.id.checkbox_image);
         final CheckBox checkBoxAudio = (CheckBox) popupView.findViewById(R.id.checkbox_audio);
-        Button button = (Button) popupView.findViewById(R.id.apply_filters);
-        mTempFilterOptions = new FilterOptions();
+        final CheckBox checkBoxPost = (CheckBox) popupView.findViewById(R.id.checkbox_post);
 
+        Button button = (Button) popupView.findViewById(R.id.apply_filters);
+
+
+        if (mFilterOptions.getCheckedTypes().get(DataUtils.NO_MEDIA)){
+            checkBoxPost.setChecked(true);
+        }
+        if (mFilterOptions.getCheckedTypes().get(DataUtils.IMAGE)){
+            checkBoxImage.setChecked(true);
+        }
+        if (mFilterOptions.getCheckedTypes().get(DataUtils.AUDIO)){
+            checkBoxAudio.setChecked(true);
+        }
+        if (!mFilterOptions.getCheckedTypes().get(DataUtils.NO_MEDIA)){
+            checkBoxPost.setChecked(false);
+        }
+        if (!mFilterOptions.getCheckedTypes().get(DataUtils.IMAGE)){
+            checkBoxImage.setChecked(false);
+        }
+        if (!mFilterOptions.getCheckedTypes().get(DataUtils.AUDIO)){
+            checkBoxAudio.setChecked(false);
+        }
+        
+        mTempFilterOptions = new FilterOptions();
         mDisplayToDate.setText(mFilterOptions.getToDate());
         mDisplayFromDate.setText(mFilterOptions.getFromDate());
 
@@ -649,9 +671,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             @Override
             public void onClick(View v) {
                 if (checkBoxImage.isChecked()){
-                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, true);
+                    mFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, true);
                 } else {
-                    mTempFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, false);
+                    mFilterOptions.getCheckedTypes().put(DataUtils.IMAGE, false);
                 }
             }
         });
@@ -660,12 +682,24 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
             @Override
             public void onClick(View v) {
                 if (checkBoxAudio.isChecked()){
-                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, true);
+                    mFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, true);
                 } else {
-                    mTempFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, false);
+                    mFilterOptions.getCheckedTypes().put(DataUtils.AUDIO, false);
                 }
             }
         });
+
+        checkBoxPost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkBoxPost.isChecked()){
+                    mFilterOptions.getCheckedTypes().put(DataUtils.NO_MEDIA, true);
+                } else {
+                    mFilterOptions.getCheckedTypes().put(DataUtils.NO_MEDIA, false);
+                }
+            }
+        });
+
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -673,12 +707,70 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback,Goo
 
                 mFilterOptions.setFromDate(mTempFilterOptions.getFromDate());
                 mFilterOptions.setToDate(mTempFilterOptions.getToDate());
-                mFilterOptions.setCheckedTypes(mTempFilterOptions.getCheckedTypes());
+//                mFilterOptions.setCheckedTypes(mTempFilterOptions.getCheckedTypes());
+                clearMap();
+                getAllEntries();
+                getSpecificEntries();
                 popupWindow.dismiss();
             }
         });
 
         dateTimeListeners();
+        onViewFilterSelected(popupView);
+    }
+
+    public void onViewFilterSelected(View view){
+        RadioButton user = (RadioButton) view.findViewById(R.id.radio_filter_user);
+        RadioButton everyone = (RadioButton) view.findViewById(R.id.radio_filter_everyone);
+        RadioButton friends = (RadioButton) view.findViewById(R.id.radio_filter_friends);
+        RadioButton groups = (RadioButton) view.findViewById(R.id.radio_filter_groups);
+
+        if (mFilterOptions.getFilterView() == FilterView.user){
+            user.setChecked(true);
+        } else if (mFilterOptions.getFilterView() == FilterView.everyone){
+            everyone.setChecked(true);
+        } else if (mFilterOptions.getFilterView() == FilterView.friends){
+            friends.setChecked(true);
+        } else if (mFilterOptions.getFilterView() == FilterView.groups){
+            groups.setChecked(true);
+        }
+
+        user.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    mFilterOptions.setFilterView(FilterView.user);
+                }
+            }
+        });
+
+        everyone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    mFilterOptions.setFilterView(FilterView.everyone);
+                }
+            }
+        });
+
+        friends.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    mFilterOptions.setFilterView(FilterView.friends);
+                }
+            }
+        });
+
+
+        groups.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    mFilterOptions.setFilterView(FilterView.groups);
+                }
+            }
+        });
     }
 
     public void dateTimeListeners(){

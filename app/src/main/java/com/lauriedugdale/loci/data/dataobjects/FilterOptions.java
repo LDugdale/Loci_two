@@ -5,6 +5,7 @@ import android.icu.util.Calendar;
 import android.util.SparseBooleanArray;
 
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.FilterView;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -19,8 +20,11 @@ public class FilterOptions {
     private String fromDate;
     private String toDate;
     private SparseBooleanArray checkedTypes;
+    private FilterView filterView;
 
     public FilterOptions() {
+
+        filterView = FilterView.everyone;
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK);
 
@@ -33,22 +37,12 @@ public class FilterOptions {
 
 
         checkedTypes = new SparseBooleanArray();
-        checkedTypes.append(DataUtils.NO_MEDIA, true);
-        checkedTypes.append(DataUtils.IMAGE, true);
-        checkedTypes.append(DataUtils.AUDIO, true);
+        checkedTypes.put(DataUtils.NO_MEDIA, true);
+        checkedTypes.put(DataUtils.IMAGE, true);
+        checkedTypes.put(DataUtils.AUDIO, true);
     }
 
     public long getNumericalFromDate(){
-
-//        SimpleDateFormat f = new SimpleDateFormat("dd-MM-yyyy", Locale.UK);
-//        Date d = new Date();
-//        try {
-//            d = f.parse(fromDate);
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//
-//       return d.getTime();
 
         Calendar c = Calendar.getInstance();
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd HHmmss", Locale.UK);
@@ -85,6 +79,14 @@ public class FilterOptions {
         }
 
         return dateInLong;
+    }
+
+    public FilterView getFilterView() {
+        return filterView;
+    }
+
+    public void setFilterView(FilterView filterView) {
+        this.filterView = filterView;
     }
 
     public String getFromDate() {

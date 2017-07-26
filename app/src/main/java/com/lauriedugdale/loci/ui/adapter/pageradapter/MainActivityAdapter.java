@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.adapter;
+package com.lauriedugdale.loci.ui.adapter.pageradapter;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

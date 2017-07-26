@@ -13,7 +13,7 @@ import android.widget.ImageView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.ui.adapter.search.SearchFilesSection;
+import com.lauriedugdale.loci.ui.adapter.search.SearchEntriesSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchGroupsSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;
 
@@ -30,7 +30,7 @@ public class SearchActivity extends AppCompatActivity {
     private DataUtils mDataUtils;
     private SearchUsersSection mUsersSection;
     private SearchGroupsSection mGroupsSection;
-    private SearchFilesSection mFilesSection;
+    private SearchEntriesSection mFilesSection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,18 +46,21 @@ public class SearchActivity extends AppCompatActivity {
         // Add user section
         mUsersSection = new SearchUsersSection(this);
         mSectionAdapter.addSection(mUsersSection);
+        mUsersSection.setVisible(false);
+        // Add files section
+        mFilesSection = new SearchEntriesSection(this);
+        mSectionAdapter.addSection(mFilesSection);
+        mFilesSection.setVisible(false);
         // Add group section
         mGroupsSection = new SearchGroupsSection(this);
         mSectionAdapter.addSection(mGroupsSection);
-        // Add files section
-        mFilesSection = new SearchFilesSection(this);
-        mSectionAdapter.addSection(mFilesSection);
+        mGroupsSection.setVisible(false);
+
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_search_friends);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mSectionAdapter);
-
         mClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,10 +84,19 @@ public class SearchActivity extends AppCompatActivity {
 
                 // if string is empty
                 if(s.toString().equals("")){
+
                     mUsersSection.clearData();
+                    mUsersSection.setVisible(false);
+
+                    mGroupsSection.clearData();
+                    mGroupsSection.setVisible(false);
+
+                    mFilesSection.clearData();
+                    mFilesSection.setVisible(false);
+
                     mSectionAdapter.notifyDataSetChanged();
                 } else {
-                    mDataUtils.search(mSectionAdapter, mUsersSection, mGroupsSection, s.toString());
+                    mDataUtils.search(mSectionAdapter, mUsersSection, mGroupsSection, mFilesSection, s.toString().toUpperCase());
                 }
             }
 

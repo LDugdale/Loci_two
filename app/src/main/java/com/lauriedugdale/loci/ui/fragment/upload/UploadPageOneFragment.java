@@ -1,8 +1,9 @@
-package com.lauriedugdale.loci.ui.activity;
+package com.lauriedugdale.loci.ui.fragment.upload;
 
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,36 +11,40 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
-import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.SQLOutput;
 
-public class UploadActivity extends AppCompatActivity {
+/**
+ * Created by mnt_x on 22/07/2017.
+ */
+
+public class UploadPageOneFragment extends Fragment {
 
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
     private int REQUEST_CAMERA = 0;
@@ -47,7 +52,7 @@ public class UploadActivity extends AppCompatActivity {
     private int SELECT_AUDIO = 2;
 
     // ui elements
-    private ImageView mDone;
+    private ImageView mNext;
     private EditText mTitle;
     private EditText mDescription;
     private TextView mViewableSelection;
@@ -73,33 +78,36 @@ public class UploadActivity extends AppCompatActivity {
 
     private Group mSelectedGroup;
 
+    private OnNextButtonClickedListener mCallback;
+
+    public static UploadPageOneFragment create() {
+        return new UploadPageOneFragment();
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload);
-
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_upload_page_one, container, false);
         mSelectedGroup = new Group("Everyone");
 
-        mDataUtils = new DataUtils(this);
+        mDataUtils = new DataUtils(getActivity());
         mPermissionType = DataUtils.ANYONE;
         mUploadType = DataUtils.NO_MEDIA;
 
         // find ui elements
-        mImageItem = (ImageView) findViewById(R.id.au_image_picker);
-        mAudioItem = (ImageView) findViewById(R.id.au_audio_picker);
-        mCameraItem = (ImageView) findViewById(R.id.au_camera_picker);
-        mDone = (ImageView) findViewById(R.id.au_done);
-        mTitle = (EditText) findViewById(R.id.au_entry_title);
-        mDescription = (EditText) findViewById(R.id.au_entry_description);
-        mViewableSelection = (TextView) findViewById(R.id.viewable_selection);
+        mImageItem = (ImageView) view.findViewById(R.id.au_image_picker);
+        mAudioItem = (ImageView) view.findViewById(R.id.au_audio_picker);
+        mCameraItem = (ImageView) view.findViewById(R.id.au_camera_picker);
+        mNext = (ImageView) view.findViewById(R.id.next_upload_page);
+        mTitle = (EditText) view.findViewById(R.id.au_entry_title);
+        mDescription = (EditText) view.findViewById(R.id.au_entry_description);
+        mViewableSelection = (TextView) view.findViewById(R.id.viewable_selection);
 
         onViewableSelectionClick();
         selectImage();
         selectAudio();
         selectCamera();
-        uploadEntry();
-
+        nextPage();
+        return view;
     }
 
     @Override
@@ -121,43 +129,19 @@ public class UploadActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Upload the details that have been entered and return to the main Fragment
-     * uses mDataUtils to writeNerFile method to add the data to firebase.
-     */
-    private void uploadEntry(){
-        mDone.setOnClickListener(new View.OnClickListener() {
+    private void nextPage(){
 
+        mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (mUploadData == null){
-                    mDataUtils.writeEntry(
-                            mPermissionType,
-                            mTitle.getText().toString(),
-                            mDescription.getText().toString(),
-                            mUploadType,
-                            mSelectedGroup.getGroupID()
-                    );
-                    finish();
-
-                } else {
-
-                    mDataUtils.writeEntryWithFile(
-                            mPermissionType,
-                            mTitle.getText().toString(),
-                            mDescription.getText().toString(),
-                            mUploadData,
-                            mUploadType,
-                            mSelectedGroup.getGroupID()
-                    );
-                    finish();
-                }
-
+                mCallback.onNextButtonClicked(mPermissionType,
+                        mTitle.getText().toString(),
+                        mDescription.getText().toString(),
+                        mUploadData,
+                        mUploadType,
+                        mSelectedGroup);
             }
         });
-
-
     }
 
     private void selectImage() {
@@ -273,23 +257,23 @@ public class UploadActivity extends AppCompatActivity {
         int currentAPIVersion = Build.VERSION.SDK_INT;
         if(currentAPIVersion>=android.os.Build.VERSION_CODES.M)
         {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(UploadActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    android.support.v7.app.AlertDialog.Builder alertBuilder = new android.support.v7.app.AlertDialog.Builder(this);
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    android.support.v7.app.AlertDialog.Builder alertBuilder = new android.support.v7.app.AlertDialog.Builder(getActivity());
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Permission necessary");
                     alertBuilder.setMessage("External storage permission is necessary");
                     alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
                         public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(UploadActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
                         }
                     });
                     android.support.v7.app.AlertDialog alert = alertBuilder.create();
                     alert.show();
 
                 } else {
-                    ActivityCompat.requestPermissions(UploadActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
                 }
                 return false;
             } else {
@@ -312,8 +296,7 @@ public class UploadActivity extends AppCompatActivity {
 
     public void showSelectFriendsPopup(View anchorView) {
 
-
-        final View popupView = getLayoutInflater().inflate(R.layout.popup_viewable, null);
+        final View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_viewable, null);
 
 //        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
         final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
@@ -334,20 +317,18 @@ public class UploadActivity extends AppCompatActivity {
         TextView done = (TextView) popupView.findViewById(R.id.done);
 
         mRecyclerView = (RecyclerView) popupView.findViewById(R.id.rv_select_group);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FetchGroupsAdapter(this);
+        mAdapter = new FetchGroupsAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchUserGroups(mAdapter);
+        mDataUtils.fetchUserAcessibleGroups(mAdapter);
 
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mSelectedGroup = mAdapter.getSelectedGroup();
                 String groupName = mSelectedGroup.getGroupName();
-
-                System.out.println("THIS IS THE GROUP NAME : " + groupName);
 
                 switch(groupName){
                     case "Everyone":
@@ -368,5 +349,28 @@ public class UploadActivity extends AppCompatActivity {
                 popupWindow.dismiss();
             }
         });
+    }
+
+    public interface OnNextButtonClickedListener {
+
+        void onNextButtonClicked(int permissionType, String title, String description, Uri uploadData, int dataType, Group group);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity activity = null;
+
+        if (context instanceof Activity){
+            activity=(Activity) context;
+        }
+
+        try {
+            mCallback = (OnNextButtonClickedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnNextButtonClickedListener");
+        }
     }
 }

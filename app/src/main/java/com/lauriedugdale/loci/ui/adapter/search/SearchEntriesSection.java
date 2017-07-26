@@ -1,24 +1,17 @@
-package com.lauriedugdale.loci.ui.adapter;
+package com.lauriedugdale.loci.ui.adapter.search;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
@@ -26,68 +19,58 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
+import io.github.luizgrp.sectionedrecyclerviewadapter.StatelessSection;
+
 /**
- * Created by mnt_x on 26/06/2017.
+ * Created by mnt_x on 21/07/2017.
  */
 
-public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
+public class SearchEntriesSection extends StatelessSection {
 
-    //TODO add delete, locate and edit buttons (only edit if within distance)
-
-    // Store the context and cursor for easy access
     private Context mContext;
-    private List<GeoEntry> mFiles;
+    private List<GeoEntry> mEntries;
     private DataUtils mDataUtils;
-    private AccessPermission mAccess;
 
-    /**
-     * Entry adapter constructor
-     *
-     * @param context
-     */
-    public FileAdapter(Context context, AccessPermission access) {
-        this.mContext = context;
-        mFiles = new ArrayList<GeoEntry>();
+    public SearchEntriesSection(Context context) {
+
+        // call constructor with layout resources for this Section header and items
+        super(new SectionParameters.Builder(R.layout.item_files)
+                .headerResourceId(R.layout.search_header_entry_section)
+                .build());
+
+        mContext = context;
+        mEntries = new ArrayList<GeoEntry>();
         mDataUtils = new DataUtils(context);
-        mAccess = access;
+
     }
 
-    public void addToFiles(GeoEntry entry){
-        mFiles.add(entry);
-        notifyDataSetChanged();
+    public void addToEntries(GeoEntry entry) {
+        mEntries.add(entry);
     }
 
     public void clearData(){
-        mFiles.clear();
-        notifyDataSetChanged();
-    }
-
-    public void removeEntry(int position){
-        mFiles.remove(position);
-        notifyItemRemoved(position);
+        mEntries.clear();
     }
 
     @Override
-    /**
-     * Inflates a layout depending on its position and returns a ViewHolder
-     */
-    public FileAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        View contactView = null;
-        // inflate second item layout & return that viewHolder
-        contactView = inflater.inflate(R.layout.item_files, parent, false);
-        // Return a new holder instance
-        return new FileAdapter.ViewHolder(contactView);
+    public int getContentItemsTotal() {
+        if (mEntries == null) {
+            return 0;
+        }
+        return mEntries.size();
     }
 
     @Override
-    /**
-     * Populates data into the layout through the viewholder
-     */
-    public void onBindViewHolder(final FileAdapter.ViewHolder viewHolder, int position) {
+    public RecyclerView.ViewHolder getItemViewHolder(View view) {
+        return new SearchEntriesViewholder(view);
+    }
 
-        final GeoEntry entry = mFiles.get(position);
+    @Override
+    public void onBindItemViewHolder(RecyclerView.ViewHolder entriesViewHolder, final int position) {
+        final SearchEntriesViewholder viewHolder = (SearchEntriesViewholder) entriesViewHolder;
 
+        final GeoEntry entry = mEntries.get(position);
         viewHolder.mTitle.setText(entry.getTitle());
         int entryImage;
         switch (entry.getFileType()){
@@ -115,31 +98,20 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent("single_entry");
+                intent.putExtra("entry", mEntries.get(viewHolder.getAdapterPosition()));
+                LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
 
-            Intent intent = new Intent(mContext, MainActivity.class);
-            intent.setAction("single_entry");
-            intent.putExtra("entry", mFiles.get(viewHolder.getAdapterPosition()));
-            mContext.startActivity(intent);
+                Intent aIntent = new Intent(mContext, MainActivity.class);
+                aIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                mContext.startActivity(aIntent);
             }
         });
+
+
     }
 
-    @Override
-    /**
-     * return the total count of items in the list
-     */
-    public int getItemCount() {
-        if (mFiles == null) {
-            return 0;
-        }
-        return mFiles.size();
-    }
-
-    /**
-     * CLASS
-     * Used to cache the views within the layout for quick access
-     */
-    class ViewHolder extends RecyclerView.ViewHolder{
+    class SearchEntriesViewholder extends RecyclerView.ViewHolder {
 
         // The UI elements
         public TextView mDistance;
@@ -149,9 +121,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         public ImageView mLocateFile;
         public TextView mAuthor;
 
-
-
-        public ViewHolder(View itemView) {
+        public SearchEntriesViewholder(View itemView) {
             super(itemView);
 
             // Find the UI elements

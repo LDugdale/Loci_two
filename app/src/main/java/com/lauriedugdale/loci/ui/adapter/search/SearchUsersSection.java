@@ -1,6 +1,7 @@
 package com.lauriedugdale.loci.ui.adapter.search;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +11,8 @@ import android.widget.TextView;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.ui.activity.MainActivity;
+import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,28 +63,25 @@ public class SearchUsersSection extends StatelessSection {
     }
 
     @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        SearchUsersViewholder userViewHolder = (SearchUsersViewholder) viewHolder;
+    public void onBindItemViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+        final SearchUsersViewholder userViewHolder = (SearchUsersViewholder) viewHolder;
 
         final User user = mUsers.get(position);
         final Button addButton = userViewHolder.mAddButton;
         // set username
         userViewHolder.mName.setText(user.getUsername());
-
         // set profile picture
         mDataUtils.getProfilePic(userViewHolder.mProfilePic, R.drawable.default_profile);
-        if(!user.getRequests().contains(mDataUtils.getCurrentUID())) {
-            userViewHolder.mAddButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mDataUtils.addFriendRequest(addButton, user.getUserID(), true);
-                }
-            });
-        } else if (user.getUserID() == mDataUtils.getCurrentUID()){
-            userViewHolder.mAddButton.setVisibility(View.INVISIBLE);
-        } else {
-            userViewHolder.mAddButton.setText("Added");
-        }
+
+
+        userViewHolder.mRootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, UserProfileActivity.class);
+                intent.putExtra(Intent.ACTION_OPEN_DOCUMENT, user);
+                mContext.startActivity(intent);
+            }
+        });
     }
 
     class SearchUsersViewholder extends RecyclerView.ViewHolder {
@@ -90,6 +90,7 @@ public class SearchUsersSection extends StatelessSection {
         public TextView mName;
         public ImageView mProfilePic;
         public Button mAddButton;
+        public View mRootView;
 
         public SearchUsersViewholder(View itemView) {
             super(itemView);
@@ -97,7 +98,10 @@ public class SearchUsersSection extends StatelessSection {
             // Find the UI elements
             mName = (TextView) itemView.findViewById(R.id.ise_name);
             mProfilePic = (ImageView) itemView.findViewById(R.id.ise_profile_pic);
-            mAddButton = (Button) itemView.findViewById(R.id.add_user_button);
+            mRootView = itemView;
         }
+
+
+
     }
 }

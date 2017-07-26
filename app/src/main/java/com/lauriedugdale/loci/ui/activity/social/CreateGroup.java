@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -44,6 +46,9 @@ public class CreateGroup extends AppCompatActivity {
     private ImageView mNextButton;
     private Uri mUploadData;
     private Bitmap mBitmap;
+    private CheckBox mPrivateGroup;
+
+    private Boolean isPrivate;
 
 
     @Override
@@ -52,12 +57,13 @@ public class CreateGroup extends AppCompatActivity {
         setContentView(R.layout.activity_create_group);
 
         mDataUtils = new DataUtils(this);
+        isPrivate = false;
 
         // connect UI elements
         mGroupImage = (ImageView) findViewById(R.id.add_group_profile_pic);
         mGroupName = (EditText) findViewById(R.id.enter_group_name);
         mNextButton = (ImageView) findViewById(R.id.next_group_page);
-
+        mPrivateGroup = (CheckBox) findViewById(R.id.cg_private_checkbox);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_select_for_group);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -69,6 +75,7 @@ public class CreateGroup extends AppCompatActivity {
 
         groupImageChoose();
         nextButton();
+        privateCheckbox();
     }
 
     public void groupImageChoose(){
@@ -90,28 +97,43 @@ public class CreateGroup extends AppCompatActivity {
         startActivityForResult(Intent.createChooser(intent, "Select File"),1);
     }
 
+    public void privateCheckbox(){
+        mPrivateGroup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            if (isChecked){
+                isPrivate = true;
+            } else {
+                isPrivate = false;
+            }
+            }
+        });
+    }
+
     public void nextButton(){
 
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if(mGroupName.getText().toString().length() < 1 ){
-                    return;
-                }
-
-                if (mUploadData == null){
-                    mDataUtils.createGroupWithoutPic(mAdapter.getCheckedItems(),
-                            mGroupName.getText().toString());
-                } else {
-                    mDataUtils.createGroupWithPic(mAdapter.getCheckedItems(),
-                            mGroupName.getText().toString(),
-                            mUploadData);
-                }
+            if(mGroupName.getText().toString().length() < 1 ){
+                return;
             }
 
+            if (mUploadData == null){
+                mDataUtils.createGroupWithoutPic(mAdapter.getCheckedItems(),
+                        mGroupName.getText().toString(),
+                        isPrivate);
+            } else {
+                mDataUtils.createGroupWithPic(mAdapter.getCheckedItems(),
+                        mGroupName.getText().toString(),
+                        mUploadData,
+                        isPrivate);
+            }
+            finish();
+            }
         });
-
     }
 
     @Override
@@ -135,17 +157,18 @@ public class CreateGroup extends AppCompatActivity {
                 } finally {
 
                 }
-
             }
         }
     }
 
     public boolean checkPermission() {
         int currentAPIVersion = Build.VERSION.SDK_INT;
-        if(currentAPIVersion>=android.os.Build.VERSION_CODES.M)
-        {
+        if(currentAPIVersion>=android.os.Build.VERSION_CODES.M) {
+
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
                 if (ActivityCompat.shouldShowRequestPermissionRationale(CreateGroup.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
                     android.support.v7.app.AlertDialog.Builder alertBuilder = new android.support.v7.app.AlertDialog.Builder(this);
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Permission necessary");
@@ -158,8 +181,8 @@ public class CreateGroup extends AppCompatActivity {
                     });
                     android.support.v7.app.AlertDialog alert = alertBuilder.create();
                     alert.show();
-
                 } else {
+
                     ActivityCompat.requestPermissions(CreateGroup.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
                 }
                 return false;
@@ -170,6 +193,4 @@ public class CreateGroup extends AppCompatActivity {
             return true;
         }
     }
-
-
 }

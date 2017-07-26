@@ -6,127 +6,26 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:background="@color/white"
-    tools:context="com.lauriedugdale.loci.ui.activity.UploadActivity">
-
-    <LinearLayout
-        android:id="@+id/au_media_picker_wrapper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="right"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_alignParentTop="true">
-
-        <TextView
-            android:id="@+id/viewable_selection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textColor="@color/colorPrimary"
-            android:text="@string/entry_viewable_anoyone"
-            android:textSize="@dimen/p" />
-
-        <ImageView
-            android:id="@+id/au_image_picker"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/ic_image"/>
-
-        <ImageView
-            android:id="@+id/au_audio_picker"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/ic_audiotrack"/>
-
-        <ImageView
-            android:id="@+id/au_camera_picker"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/ic_camera"/>
-
-    </LinearLayout>
-
+    tools:context="com.lauriedugdale.loci.ui.activity.upload.UploadActivity">
 
     <RelativeLayout
-        android:id="@+id/au_text_entry_wrapper"
-        android:layout_below="@id/au_media_picker_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginLeft="16dp">
+        android:layout_height="match_parent">
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/au_entry_title_wrapper"
+        <android.support.v4.view.ViewPager
+            android:id="@+id/au_view_pager"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textCapSentences"
-            android:layout_alignParentTop="true">
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/am_loci_tabs"
+            android:layout_alignParentStart="true"/>
 
-            <EditText
-                android:id="@+id/au_entry_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/entry_title"
-                android:inputType="textCapSentences"
-                android:textColor="@android:color/black"
-                android:textColorHint="@android:color/white"
-                android:textSize="@dimen/h2"/>
 
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/au_entry_description_wrapper"
-            android:inputType="textCapSentences"
-            android:layout_below="@id/au_entry_title_wrapper"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/au_entry_description"
-                android:hint="@string/entry_description"
-                android:scrollbarSize="@dimen/h4"
-                android:layout_width="match_parent"
-                android:height="300dp"
-                android:gravity="top"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/black"
-                android:textColorHint="@android:color/white"
-                android:background="@color/white"
-                android:inputType="textMultiLine"
-                android:textSize="@dimen/p"/>
-
-        </android.support.design.widget.TextInputLayout>
-
-<!--        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignBottom="@id/au_entry_description_wrapper"
-            android:background="@color/colorPrimary"/>-->
+        <!--<com.lauriedugdale.loci.ui.nav.LociNavView-->
+            <!--android:id="@+id/am_loci_tabs"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentBottom="true"/>-->
 
     </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_margin="16dp"
-        android:layout_below="@+id/au_text_entry_wrapper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-
-        <ImageView
-            android:id="@+id/au_done"
-            android:src="@drawable/ic_done"
-            android:layout_width="50dp"
-            android:layout_height="50dp" />
-
-    </RelativeLayout>
-
 
 </RelativeLayout>
