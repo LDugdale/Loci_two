@@ -54,6 +54,7 @@ import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.EventIconRendered;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
@@ -97,6 +98,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     private int curMapTypeIndex = 1; // chosen map type from MAP_TYPES
 
     private DataUtils mDataUtils; // handles data transactions with firebase
+    private EntryDatabase mEntryDatabase;
 
     private HashMap<String, EntryItem> visibleMarkers; // keeps track of visible markers
     private HashMap<String, GeoEntry> mEntryMap; // keeps track of the entries downloaded from the server
@@ -229,6 +231,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
 
         // instantiate inital variables
         mDataUtils = new DataUtils(getActivity());
+        mEntryDatabase = new EntryDatabase(getActivity());
         visibleMarkers = new HashMap<String, EntryItem>();
         mEntryMap = new HashMap<String, GeoEntry>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
@@ -403,16 +406,22 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     }
 
     private void getAllEntries() {
+        if (mCurrentLocation == null){
+            return;
+        }
+
         if (mCurrentlyDisplaying.equals("all")) {
 
             LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-            mDataUtils.readAllEntries(bounds.southwest.latitude,
-                    bounds.northeast.latitude,
+
+            mEntryDatabase.downloadAllEntries(bounds.getCenter(),
+                    bounds.southwest,
+                    bounds.northeast,
                     mFilterOptions,
                     mEntryMap,
                     new EntriesDownloadedListener() {
                         @Override
-                        public void onEntriesFetched() {
+                        public void onEntriesDownloaded() {
                             addAllEntriesToMap();
                         }
                     });
@@ -427,7 +436,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                     mEntryMap,
                     new EntriesDownloadedListener() {
                         @Override
-                        public void onEntriesFetched() {
+                        public void onEntriesDownloaded() {
 
                             addAllEntriesToMap();
                             getBounds();
@@ -440,7 +449,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                     mEntryMap,
                     new EntriesDownloadedListener() {
                         @Override
-                        public void onEntriesFetched() {
+                        public void onEntriesDownloaded() {
                             addAllEntriesToMap();
                             getBounds();
                         }

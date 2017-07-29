@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
@@ -38,6 +39,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private Context mContext;
     private List<GeoEntry> mFiles;
     private DataUtils mDataUtils;
+    private EntryStorage mEntryStorage;
     private AccessPermission mAccess;
 
     /**
@@ -49,6 +51,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         this.mContext = context;
         mFiles = new ArrayList<GeoEntry>();
         mDataUtils = new DataUtils(context);
+        mEntryStorage = new EntryStorage(context);
         mAccess = access;
     }
 
@@ -102,7 +105,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 break;
         }
         // set file picture
-        mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryImage, entry.getFileType());
+        mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());

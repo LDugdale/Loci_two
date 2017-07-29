@@ -33,6 +33,7 @@ import com.google.maps.android.SphericalUtil;
 import com.lauriedugdale.loci.HideOverlayView;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
 
     private int curMapTypeIndex = 1; // chosen map type from MAP_TYPES
 
-    private DataUtils mDataUtils; // handles data transactions with firebase
+    private EntryDatabase mEntryDatabase; // handles data transactions with firebase
 
     public static UploadPageTwoFragment create(){
         return new UploadPageTwoFragment();
@@ -81,7 +82,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_upload_page_two, container, false);
 
-        mDataUtils = new DataUtils(getActivity());
+        mEntryDatabase = new EntryDatabase(getActivity());
 
         return view;
     }
@@ -235,8 +236,8 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
             public void onClick(View v) {
 
                 if (uploadData == null){
-
-                    mDataUtils.writeEntry(
+                    System.out.println("ALKFJASKLFJALKFJSAKLFJ : " + permissionType);
+                    mEntryDatabase.uploadEntryWithoutFile(
                             permissionType,
                             title,
                             description,
@@ -247,7 +248,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
                     getActivity().finish();
                 } else {
 
-                    mDataUtils.writeEntryWithFile(
+                    mEntryDatabase.uploadEntryWithFile(
                             permissionType,
                             title,
                             description,

@@ -6,5 +6,5 @@ package com.lauriedugdale.loci;
 
 public interface EntriesDownloadedListener {
 
-    void onEntriesFetched();
+    void onEntriesDownloaded();
 }

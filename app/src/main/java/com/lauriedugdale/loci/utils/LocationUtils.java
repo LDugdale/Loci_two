@@ -12,6 +12,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
@@ -150,6 +151,12 @@ public final class LocationUtils {
                 }
             }
         });
+    }
+
+    public static boolean isWithinBounds(Location location, GeoEntry entry){
+
+        Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), entry.getLatitude(), entry.getLongitude());
+        return (distance <= MAXIMUM_DISTANCE);
     }
 
     public static LatLngBounds toBounds(double latitutude, double longitude, double radius) {

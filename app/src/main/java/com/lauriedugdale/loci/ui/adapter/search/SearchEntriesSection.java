@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.LocationUtils;
@@ -30,7 +31,8 @@ public class SearchEntriesSection extends StatelessSection {
 
     private Context mContext;
     private List<GeoEntry> mEntries;
-    private DataUtils mDataUtils;
+    private EntryStorage mEntryStorage;
+
 
     public SearchEntriesSection(Context context) {
 
@@ -41,7 +43,8 @@ public class SearchEntriesSection extends StatelessSection {
 
         mContext = context;
         mEntries = new ArrayList<GeoEntry>();
-        mDataUtils = new DataUtils(context);
+        mEntryStorage = new EntryStorage(context);
+
 
     }
 
@@ -85,7 +88,7 @@ public class SearchEntriesSection extends StatelessSection {
                 break;
         }
         // set file picture
-        mDataUtils.getFilePic(viewHolder.mFilePic, entry.getFilePath(), entryImage, entry.getFileType());
+        mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());

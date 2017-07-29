@@ -10,6 +10,8 @@ import android.os.Parcelable;
 
 public class GeoEntry implements Parcelable{
 
+
+
     private String creator;
     private String creatorName;
     private String title;
@@ -25,6 +27,7 @@ public class GeoEntry implements Parcelable{
     private String queryTitle;
     private String groupName;
     private String groupID;
+    private int fromWho;
     private int likes;
 
     public GeoEntry() {
@@ -46,11 +49,12 @@ public class GeoEntry implements Parcelable{
         queryTitle = in.readString();
         groupName = in.readString();
         groupID = in.readString();
+        fromWho = in.readInt();
         likes = in.readInt();
 
     }
 
-    public GeoEntry(String creator, String creatorName, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate) {
+    public GeoEntry(String creator, String creatorName, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate, int fromWho) {
         this.creator = creator;
         this.creatorName = creatorName;
         this.title = title;
@@ -62,9 +66,10 @@ public class GeoEntry implements Parcelable{
         this.fileType = fileType;
         this.uploadDate = uploadDate;
         this.queryTitle = title.toUpperCase();
+        this.fromWho = fromWho;
     }
 
-    public GeoEntry(String creator, String creatorName, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate, String groupName, String groupID) {
+    public GeoEntry(String creator, String creatorName, String title, String description, double latitude, double longitude, double altitude, String filePath, int fileType, long uploadDate, String groupName, String groupID, int fromWho) {
         this.creator = creator;
         this.creatorName = creatorName;
         this.title = title;
@@ -78,6 +83,7 @@ public class GeoEntry implements Parcelable{
         this.queryTitle = title.toUpperCase();
         this.groupName = groupName;
         this.groupID = groupID;
+        this.fromWho = fromWho;
     }
 
     public String getQueryTitle() {
@@ -180,6 +186,14 @@ public class GeoEntry implements Parcelable{
         this.likes = likes;
     }
 
+    public int getFromWho() {
+        return fromWho;
+    }
+
+    public void setFromWho(int fromWho) {
+        this.fromWho = fromWho;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -201,6 +215,7 @@ public class GeoEntry implements Parcelable{
         dest.writeString(queryTitle);
         dest.writeString(groupName);
         dest.writeString(groupID);
+        dest.writeInt(fromWho);
         dest.writeInt(likes);
 
 

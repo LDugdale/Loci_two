@@ -85,7 +85,7 @@ public class EntryFragment extends Fragment {
         // add comments to adapter
         mDataUtils.getComments(mAdapter, mGeoEntry.getEntryID(), new EntriesDownloadedListener() {
             @Override
-            public void onEntriesFetched() {
+            public void onEntriesDownloaded() {
 
             }
         });
