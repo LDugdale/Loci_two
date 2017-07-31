@@ -29,6 +29,7 @@ import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.ui.adapter.NearMeEntryAdapter;
 import com.lauriedugdale.loci.utils.FilterView;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
@@ -183,7 +184,7 @@ public class EntryDatabase {
                 group.getGroupID(),
                 DataUtils.FROM_SELF);
 
-        DatabaseReference entryRef = mDatabase.child("files");
+        DatabaseReference entryRef = mDatabase.child("entries");
         DatabaseReference pushEntryRef = entryRef.push();
         String entryID = pushEntryRef.getKey();
         file.setEntryID(entryID);
@@ -444,7 +445,7 @@ public class EntryDatabase {
         });
     }
 
-    public void downloadNearMe(final Location currentLocation, final ArrayList<GeoEntry> heroImages, final ArrayList<GeoEntry> friends, final ArrayList<GeoEntry> groups, final ArrayList<GeoEntry> anyone, final EntriesDownloadedListener listener){
+    public void downloadNearMe(final Location currentLocation, final ArrayList<GeoEntry> heroImages, final ArrayList<GeoEntry> friends, final NearMeEntryAdapter fAdapter, final ArrayList<GeoEntry> groups, final NearMeEntryAdapter gAdapter, final ArrayList<GeoEntry> anyone, final NearMeEntryAdapter aAdapter, final EntriesDownloadedListener listener){
 
         final String currentUID = getCurrentUID();
 
@@ -468,14 +469,16 @@ public class EntryDatabase {
                         }
 
                         if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
-                            System.out.println("THIS IS THE TITLE : " + entry.getTitle());
+                            System.out.println("GET IMAGE ENTRIES FRIEND OR GROUP " + entry.getTitle());
                             heroImages.add(entry);
+                            listener.onEntriesDownloaded();
+
                         }
 
                         if (entry.getFromWho() == DataUtils.FROM_FRIEND){
-                            friends.add(entry);
+                            fAdapter.addToEntries(entry);
                         } else if (entry.getFromWho() == DataUtils.FROM_GROUP){
-                            groups.add(entry);
+                            gAdapter.addToEntries(entry);
                         }
                     }
 
@@ -495,11 +498,13 @@ public class EntryDatabase {
                         }
 
                         if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
+                            System.out.println("GET IMAGE ENTRIES ANYONE " + entry.getTitle());
+
                             heroImages.add(entry);
+                            listener.onEntriesDownloaded();
+
                         }
-
-                        anyone.add(entry);
-
+                        aAdapter.addToEntries(entry);
                     }
 
                     @Override
@@ -521,7 +526,6 @@ public class EntryDatabase {
 
             @Override
             public void onGeoQueryReady() {
-                listener.onEntriesDownloaded();
                 Log.d(TAG, "All initial data has been loaded and events have been fired!");
             }
 

@@ -8,6 +8,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,16 +20,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.ui.adapter.FileAdapter;
+import com.lauriedugdale.loci.ui.adapter.NearMeEntryAdapter;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
@@ -62,6 +69,13 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     private ImageView mHeroThree;
     private LinearLayout mHeroTwoThreeWrapper;
 
+    private RecyclerView mFriendsRecyclerView;
+    private RecyclerView mGroupsRecyclerView;
+    private RecyclerView mAnyoneRecyclerView;
+    private NearMeEntryAdapter mFriendsAdapter;
+    private NearMeEntryAdapter mGroupsAdapter;
+    private NearMeEntryAdapter mAnyoneAdapter;
+
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -72,6 +86,7 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
                 mLongitude = intent.getDoubleExtra("longitude", 0L);
                 mLocation.setLatitude(mLatitude);
                 mLocation.setLongitude(mLongitude);
+                downloadEntries();
             }
 
         }
@@ -103,8 +118,12 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         if (mLocation == null) {
             return;
         }
-
-        mEntryDatabase.downloadNearMe(mLocation, mHeroImages, mFriends, mGroups, mAnyone, this);
+        emptyLists();
+        mEntryDatabase.downloadNearMe(mLocation, mHeroImages,
+                                            mFriends, mFriendsAdapter,
+                                            mGroups, mGroupsAdapter,
+                                            mAnyone, mAnyoneAdapter,
+                                            this);
     }
 
     @Override
@@ -113,21 +132,27 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         addHeroImages();
     }
 
+    private void emptyLists(){
+        mHeroImages.clear();
+        mFriends.clear();
+        mGroups.clear();
+        mAnyone.clear();
+    }
+
     public void addHeroImages(){
 
-        GeoEntry [] temp = new GeoEntry[3];
+        if (mHeroImages.size() >= 1 && mHeroImages.size() <= 2 ){
 
-        if (mHeroImages.size() == 1){
-
-            mEntryStorage.getFilePic(mHeroOne, temp[0]);
+            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(0));
             mHeroOne.setVisibility(View.VISIBLE);
         } else if(mHeroImages.size() >= 3){
 
             final int[] ints = new Random().ints(0, mHeroImages.size()).distinct().limit(2).toArray();
-            mEntryStorage.getFilePic(mHeroTwo, temp[ints[0]]);
-            mEntryStorage.getFilePic(mHeroThree, temp[ints[1]]);
+            mEntryStorage.getFilePic(mHeroTwo, mHeroImages.get(ints[0]));
+            mEntryStorage.getFilePic(mHeroThree, mHeroImages.get(ints[1]));
             mHeroTwoThreeWrapper.setVisibility(View.VISIBLE);
         } else if (mHeroImages.size() == 0){
+
             mHeroOne.setVisibility(View.GONE);
             mHeroTwoThreeWrapper.setVisibility(View.GONE);
         }
@@ -143,6 +168,20 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         mHeroTwo = (ImageView) rootView.findViewById(R.id.image_hero_two);
         mHeroThree = (ImageView) rootView.findViewById(R.id.image_hero_three);
         mHeroTwoThreeWrapper = (LinearLayout) rootView.findViewById(R.id.image_hero_two_three_wrapper);
+
+        mFriendsRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_friends_entries);
+        mGroupsRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_group_entries);
+        mAnyoneRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_anyone_entries);
+        mFriendsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
+        mGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
+        mAnyoneRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true)   );
+        mFriendsAdapter = new NearMeEntryAdapter(getActivity(), mFriends);
+        mFriendsRecyclerView.setAdapter(mFriendsAdapter);
+        mGroupsAdapter = new NearMeEntryAdapter(getActivity(), mGroups);
+        mGroupsRecyclerView.setAdapter(mGroupsAdapter);
+        mAnyoneAdapter = new NearMeEntryAdapter(getActivity(), mAnyone);
+        mAnyoneRecyclerView.setAdapter(mAnyoneAdapter);
+
 
         return rootView;
     }
@@ -166,7 +205,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     public void onResume() {
         super.onResume();
 
-        downloadEntries();
         IntentFilter filter = new IntentFilter("location_update");
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mDataReceiver, filter);
     }

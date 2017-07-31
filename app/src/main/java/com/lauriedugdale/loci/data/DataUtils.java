@@ -284,12 +284,13 @@ public class DataUtils {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("friend_requests");
 
-        ref.child(currentUID).addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.child(toUser).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot.hasChild(toUser) ){
-                    if ((boolean)dataSnapshot.child(toUser).getValue()){
+                System.out.println("JLKSDJFSLKDFJ" + dataSnapshot);
+                if (dataSnapshot.hasChild(currentUID) ){
+                    System.out.println(dataSnapshot.child(currentUID).getValue());
+                    if ((boolean)dataSnapshot.child(currentUID) .getValue()){
                         addButton.setText("Friends");
                     } else {
                         addButton.setText("Pending");

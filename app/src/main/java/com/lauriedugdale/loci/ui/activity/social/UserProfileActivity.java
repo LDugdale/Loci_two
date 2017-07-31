@@ -97,6 +97,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
     public void addFriend(){
 
-        mDataUtils.addFriendRequest(mAdd, mUser.getUserID(), true);
+        mDataUtils.addFriendRequest(mAdd, mUser.getUserID(), false);
     }
 }

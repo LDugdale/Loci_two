@@ -21,6 +21,7 @@ public class EntryItem implements ClusterItem {
         this.fileType = fileType;
         mPosition = new LatLng(lat, lng);
         this.geoEntry = geoEntry;
+
     }
 
     public GeoEntry getGeoEntry() {
