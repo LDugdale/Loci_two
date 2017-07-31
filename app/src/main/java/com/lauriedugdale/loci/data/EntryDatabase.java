@@ -29,13 +29,12 @@ import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.ui.adapter.NearMeEntryAdapter;
+import com.lauriedugdale.loci.ui.adapter.nearme.NearMeEntryAdapter;
 import com.lauriedugdale.loci.utils.FilterView;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * This class handles the uploading and downloading of entries
@@ -445,7 +444,7 @@ public class EntryDatabase {
         });
     }
 
-    public void downloadNearMe(final Location currentLocation, final ArrayList<GeoEntry> heroImages, final ArrayList<GeoEntry> friends, final NearMeEntryAdapter fAdapter, final ArrayList<GeoEntry> groups, final NearMeEntryAdapter gAdapter, final ArrayList<GeoEntry> anyone, final NearMeEntryAdapter aAdapter, final EntriesDownloadedListener listener){
+    public void downloadNearMe(final Location currentLocation, final ArrayList<GeoEntry> heroImages, final NearMeEntryAdapter fAdapter, final NearMeEntryAdapter gAdapter, final NearMeEntryAdapter aAdapter, final EntriesDownloadedListener listener){
 
         final String currentUID = getCurrentUID();
 
@@ -469,7 +468,6 @@ public class EntryDatabase {
                         }
 
                         if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
-                            System.out.println("GET IMAGE ENTRIES FRIEND OR GROUP " + entry.getTitle());
                             heroImages.add(entry);
                             listener.onEntriesDownloaded();
 
@@ -498,7 +496,6 @@ public class EntryDatabase {
                         }
 
                         if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
-                            System.out.println("GET IMAGE ENTRIES ANYONE " + entry.getTitle());
 
                             heroImages.add(entry);
                             listener.onEntriesDownloaded();

@@ -87,8 +87,8 @@ public class User implements Parcelable {
     }
 
     /*
-         * Parcelable code
-         */
+     * Parcelable code
+     */
     private User(Parcel in) {
         userID = in.readString();
         username = in.readString();

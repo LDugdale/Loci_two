@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.adapter;
+package com.lauriedugdale.loci.ui.adapter.nearme;
 
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +49,14 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
     public void addToEntries(GeoEntry entry){
         mEntries.add(entry);
         notifyDataSetChanged();
+    }
+
+    public boolean hasEntries(){
+        if(mEntries.size() > 0){
+            return true;
+        }
+
+        return false;
     }
 
     public void clearData(){
