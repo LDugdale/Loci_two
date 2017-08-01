@@ -14,6 +14,7 @@ import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
+import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
@@ -91,20 +92,9 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
         final GeoEntry entry = mEntries.get(position);
 
         viewHolder.mTitle.setText(entry.getTitle());
-        int entryImage;
-        switch (entry.getFileType()){
-            case DataUtils.IMAGE:
-                entryImage = R.drawable.ic_image;
-                break;
-            case DataUtils.AUDIO:
-                entryImage = R.drawable.ic_audiotrack_light;
-                break;
-            default:
-                entryImage = R.drawable.ic_text;
-                break;
-        }
-        // set file picture
-        mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
+
+        // set entry picture
+        EntryUtils.getFilePic(viewHolder.mFilePic, entry);
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
@@ -118,10 +108,10 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(mContext, MainActivity.class);
-                intent.setAction("single_entry");
-                intent.putExtra("entry", mEntries.get(viewHolder.getAdapterPosition()));
-                mContext.startActivity(intent);
+            Intent intent = new Intent(mContext, MainActivity.class);
+            intent.setAction("single_entry");
+            intent.putExtra("entry", mEntries.get(viewHolder.getAdapterPosition()));
+            mContext.startActivity(intent);
             }
         });
     }

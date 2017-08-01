@@ -20,8 +20,6 @@ public class SocialUtils {
     public static final int EVERYONE_POSTS = 100;
 
 
-
-
     public static Uri postDataToFirebase(Context context, Bitmap bitmap) {
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

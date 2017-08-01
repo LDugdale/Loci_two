@@ -43,7 +43,7 @@ public class TransportRest {
         void onBusstopsDownloaded();
     }
 
-    public void getBusStops(final double currentLatitude, final double currentLongitude, final double radius, final BusStopsAdapter adapter, BusStopsDownloadedListener listener) {
+    public void getBusStops(final double currentLatitude, final double currentLongitude, final double radius, final BusStopsAdapter adapter, final BusStopsDownloadedListener listener) {
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -73,15 +73,20 @@ public class TransportRest {
 
                             JSONObject c = stops.getJSONObject(i);
 
-                            String atcocode = c.getString("atcocode");
-                            String name = c.getString("name");
-                            System.out.println(name);
-                            String locality = c.getString("locality");
-                            double latitude = c.getDouble("longitude");
-                            double longitude = c.getDouble("latitude");
-                            float distance = LocationUtils.getDistanceInMeters(latitude, longitude, currentLatitude, currentLongitude);
+                            final String atcocode = c.getString("atcocode");
+                            final String name = c.getString("name");
+                            final String locality = c.getString("locality");
+                            final double latitude = c.getDouble("latitude");
+                            final double longitude = c.getDouble("longitude");
+                            final float distance = LocationUtils.getDistanceInMeters(latitude, longitude, currentLatitude, currentLongitude);
 
-                            adapter.addToStops(new BusStop(atcocode, name, locality, latitude, longitude, distance));
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.addToStops(new BusStop(atcocode, name, locality, latitude, longitude, distance));
+                                    listener.onBusstopsDownloaded();
+                                }
+                            });
 
                         }
                     } catch ( JSONException e) {
@@ -100,7 +105,6 @@ public class TransportRest {
     public String makeServiceCall(String reqUrl) {
         String response = null;
         try {
-            System.out.println(reqUrl);
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -116,7 +120,7 @@ public class TransportRest {
         } catch (Exception e) {
             Log.e(TAG, "Exception: " + e.getMessage());
         }
-        System.out.println(response);
+
         return response;
     }
 

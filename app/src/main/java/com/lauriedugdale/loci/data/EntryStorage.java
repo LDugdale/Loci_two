@@ -41,9 +41,24 @@ public class EntryStorage {
                     .load(storageRef)
                     .into(image);
         } else {
-            image.setImageResource(R.drawable.default_profile);
+            image.setImageResource(chooseImage(entry));
         }
+    }
 
+    private int chooseImage(GeoEntry entry){
+        int entryImage;
+        switch (entry.getFileType()){
+            case DataUtils.IMAGE:
+                entryImage = R.mipmap.image_ar_marker;
+                break;
+            case DataUtils.AUDIO:
+                entryImage = R.mipmap.audio_ar_marker;
+                break;
+            default:
+                entryImage = R.mipmap.blank_ar_marker;
+                break;
+        }
+        return entryImage;
     }
 
 }
