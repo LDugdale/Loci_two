@@ -19,6 +19,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -48,6 +49,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
     private LinearLayout mUploadImage;
     private ImageView mCurrentImage;
+    private Button mApplySettings;
 
     private LinearLayout mSelectAdmins;
 
@@ -71,6 +73,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
         mEveryone = (RadioButton) findViewById(R.id.radio_everyone);
         mAdmin = (RadioButton) findViewById(R.id.radio_admin);
         mSelectAdmins = (LinearLayout) findViewById(R.id.select_admins_wrapper);
+        mApplySettings = (Button) findViewById(R.id.apply_settings_group);
 
         if(mGroup.getEveryoneAdmin().equals("admin")){
             mAdmin.setChecked(true);
@@ -83,6 +86,16 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
         chooseProfilePicture();
         onSelectAdminClicked();
+        onApplySettingsClicked();
+    }
+
+    public void onApplySettingsClicked(){
+        mApplySettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     public void onSelectAdminClicked(){

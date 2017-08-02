@@ -83,6 +83,7 @@
             
             <EditText
                 android:id="@+id/profile_bio"
+                android:maxLength="300"
                 android:background="@color/white"
                 android:inputType="textMultiLine"
                 android:lines="8"

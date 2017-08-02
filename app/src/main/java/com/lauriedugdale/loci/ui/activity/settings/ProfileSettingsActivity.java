@@ -80,6 +80,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mUserDatabase.uploadProfileBio(mBio.getText().toString());
+                finish();
             }
         });
     }

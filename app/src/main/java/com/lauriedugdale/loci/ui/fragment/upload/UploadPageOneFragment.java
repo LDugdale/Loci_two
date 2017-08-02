@@ -144,6 +144,11 @@ public class UploadPageOneFragment extends Fragment {
         mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // if user has not entered a title return
+                if (mTitle.toString().equals("")){
+                    return;
+                }
+
                 mCallback.onNextButtonClicked(mPermissionType,
                         mTitle.getText().toString(),
                         mDescription.getText().toString(),
@@ -264,7 +269,6 @@ public class UploadPageOneFragment extends Fragment {
         Bitmap bitmap = null;
         try {
             bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-            // Log.d(TAG, String.valueOf(bitmap));
 
             mImageUpload.setImageBitmap(bitmap);
 

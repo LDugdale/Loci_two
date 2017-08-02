@@ -232,7 +232,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
             public void onClick(View v) {
 
                 if (uploadData == null){
-                    System.out.println("ALKFJASKLFJALKFJSAKLFJ : " + permissionType);
+
                     mEntryDatabase.uploadEntryWithoutFile(
                             permissionType,
                             title,

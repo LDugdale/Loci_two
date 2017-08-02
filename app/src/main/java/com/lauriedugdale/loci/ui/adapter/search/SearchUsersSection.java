@@ -72,9 +72,7 @@ public class SearchUsersSection extends StatelessSection {
         // set username
         userViewHolder.mName.setText(user.getUsername());
         // set profile picture
-        mUserDatabase.downloadProfilePic(userViewHolder.mProfilePic, R.drawable.default_profile);
-
-
+        mUserDatabase.downloadNonLoggedInProfilePic(user.getUserID(), userViewHolder.mProfilePic, R.drawable.default_profile);
         userViewHolder.mRootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

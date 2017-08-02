@@ -109,6 +109,7 @@ public class UserDatabase extends LociData {
                     addButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            getDatabase().child("friend_requests").child(currentUID).child(toUser).setValue(status);
                             getDatabase().child("friend_requests").child(toUser).child(currentUID).setValue(status).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
@@ -144,6 +145,7 @@ public class UserDatabase extends LociData {
                 getDatabase().child("friends").child(selectedUser.getUserID() + "/" + currentUID).setValue(new UserFriend(currentUser, true));
 
                 getDatabase().child("friend_requests").child(currentUID).child(selectedUser.getUserID()).setValue(true);
+                getDatabase().child("friend_requests").child(selectedUser.getUserID()).child(currentUID).setValue(true);
             }
 
             @Override
@@ -167,11 +169,9 @@ public class UserDatabase extends LociData {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri url = taskSnapshot.getDownloadUrl();
-
                 FirebaseUser userAuth = FirebaseAuth.getInstance().getCurrentUser();
                 UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setPhotoUri(url).build();
                 userAuth.updateProfile(profileUpdates);
-
                 getDatabase().child("users/" + currentID).child("profilePath").setValue(url.toString());
             }
         });

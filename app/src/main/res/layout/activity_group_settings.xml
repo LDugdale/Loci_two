@@ -9,6 +9,7 @@
 
 
     <Button
+        android:id="@+id/apply_settings_group"
         android:text="@string/add_filters"
         android:textColor="@color/white"
         android:layout_width="0dp"

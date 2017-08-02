@@ -19,8 +19,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.activity.MainActivity"
-            android:theme="@style/FullScreenTheme"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreenTheme" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -37,22 +37,22 @@
             android:name=".services.LociLocationService"
             android:stopWithTask="true" />
 
-        <activity android:name=".ui.activity.auth.LoginActivity"
+        <activity
+            android:name=".ui.activity.auth.LoginActivity"
             android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
         <activity
             android:name=".ui.activity.auth.SignupActivity"
-            android:theme="@style/FullScreenTheme"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreenTheme" />
         <activity
             android:name=".ui.activity.auth.ResetPasswordActivity"
-            android:theme="@style/FullScreenTheme"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreenTheme" />
         <activity
             android:name=".ui.activity.upload.UploadActivity"
             android:parentActivityName=".ui.activity.MainActivity"
@@ -60,8 +60,8 @@
         <activity
             android:name=".ui.activity.entry.ImageEntryActivity"
             android:parentActivityName=".ui.activity.MainActivity"
-            android:theme="@style/FullScreenTheme"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreenTheme" />
         <activity
             android:name=".ui.activity.FullScreenActivity"
             android:theme="@style/FullScreenTheme" />
@@ -71,36 +71,40 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.activity.entry.AudioEntryActivity"
+        <activity
+            android:name=".ui.activity.entry.AudioEntryActivity"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
         <!-- <activity -->
         <!-- android:name=".NavDraw" -->
         <!-- android:label="@string/title_activity_nav_draw" -->
         <!-- android:theme="@style/AppTheme" /> -->
-        <activity android:name=".ui.activity.NotificationActivity"
+        <activity
+            android:name=".ui.activity.NotificationActivity"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.AugmentedActivity"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".ui.activity.MainActivity">
+            android:parentActivityName=".ui.activity.MainActivity"
+            android:screenOrientation="portrait">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.lauriedugdale.loci.ui.activity.MainActivity" />
         </activity>
-        <activity android:name=".ui.activity.social.CreateGroup"
+        <activity
+            android:name=".ui.activity.social.CreateGroup"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".ui.activity.entry.NoMediaActivity"
+        <activity
+            android:name=".ui.activity.entry.NoMediaActivity"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.social.UserProfileActivity"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".ui.activity.MainActivity" />
+            android:parentActivityName=".ui.activity.MainActivity"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".services.GeoFencingService"
@@ -110,25 +114,38 @@
             android:name=".services.GeofenceIntentService"
             android:exported="false" />
 
-        <activity android:name=".ui.activity.social.GroupProfileActivity"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".ui.activity.MainActivity" />
-
-        <activity android:name=".ui.activity.SearchActivity"
+        <activity
+            android:name=".ui.activity.social.GroupProfileActivity"
+            android:parentActivityName=".ui.activity.MainActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.SearchActivity"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.settings.GroupSettingsActivity"
+            android:label="@string/title_activity_group_settings"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait"
-            android:label="@string/title_activity_group_settings"
             android:theme="@style/AppTheme" />
-        <activity android:name=".ui.activity.settings.ProfileSettingsActivity"
+        <activity
+            android:name=".ui.activity.settings.ProfileSettingsActivity"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".ui.activity.UserFilesActivity"
+        <activity
+            android:name=".ui.activity.UserFilesActivity"
             android:parentActivityName=".ui.activity.MainActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
+
+        <activity android:name=".ui.activity.SplashScreenActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

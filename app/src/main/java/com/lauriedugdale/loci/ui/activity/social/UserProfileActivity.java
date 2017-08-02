@@ -28,6 +28,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private ImageView mProfileImage;
     private TextView mUsername;
+    private TextView mBio;
     private ImageView mLocateAll;
     private RecyclerView mRecyclerView;
     private FileAdapter mAdapter;
@@ -47,11 +48,13 @@ public class UserProfileActivity extends AppCompatActivity {
 
         mProfileImage = (ImageView) findViewById(R.id.profile_picture);
         mUsername = (TextView) findViewById(R.id.profile_username);
+        mBio = (TextView) findViewById(R.id.profile_bio);
         mLocateAll = (ImageView) findViewById(R.id.locate_all);
         mAdd = (TextView) findViewById(R.id.add_button);
 
         mUserDatabase.downloadNonLoggedInProfilePic(mUser.getUserID(), mProfileImage, R.drawable.default_profile);
         mUsername.setText(mUser.getUsername());
+        mBio.setText(mUser.getBio());
         locateAll();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_user_files);

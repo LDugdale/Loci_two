@@ -74,7 +74,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         final Comment comment = mComments.get(position);
 
         // set author profile
-        mUserDatabase.downloadProfilePic(viewHolder.mAuthorProfile, R.drawable.default_profile);
+        mUserDatabase.downloadNonLoggedInProfilePic(comment.getCommentAuthorID(), viewHolder.mAuthorProfile, R.drawable.default_profile);
         // set author name
         viewHolder.mAuthor.setText(comment.getCommentAuthorName());
         // set date
