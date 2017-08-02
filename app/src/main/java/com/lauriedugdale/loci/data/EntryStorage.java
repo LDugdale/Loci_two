@@ -34,7 +34,6 @@ public class EntryStorage {
 
         if(entry.getFileType() == DataUtils.IMAGE){
 
-
             StorageReference storageRef = mStorage.getReferenceFromUrl(filePath.toString());
             Glide.with(mContext)
                     .using(new FirebaseImageLoader())

@@ -11,6 +11,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +31,7 @@ import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.TransportRest;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.adapter.nearme.BusStopsAdapter;
+import com.lauriedugdale.loci.ui.adapter.nearme.HeroNearMeAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.NearMeEntryAdapter;
 
 import java.util.ArrayList;
@@ -48,33 +50,26 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     private EntryStorage mEntryStorage;
     private TransportRest transportRest;
 
-    private ArrayList<GeoEntry> mFriends;
-    private ArrayList<GeoEntry> mGroups;
-    private ArrayList<GeoEntry> mAnyone;
-    private ArrayList<GeoEntry> mHeroImages;
-
     private Location mLocation;
     private double mLatitude;
     private double mLongitude;
 
-    private ImageView mHeroOne;
-    private ImageView mHeroTwo;
-    private ImageView mHeroThree;
-    private LinearLayout mHeroTwoThreeWrapper;
     private ConstraintLayout mFriendsWrapper;
     private ConstraintLayout mGroupsWrapper;
     private ConstraintLayout mAnyoneWrapper;
     private ConstraintLayout mBussesWrapper;
 
-
     private RecyclerView mFriendsRecyclerView;
     private RecyclerView mGroupsRecyclerView;
     private RecyclerView mAnyoneRecyclerView;
     private RecyclerView mBusRecyclerView;
+    private RecyclerView mHeroRecyclerView;
+
     private NearMeEntryAdapter mFriendsAdapter;
     private NearMeEntryAdapter mGroupsAdapter;
     private NearMeEntryAdapter mAnyoneAdapter;
     private BusStopsAdapter mBusStopAdapter;
+    private HeroNearMeAdapter mHeroAdapter;
 
 
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
@@ -108,16 +103,11 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         transportRest = new TransportRest();
 
         mLocation = new Location("current_location");
-
-        mFriends = new ArrayList<>();
-        mGroups = new ArrayList<>();
-        mAnyone = new ArrayList<>();
-        mHeroImages = new ArrayList<>();
     }
 
     public void downloadBusStops(){
         mBusStopAdapter.clearData();
-        transportRest.getBusStops(mLatitude, mLongitude, 5000, mBusStopAdapter, this);
+        transportRest.getBusStops(getActivity(), mLatitude, mLongitude, 5000, mBusStopAdapter, this);
     }
 
     public void downloadEntries(){
@@ -125,7 +115,7 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
             return;
         }
         emptyLists();
-        mEntryDatabase.downloadNearMe(mLocation, mHeroImages,
+        mEntryDatabase.downloadNearMe(mLocation, mHeroAdapter,
                                             mFriendsAdapter,
                                             mGroupsAdapter,
                                             mAnyoneAdapter,
@@ -167,7 +157,7 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     }
 
     private void emptyLists(){
-        mHeroImages.clear();
+        mHeroAdapter.clearData();
         mFriendsAdapter.clearData();
         mGroupsAdapter.clearData();
         mAnyoneAdapter.clearData();
@@ -175,22 +165,22 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
 
     public void addHeroImages(){
 
-        if (mHeroImages.size() >= 1 && mHeroImages.size() <= 2 ){
-
-            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(0));
-            mHeroOne.setVisibility(View.VISIBLE);
-        } else if(mHeroImages.size() >= 3){
-
-            final int[] ints = new Random().ints(0, mHeroImages.size()).distinct().limit(3).toArray();
-            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(ints[0]));
-            mEntryStorage.getFilePic(mHeroTwo, mHeroImages.get(ints[1]));
-            mEntryStorage.getFilePic(mHeroThree, mHeroImages.get(ints[2]));
-            mHeroTwoThreeWrapper.setVisibility(View.VISIBLE);
-        } else if (mHeroImages.size() == 0){
-
-            mHeroOne.setVisibility(View.GONE);
-            mHeroTwoThreeWrapper.setVisibility(View.GONE);
-        }
+//        if (mHeroImages.size() >= 1 && mHeroImages.size() <= 2 ){
+//
+//            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(0));
+//            mHeroOne.setVisibility(View.VISIBLE);
+//        } else if(mHeroImages.size() >= 3){
+//
+//            final int[] ints = new Random().ints(0, mHeroImages.size()).distinct().limit(3).toArray();
+//            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(ints[0]));
+//            mEntryStorage.getFilePic(mHeroTwo, mHeroImages.get(ints[1]));
+//            mEntryStorage.getFilePic(mHeroThree, mHeroImages.get(ints[2]));
+//            mHeroTwoThreeWrapper.setVisibility(View.VISIBLE);
+//        } else if (mHeroImages.size() == 0){
+//
+//            mHeroOne.setVisibility(View.GONE);
+//            mHeroTwoThreeWrapper.setVisibility(View.GONE);
+//        }
     }
 
 
@@ -199,10 +189,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_near_me,container, false);
 
-        mHeroOne = (ImageView) rootView.findViewById(R.id.image_hero_one);
-        mHeroTwo = (ImageView) rootView.findViewById(R.id.image_hero_two);
-        mHeroThree = (ImageView) rootView.findViewById(R.id.image_hero_three);
-        mHeroTwoThreeWrapper = (LinearLayout) rootView.findViewById(R.id.image_hero_two_three_wrapper);
         mFriendsWrapper = (ConstraintLayout) rootView.findViewById(R.id.friends_post_wrapper);
         mGroupsWrapper = (ConstraintLayout) rootView.findViewById(R.id.groups_post_wrapper);
         mAnyoneWrapper = (ConstraintLayout) rootView.findViewById(R.id.anyone_post_wrapper);
@@ -212,20 +198,24 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         mGroupsRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_group_entries);
         mAnyoneRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_anyone_entries);
         mBusRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_bus_stops);
+        mHeroRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_hero_images);
 
-        mFriendsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
-        mGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
-        mAnyoneRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
-        mBusRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
+        mFriendsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        mGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        mAnyoneRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        mBusRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        mHeroRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
 
-        mFriendsAdapter = new NearMeEntryAdapter(getActivity(), mFriends);
+        mFriendsAdapter = new NearMeEntryAdapter(getActivity());
         mFriendsRecyclerView.setAdapter(mFriendsAdapter);
-        mGroupsAdapter = new NearMeEntryAdapter(getActivity(), mGroups);
+        mGroupsAdapter = new NearMeEntryAdapter(getActivity());
         mGroupsRecyclerView.setAdapter(mGroupsAdapter);
-        mAnyoneAdapter = new NearMeEntryAdapter(getActivity(), mAnyone);
+        mAnyoneAdapter = new NearMeEntryAdapter(getActivity());
         mAnyoneRecyclerView.setAdapter(mAnyoneAdapter);
         mBusStopAdapter = new BusStopsAdapter(getActivity());
         mBusRecyclerView.setAdapter(mBusStopAdapter);
+        mHeroAdapter = new HeroNearMeAdapter(getActivity());
+        mHeroRecyclerView.setAdapter(mHeroAdapter);
 
         return rootView;
     }

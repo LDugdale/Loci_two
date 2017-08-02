@@ -33,7 +33,8 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
     private FrameLayout mEndImage;
     private ImageView mBottomImage;
     private ImageView mCenterBackgroundImage;
-//    private ImageView mCenterImageAdd;
+
+    private FrameLayout mContainer;
 
     // indicator of current page
     private View mIndicator;
@@ -62,6 +63,14 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
         init();
     }
 
+    public void setInvisible(){
+        mContainer.setVisibility(INVISIBLE);
+    }
+
+    public void setVisible(){
+        mContainer.setVisibility(VISIBLE);
+    }
+
     /**
      * Initialise the ImageViews
      */
@@ -76,6 +85,8 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
         mBottomImage = (ImageView) findViewById(R.id.vst_bottom_image);
 
         mIndicator = findViewById(R.id.vst_indicator_image);
+
+        mContainer = (FrameLayout) findViewById(R.id.nav_menu);
 
         mCenterColor = ContextCompat.getColor(getContext(), R.color.colorPrimary);
         mSideColor = ContextCompat.getColor(getContext(), R.color.colorPrimary);
@@ -226,7 +237,5 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
         int color = (int) mArgbEvaluator.evaluate(fractionFromCenter, mCenterColor, mSideColor);
 
         mCenterImage.setColorFilter(color);
-//        mStartImage.setColorFilter(color);
-//        mEndImage.setColorFilter(color);
     }
 }

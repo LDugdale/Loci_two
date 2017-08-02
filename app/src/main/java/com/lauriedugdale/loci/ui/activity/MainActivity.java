@@ -26,10 +26,8 @@ import com.lauriedugdale.loci.services.GeoFencingService;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
 import com.lauriedugdale.loci.ui.activity.settings.ProfileSettingsActivity;
 import com.lauriedugdale.loci.ui.adapter.pageradapter.MainActivityAdapter;
-import com.lauriedugdale.loci.ui.fragment.MainFragment;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
 import com.lauriedugdale.loci.utils.LocationUtils;
-
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -38,9 +36,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,10 +52,15 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private MainActivityAdapter mAdapter;
 
+    private LociNavView mTabsView;
+
     private FirebaseAuth mAuth;
 
     private DataUtils mDataUtils;
 
+    public LociNavView getmTabsView() {
+        return mTabsView;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
         mSearch = (TextView) findViewById(R.id.main_search);
 
         // find navigation tabs and start listeners
-        LociNavView tabsView = (LociNavView) findViewById(R.id.am_loci_tabs);
-        tabsView.setUpWithViewPager(mViewPager, this);
+        mTabsView = (LociNavView) findViewById(R.id.am_loci_tabs);
+        mTabsView.setUpWithViewPager(mViewPager, this);
 
         // set initial fragment
         mViewPager.setCurrentItem(1);

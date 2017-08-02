@@ -19,7 +19,9 @@ import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
+import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
+import com.lauriedugdale.loci.ui.nav.LociNavView;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,8 +53,9 @@ public class PopupUtils {
     }
 
 
-    public static void showClusterInfoPopup(Context context, View anchorView, ArrayList<?> clusterList, boolean mDisplayingCustomEntries) {
+    public static void showClusterInfoPopup(Context context, View anchorView, ArrayList<?> clusterList, boolean mDisplayingCustomEntries, final LociNavView nav) {
 
+        nav.setInvisible();
         final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
                 new int[] { android.R.attr.actionBarSize });
 
@@ -70,7 +73,7 @@ public class PopupUtils {
 
         View popupView = inflater.inflate(R.layout.popup_map_cluster_info, null);
         // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
-        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
         // If you need the PopupWindow to dismiss when when touched outside
@@ -80,6 +83,13 @@ public class PopupUtils {
         anchorView.getLocationOnScreen(location);
 
         popupWindow.showAtLocation(anchorView, Gravity.TOP, 0, topMargin);
+
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                nav.setVisible();
+            }
+        });
 
         RecyclerView recyclerView = (RecyclerView) popupView.findViewById(R.id.rv_cluster);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(context);

@@ -18,6 +18,7 @@ import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
+import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
@@ -100,6 +101,8 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
         viewHolder.mAuthor.setText(entry.getCreatorName());
         // check distance, if its too far away hide the show entry button
         LocationUtils.checkDistance(mContext, viewHolder.mShowEntry, entry.getLatitude(), entry.getLongitude());
+        // set image
+        EntryUtils.getFilePic(viewHolder.mEntryType, entry);
         // add action listner
         viewHolder.mShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -268,7 +268,7 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
             for (CameraPoint cp : entries){
                 entryList.add(cp.getEntry());
             }
-            PopupUtils.showClusterInfoPopup(this, this.surfaceView, entryList, false);
+            PopupUtils.showClusterInfoPopup(this, this.surfaceView, entryList, false, null);
         }
     }
 

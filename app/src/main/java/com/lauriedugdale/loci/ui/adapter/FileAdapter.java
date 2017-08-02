@@ -20,6 +20,7 @@ import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
+import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
@@ -92,20 +93,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         final GeoEntry entry = mFiles.get(position);
 
         viewHolder.mTitle.setText(entry.getTitle());
-        int entryImage;
-        switch (entry.getFileType()){
-            case DataUtils.IMAGE:
-                entryImage = R.drawable.ic_image;
-                break;
-            case DataUtils.AUDIO:
-                entryImage = R.drawable.ic_audiotrack_light;
-                break;
-            default:
-                entryImage = R.drawable.ic_text;
-                break;
-        }
+
         // set file picture
-        mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
+        EntryUtils.getFilePic(viewHolder.mFilePic, entry);
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());

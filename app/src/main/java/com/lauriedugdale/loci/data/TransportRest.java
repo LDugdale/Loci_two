@@ -1,5 +1,7 @@
 package com.lauriedugdale.loci.data;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.JsonReader;
 import android.util.JsonToken;
@@ -27,7 +29,6 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import static com.google.android.gms.internal.zzail.runOnUiThread;
 
 /**
  * Created by mnt_x on 31/07/2017.
@@ -43,12 +44,11 @@ public class TransportRest {
         void onBusstopsDownloaded();
     }
 
-    public void getBusStops(final double currentLatitude, final double currentLongitude, final double radius, final BusStopsAdapter adapter, final BusStopsDownloadedListener listener) {
+    public void getBusStops(final Activity activity, final double currentLatitude, final double currentLongitude, final double radius, final BusStopsAdapter adapter, final BusStopsDownloadedListener listener) {
 
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-
                 LatLngBounds bounds = LocationUtils.toBounds(currentLatitude, currentLongitude, radius);
 
                 String url = "https://transportapi.com/v3/uk/bus/stops/bbox.json?" +
@@ -80,7 +80,7 @@ public class TransportRest {
                             final double longitude = c.getDouble("longitude");
                             final float distance = LocationUtils.getDistanceInMeters(latitude, longitude, currentLatitude, currentLongitude);
 
-                            runOnUiThread(new Runnable() {
+                            activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     adapter.addToStops(new BusStop(atcocode, name, locality, latitude, longitude, distance));

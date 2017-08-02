@@ -10,12 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.utils.EntryUtils;
-import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,25 +19,27 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by mnt_x on 29/07/2017.
+ * Created by mnt_x on 01/08/2017.
  */
 
-public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.ViewHolder> {
+public class HeroNearMeAdapter extends RecyclerView.Adapter<HeroNearMeAdapter.ViewHolder> {
 
     //TODO add delete, locate and edit buttons (only edit if within distance)
 
     // Store the context and cursor for easy access
     private Context mContext;
     private List<GeoEntry> mEntries;
+    private EntryStorage mEntryStorage;
 
     /**
      * NearMeAdapter constructor
      *
      * @param context
      */
-    public NearMeEntryAdapter(Context context) {
+    public HeroNearMeAdapter(Context context) {
         this.mContext = context;
         mEntries = new ArrayList<GeoEntry>();
+        mEntryStorage = new EntryStorage(context);
     }
 
     public void addToEntries(GeoEntry entry){
@@ -71,46 +69,27 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
     /**
      * Inflates a layout depending on its position and returns a ViewHolder
      */
-    public NearMeEntryAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public HeroNearMeAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
         // inflate second item layout & return that viewHolder
-        contactView = inflater.inflate(R.layout.item_near_me_entry, parent, false);
+        contactView = inflater.inflate(R.layout.item_hero_near_me, parent, false);
         // Return a new holder instance
-        return new NearMeEntryAdapter.ViewHolder(contactView);
+        return new HeroNearMeAdapter.ViewHolder(contactView);
     }
 
     @Override
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(final NearMeEntryAdapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(final HeroNearMeAdapter.ViewHolder viewHolder, int position) {
 
         final GeoEntry entry = mEntries.get(position);
 
-        viewHolder.mTitle.setText(entry.getTitle());
+        System.out.println("THIS IS THEJSKLFJSLKFJSKF " + entry.getTitle());
 
         // set entry picture
-        EntryUtils.getFilePic(viewHolder.mFilePic, entry);
-
-        // Set distance
-        LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
-        viewHolder.mDate.setText(dateString);
-        // set author
-        viewHolder.mAuthor.setText(entry.getCreatorName());
-
-        viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            Intent intent = new Intent(mContext, MainActivity.class);
-            intent.setAction("single_entry");
-            intent.putExtra("entry", mEntries.get(viewHolder.getAdapterPosition()));
-            mContext.startActivity(intent);
-            }
-        });
+        mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
     }
 
     @Override
@@ -131,25 +110,13 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
     class ViewHolder extends RecyclerView.ViewHolder{
 
         // The UI elements
-        public TextView mDistance;
-        public TextView mDate;
-        public TextView mTitle;
         public ImageView mFilePic;
-        public ImageView mLocateFile;
-        public TextView mAuthor;
-
-
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             // Find the UI elements
-            mTitle = (TextView) itemView.findViewById(R.id.if_name);
-            mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
-            mLocateFile = (ImageView) itemView.findViewById(R.id.if_locate_file);
-            mDistance = (TextView) itemView.findViewById(R.id.info_bar_marker_distance);
-            mDate = (TextView) itemView.findViewById(R.id.info_bar_marker_date);
-            mAuthor = (TextView) itemView.findViewById(R.id.info_bar_marker_author);
+            mFilePic = (ImageView) itemView.findViewById(R.id.ihnm_hero_image);
         }
     }
 }

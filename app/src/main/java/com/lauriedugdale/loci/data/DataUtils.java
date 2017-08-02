@@ -93,7 +93,7 @@ public class DataUtils {
     private FirebaseUser mUser;
 
     public DataUtils(Context context) {
-        mUser = FirebaseAuth.getInstance().getCurrentUser();
+        mUser = FirebaseAuth    .getInstance().getCurrentUser();
         mContext = context;
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mStorage = FirebaseStorage.getInstance();

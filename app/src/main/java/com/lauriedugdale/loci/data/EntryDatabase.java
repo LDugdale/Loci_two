@@ -29,6 +29,7 @@ import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.ui.adapter.nearme.HeroNearMeAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.NearMeEntryAdapter;
 import com.lauriedugdale.loci.utils.FilterView;
 import com.lauriedugdale.loci.utils.LocationUtils;
@@ -444,7 +445,7 @@ public class EntryDatabase {
         });
     }
 
-    public void downloadNearMe(final Location currentLocation, final ArrayList<GeoEntry> heroImages, final NearMeEntryAdapter fAdapter, final NearMeEntryAdapter gAdapter, final NearMeEntryAdapter aAdapter, final EntriesDownloadedListener listener){
+    public void downloadNearMe(final Location currentLocation, final HeroNearMeAdapter hAdapter, final NearMeEntryAdapter fAdapter, final NearMeEntryAdapter gAdapter, final NearMeEntryAdapter aAdapter, final EntriesDownloadedListener listener){
 
         final String currentUID = getCurrentUID();
 
@@ -468,7 +469,7 @@ public class EntryDatabase {
                         }
 
                         if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
-                            heroImages.add(entry);
+                            hAdapter.addToEntries(entry);
                             listener.onEntriesDownloaded();
 
                         }
@@ -497,7 +498,7 @@ public class EntryDatabase {
 
                         if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
 
-                            heroImages.add(entry);
+                            hAdapter.addToEntries(entry);
                             listener.onEntriesDownloaded();
 
                         }

@@ -1,6 +1,7 @@
 package com.lauriedugdale.loci.ui.fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -379,7 +380,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             @Override
             public boolean onClusterClick(Cluster<EntryItem> cluster) {
                 ArrayList<EntryItem> clusterList = (ArrayList) cluster.getItems();
-                PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, clusterList, mDisplayingCustomEntries);
+                PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, clusterList, mDisplayingCustomEntries, ((MainActivity)getActivity()).getmTabsView());
                 return true;
             }
         });
@@ -476,7 +477,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             @Override
             public void onFinish() {
                 if (mCurrentlyDisplaying.equals("geofence_entries")) {
-                    PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, mGeofenceList, mDisplayingCustomEntries);
+                    PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, mGeofenceList, mDisplayingCustomEntries, ((MainActivity)getActivity()).getmTabsView());
                 }
 
             }
@@ -585,6 +586,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         if(mCurrentlyDisplaying.equals("all")) {
             getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position), null);
         }
+
         getMap().setMapType( MAP_TYPES[curMapTypeIndex] );
         getMap().getUiSettings().setCompassEnabled(false);
         getMap().getUiSettings().setMapToolbarEnabled(false);
@@ -623,11 +625,14 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
 
     public void showFilterPopup(View anchorView) {
 
+        ((MainActivity)getActivity()).getmTabsView().setInvisible();
         // TODO check boxes for media types and date pickers to and from dates
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_filter, null);
 
         // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
         final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
+
+
 
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
