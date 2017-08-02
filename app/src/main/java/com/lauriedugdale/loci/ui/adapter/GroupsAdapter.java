@@ -9,9 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
-import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
     private Context mContext;
     private List<Group> mGroups;
 
-    private DataUtils mDataUtils;
+    private GroupDatabase mGroupDatabase;
 
     // This interface handles clicks on items within this Adapter. This is populated from the constructor
     // Call the instance in this variable to call the onClick method whenever and item is clicked in the list.
@@ -50,7 +50,7 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
         this.mContext = context;
         this.mClickHandler = clickHandler;
         mGroups = new ArrayList<Group>();
-        mDataUtils = new DataUtils(context);
+        mGroupDatabase = new GroupDatabase(context);
     }
 
     public void addToGroups(Group group){
@@ -85,7 +85,7 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
         viewHolder.mName.setText(group.getGroupName());
 
         // set profile picture
-        mDataUtils.getGroupPic(viewHolder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
+        mGroupDatabase.downloadGroupPic(viewHolder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
     }
 
     @Override

@@ -1,8 +1,6 @@
 package com.lauriedugdale.loci.ui.adapter;
 
 import android.content.Context;
-import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,21 +8,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * @author Laurie Dugdale
@@ -36,7 +28,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     // Store the context and cursor for easy access
     private Context mContext;
     private List<Comment> mComments;
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     /**
      * Entry adapter constructor
@@ -46,7 +38,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     public CommentsAdapter(Context context) {
         this.mContext = context;
         mComments = new ArrayList<Comment>();
-        mDataUtils = new DataUtils(context);
+        mUserDatabase = new UserDatabase(context);
+
     }
 
     public void clearData(){
@@ -81,7 +74,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         final Comment comment = mComments.get(position);
 
         // set author profile
-        mDataUtils.getProfilePic(viewHolder.mAuthorProfile, R.drawable.default_profile);
+        mUserDatabase.downloadProfilePic(viewHolder.mAuthorProfile, R.drawable.default_profile);
         // set author name
         viewHolder.mAuthor.setText(comment.getCommentAuthorName());
         // set date

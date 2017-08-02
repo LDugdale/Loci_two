@@ -16,11 +16,12 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.CommentsDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
-import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,7 +31,8 @@ public class EntryFragment extends Fragment {
 
     private GeoEntry mGeoEntry;
 
-    private DataUtils mDataUtils;
+    private CommentsDatabase mCommentsDatabase;
+    private UserDatabase mUserDatabase;
 
     private TextView mTitle;
     private TextView mDescription;
@@ -49,8 +51,8 @@ public class EntryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDataUtils = new DataUtils(getContext());
-
+        mCommentsDatabase = new CommentsDatabase(getActivity());
+        mUserDatabase = new UserDatabase(getActivity());
         //here is your arguments
         Bundle bundle=getArguments();
         //here is your list array
@@ -68,7 +70,6 @@ public class EntryFragment extends Fragment {
         mDate = (TextView) view.findViewById(R.id.view_entry_date);
         mComment = (EditText) view.findViewById(R.id.view_entry_comments);
         mSend = (ImageView) view.findViewById(R.id.view_entry_send);
-        mDataUtils = new DataUtils(getActivity());
 
         // Set up the recycler view
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_comments);
@@ -83,7 +84,7 @@ public class EntryFragment extends Fragment {
         }
 
         // add comments to adapter
-        mDataUtils.getComments(mAdapter, mGeoEntry.getEntryID(), new EntriesDownloadedListener() {
+        mCommentsDatabase.downloadComments(mAdapter, mGeoEntry.getEntryID(), new EntriesDownloadedListener() {
             @Override
             public void onEntriesDownloaded() {
 
@@ -95,7 +96,7 @@ public class EntryFragment extends Fragment {
         mDescription.setText(mGeoEntry.getDescription());
 
         // set author name and picture
-        mDataUtils.getNonLoggedInProfilePic(mGeoEntry.getCreator(), mAuthorPic, R.drawable.default_profile);
+        mUserDatabase.downloadNonLoggedInProfilePic(mGeoEntry.getCreator(), mAuthorPic, R.drawable.default_profile);
         mAuthor.setText(mGeoEntry.getCreatorName());
 
         // set the upload date
@@ -111,14 +112,14 @@ public class EntryFragment extends Fragment {
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDataUtils.addComment(
+                mCommentsDatabase.uploadComment(
                         new Comment(
                             mGeoEntry.getEntryID(),
                             mComment.getText().toString(),
-                            mDataUtils.getCurrentUID(),
-                            mDataUtils.getCurrentUsername(),
-                            mDataUtils.getDateTime()),
-                        mGeoEntry.getEntryID()
+                            mCommentsDatabase.getCurrentUID(),
+                            mCommentsDatabase.getCurrentUsername(),
+                            DataUtils.getDateTime()),
+                            mGeoEntry.getEntryID()
                         );
             }
         });

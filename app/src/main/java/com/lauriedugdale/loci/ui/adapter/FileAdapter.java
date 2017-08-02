@@ -2,24 +2,19 @@ package com.lauriedugdale.loci.ui.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
@@ -39,7 +34,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     // Store the context and cursor for easy access
     private Context mContext;
     private List<GeoEntry> mFiles;
-    private DataUtils mDataUtils;
     private EntryStorage mEntryStorage;
     private AccessPermission mAccess;
 
@@ -51,7 +45,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public FileAdapter(Context context, AccessPermission access) {
         this.mContext = context;
         mFiles = new ArrayList<GeoEntry>();
-        mDataUtils = new DataUtils(context);
         mEntryStorage = new EntryStorage(context);
         mAccess = access;
     }

@@ -16,7 +16,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 
@@ -30,7 +31,7 @@ public class SignupActivity extends AppCompatActivity {
     private Button mBtnResetPassword;
     private ProgressBar mProgressBar;
     private FirebaseAuth mAuth;
-    private DataUtils mDatabaseUtils;
+    private UserDatabase mUserDatabase;
 
     private String mUsername;
     private String mEmail;
@@ -41,7 +42,7 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
 
         // access database methods
-        mDatabaseUtils = new DataUtils(this);
+        mUserDatabase = new UserDatabase(this);
 
         //Get Firebase auth instance
         mAuth = FirebaseAuth.getInstance();
@@ -112,7 +113,7 @@ public class SignupActivity extends AppCompatActivity {
                     public void onSuccess(AuthResult authResult) {
                         startActivity(new Intent(SignupActivity.this, MainActivity.class));
 
-                        mDatabaseUtils.writeNewUser(mUsername, mEmail);
+                        mUserDatabase.uploadNewUser(mUsername, mEmail);
                         finish();
                     }
                 });

@@ -11,7 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.activity.social.GroupProfileActivity;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
@@ -24,7 +25,7 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
 
     private GroupsAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private DataUtils mDataUtils;
+    private GroupDatabase mGroupDatabase;
 
     public static GroupsFragment create(){
         return new GroupsFragment();
@@ -36,7 +37,7 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
         View view = inflater.inflate(R.layout.fragment_groups, container, false);
         setHasOptionsMenu(true);
 
-        mDataUtils = new DataUtils(getActivity());
+        mGroupDatabase = new GroupDatabase(getActivity());
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_groups);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
@@ -46,7 +47,7 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
         mAdapter = new GroupsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchUserAcessibleGroups(mAdapter);
+        mGroupDatabase.downloadUserAcessibleGroups(mAdapter);
         return view;
     }
 

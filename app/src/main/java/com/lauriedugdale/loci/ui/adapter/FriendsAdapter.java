@@ -9,8 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private Context mContext;
     private List<User> mUsers;
 
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     // This interface handles clicks on items within this Adapter. This is populated from the constructor
     // Call the instance in this variable to call the onClick method whenever and item is clicked in the list.
@@ -49,7 +50,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         this.mContext = context;
         this.mClickHandler = clickHandler;
         mUsers = new ArrayList<User>();
-        mDataUtils = new DataUtils(context);
+        mUserDatabase = new UserDatabase(context);
     }
 
     public void addToUsers(User user){
@@ -83,7 +84,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mDataUtils.getNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
+        mUserDatabase.downloadNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
     }
 
 

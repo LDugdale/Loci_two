@@ -10,8 +10,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class NotificationFriendsAdapter extends RecyclerView.Adapter<Notificatio
     // Store the context and cursor for easy access
     private Context mContext;
     private List<User> mUsers;
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     /**
      * Entry adapter constructor
@@ -36,7 +37,7 @@ public class NotificationFriendsAdapter extends RecyclerView.Adapter<Notificatio
     public NotificationFriendsAdapter(Context context) {
         this.mContext = context;
         mUsers = new ArrayList<User>();
-        mDataUtils = new DataUtils(context);
+        mUserDatabase = new UserDatabase(context);
     }
 
     public void addToUsers(User user){
@@ -82,12 +83,12 @@ public class NotificationFriendsAdapter extends RecyclerView.Adapter<Notificatio
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+        mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
         viewHolder.mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDataUtils.addFriend(user);
+                mUserDatabase.uploadFriend(user);
                 removeEntry(position);
             }
         });

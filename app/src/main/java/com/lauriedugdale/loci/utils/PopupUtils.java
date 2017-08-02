@@ -3,23 +3,18 @@ package com.lauriedugdale.loci.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
-import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
 
@@ -32,25 +27,6 @@ import java.util.Locale;
  */
 
 public class PopupUtils {
-
-    private static void setInfoBarImage(Context context, ImageView imageType, int type){
-        // remove previous listener
-        imageType.setOnClickListener(null);
-        switch(type){
-            case DataUtils.NO_MEDIA:
-                imageType.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_text));
-                break;
-            case DataUtils.IMAGE:
-                imageType.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_image));
-                break;
-            case DataUtils.AUDIO:
-                imageType.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_audiotrack));
-                break;
-            default:
-                imageType.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_text));
-                break;
-        }
-    }
 
 
     public static void showClusterInfoPopup(Context context, View anchorView, ArrayList<?> clusterList, boolean mDisplayingCustomEntries, final LociNavView nav) {
@@ -83,6 +59,15 @@ public class PopupUtils {
         anchorView.getLocationOnScreen(location);
 
         popupWindow.showAtLocation(anchorView, Gravity.TOP, 0, topMargin);
+
+        ImageView close = (ImageView) popupView.findViewById(R.id.close);
+
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
 
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
@@ -142,7 +127,7 @@ public class PopupUtils {
         TextView entryAuthor = (TextView) popupView.findViewById(R.id.info_bar_marker_author);
 
         // set type image
-        setInfoBarImage(context, entryImage, entry.getFileType());
+        EntryUtils.getFilePic(entryImage, entry);
         // set title
         entryTitle.setText(entry.getTitle());
         // display distance

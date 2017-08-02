@@ -1,13 +1,10 @@
 package com.lauriedugdale.loci.ui.fragment;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.icu.text.SimpleDateFormat;
@@ -16,7 +13,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -54,7 +50,9 @@ import com.google.maps.android.clustering.ClusterManager;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.EventIconRendered;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
@@ -84,6 +82,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = MainFragment.class.getSimpleName();
+
     // location variables
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
@@ -98,7 +97,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
 
     private int curMapTypeIndex = 1; // chosen map type from MAP_TYPES
 
-    private DataUtils mDataUtils; // handles data transactions with firebase
     private EntryDatabase mEntryDatabase;
 
     private HashMap<String, EntryItem> visibleMarkers; // keeps track of visible markers
@@ -176,6 +174,9 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         }
     };
 
+    public MainFragment() {
+    }
+
     public void clearMap() {
         visibleMarkers = new HashMap<String, EntryItem>();
         mEntryMap = new HashMap<String, GeoEntry>();
@@ -231,7 +232,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         super.onCreate(savedInstanceState);
 
         // instantiate inital variables
-        mDataUtils = new DataUtils(getActivity());
         mEntryDatabase = new EntryDatabase(getActivity());
         visibleMarkers = new HashMap<String, EntryItem>();
         mEntryMap = new HashMap<String, GeoEntry>();
@@ -432,7 +432,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     private void getSpecificEntries() {
 
         if (mCurrentlyDisplaying.equals("user_entries")) {
-            mDataUtils.readUserEntries(mUser.getUserID(),
+            mEntryDatabase.downloadUserEntries(mUser.getUserID(),
                     mFilterOptions,
                     mEntryMap,
                     new EntriesDownloadedListener() {
@@ -445,7 +445,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                         }
                     });
         } else if (mCurrentlyDisplaying.equals("group_entries")) {
-            mDataUtils.readGroupEntries(mGroup.getGroupID(),
+            mEntryDatabase.downloadGroupEntries(mGroup.getGroupID(),
                     mFilterOptions,
                     mEntryMap,
                     new EntriesDownloadedListener() {

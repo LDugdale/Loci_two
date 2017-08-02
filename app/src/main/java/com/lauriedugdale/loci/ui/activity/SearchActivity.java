@@ -12,7 +12,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.SearchDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.search.SearchEntriesSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchGroupsSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;
@@ -27,7 +28,7 @@ public class SearchActivity extends AppCompatActivity {
     // private SelectFriendsAdapter mAdapter;
     private SectionedRecyclerViewAdapter mSectionAdapter;
     private RecyclerView mRecyclerView;
-    private DataUtils mDataUtils;
+    private SearchDatabase mSearchDatabase;
     private SearchUsersSection mUsersSection;
     private SearchGroupsSection mGroupsSection;
     private SearchEntriesSection mFilesSection;
@@ -37,7 +38,7 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        mDataUtils = new DataUtils(this);
+        mSearchDatabase = new SearchDatabase(this);
 
         mClose = (ImageView) findViewById(R.id.search_close);
         mSearch = (EditText) findViewById(R.id.main_search);
@@ -96,7 +97,7 @@ public class SearchActivity extends AppCompatActivity {
 
                     mSectionAdapter.notifyDataSetChanged();
                 } else {
-                    mDataUtils.search(mSectionAdapter, mUsersSection, mGroupsSection, mFilesSection, s.toString().toUpperCase());
+                    mSearchDatabase.search(mSectionAdapter, mUsersSection, mGroupsSection, mFilesSection, s.toString().toUpperCase());
                 }
             }
 

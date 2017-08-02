@@ -26,13 +26,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.GeofencingUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class GeoFencingService extends Service implements OnCompleteListener<Void> {
     //TODO This class has two purposes - providing location to the "NearMeFragment" and Geofencing consider splitting
@@ -51,7 +50,7 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
     private ArrayList<Geofence> mGeofenceList; // List of geofences used
     private PendingIntent mGeofencePendingIntent; // Used when requesting to add or remove geofences
 
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
     private Bundle mGeoEntries;
 
     public GeoFencingService() {
@@ -61,7 +60,7 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
 
-        mDataUtils = new DataUtils(this);
+        mUserDatabase = new UserDatabase(this);
         mGeofenceList = new ArrayList<>();
         mGeofencePendingIntent = null;
         mGeoEntries = new Bundle();
@@ -156,7 +155,7 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
     public void retrieveEntries(){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("file_permission");
-        ref.child(mDataUtils.getCurrentUID()).addValueEventListener(new ValueEventListener() {
+        ref.child(mUserDatabase.getCurrentUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {

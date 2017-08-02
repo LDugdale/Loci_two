@@ -32,12 +32,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
 import com.lauriedugdale.loci.HideOverlayView;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.dataobjects.Group;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by mnt_x on 22/07/2017.

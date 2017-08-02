@@ -1,13 +1,7 @@
 package com.lauriedugdale.loci.utils;
 
-import android.net.Uri;
 import android.widget.ImageView;
-
-import com.bumptech.glide.Glide;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
-import com.google.firebase.storage.StorageReference;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 
 /**

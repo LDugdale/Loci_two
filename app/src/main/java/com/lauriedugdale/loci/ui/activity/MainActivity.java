@@ -19,7 +19,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.services.GeoFencingService;
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
 
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     public LociNavView getmTabsView() {
         return mTabsView;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mDataUtils = new DataUtils(this);
+        mUserDatabase = new UserDatabase(this);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -210,11 +211,11 @@ public class MainActivity extends AppCompatActivity {
         mMenuProfileImage = (ImageView) header.findViewById(R.id.menu_profile_image);
 
         // Fetch the profile picture for the currently logged in user to display in the nav drawer
-        mDataUtils.getProfilePic(mMenuProfileImage, R.drawable.default_profile);
+        mUserDatabase.downloadProfilePic(mMenuProfileImage, R.drawable.default_profile);
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("users");
-        ref.child(mDataUtils.getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.child(mUserDatabase.getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {

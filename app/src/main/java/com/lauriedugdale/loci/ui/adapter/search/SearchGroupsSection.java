@@ -8,10 +8,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.activity.social.GroupProfileActivity;
-import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class SearchGroupsSection  extends StatelessSection {
 
     private Context mContext;
     private List<Group> mGroups;
-    private DataUtils mDataUtils;
+    private GroupDatabase mGroupDatabase;
 
     public SearchGroupsSection(Context context) {
         // call constructor with layout resources for this Section header and items
@@ -37,7 +37,7 @@ public class SearchGroupsSection  extends StatelessSection {
 
         mContext = context;
         mGroups = new ArrayList<Group>();
-        mDataUtils = new DataUtils(context);
+        mGroupDatabase = new GroupDatabase(context);
 
     }
 
@@ -71,7 +71,7 @@ public class SearchGroupsSection  extends StatelessSection {
         // set groupname
         groupsViewholder.mGroupName.setText(group.getGroupName());
         // set profile picture
-        mDataUtils.getGroupPic(groupsViewholder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
+        mGroupDatabase.downloadGroupPic(groupsViewholder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
         groupsViewholder.mRootView.setOnClickListener(new View.OnClickListener() {
 
             @Override

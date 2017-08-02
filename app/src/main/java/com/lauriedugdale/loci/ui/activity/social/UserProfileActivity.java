@@ -1,7 +1,6 @@
 package com.lauriedugdale.loci.ui.activity.social;
 
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,23 +11,19 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 
 public class UserProfileActivity extends AppCompatActivity {
 
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
+    private EntryDatabase mEntryDatabase;
     private User mUser;
 
     private ImageView mProfileImage;
@@ -44,7 +39,8 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
-        mDataUtils = new DataUtils(this);
+        mEntryDatabase = new EntryDatabase(this);
+        mUserDatabase = new UserDatabase(this);
 
         // get the GeoEntry to display info on this page
         mUser = getIntent().getParcelableExtra(Intent.ACTION_OPEN_DOCUMENT);
@@ -54,7 +50,7 @@ public class UserProfileActivity extends AppCompatActivity {
         mLocateAll = (ImageView) findViewById(R.id.locate_all);
         mAdd = (TextView) findViewById(R.id.add_button);
 
-        mDataUtils.getNonLoggedInProfilePic(mUser.getUserID(), mProfileImage, R.drawable.default_profile);
+        mUserDatabase.downloadNonLoggedInProfilePic(mUser.getUserID(), mProfileImage, R.drawable.default_profile);
         mUsername.setText(mUser.getUsername());
         locateAll();
 
@@ -63,7 +59,7 @@ public class UserProfileActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new FileAdapter(this, AccessPermission.VIEWER);
         mRecyclerView.setAdapter(mAdapter);
-        mDataUtils.fetchProfileEntries(mAdapter, mUser.getUserID());
+        mEntryDatabase.downloadProfileEntries(mAdapter, mUser.getUserID());
 
         // my_child_toolbar is defined in the layout file
         Toolbar myChildToolbar =
@@ -97,6 +93,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
     public void addFriend(){
 
-        mDataUtils.addFriendRequest(mAdd, mUser.getUserID(), false);
+        mUserDatabase.uploadFriendRequest(mAdd, mUser.getUserID(), false);
     }
 }

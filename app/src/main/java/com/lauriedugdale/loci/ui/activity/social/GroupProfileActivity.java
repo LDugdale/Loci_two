@@ -1,7 +1,6 @@
 package com.lauriedugdale.loci.ui.activity.social;
 
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,9 +14,10 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryDatabase;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
-import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.activity.settings.GroupSettingsActivity;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
@@ -26,7 +26,9 @@ public class GroupProfileActivity extends AppCompatActivity {
 
     private static final String TAG = GroupProfileActivity.class.getSimpleName();
 
-    private DataUtils mDataUtils;
+    private GroupDatabase mGroupDatabase;
+    private EntryDatabase mEntryDatabase;
+
     private Group mGroup;
 
     private ImageView mGroupImage;
@@ -44,7 +46,8 @@ public class GroupProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_profile);
 
-        mDataUtils = new DataUtils(this);
+        mGroupDatabase = new GroupDatabase(this);
+        mEntryDatabase = new EntryDatabase(this);
 
         // get the GeoEntry to display info on this page
         mGroup = getIntent().getParcelableExtra(Intent.ACTION_OPEN_DOCUMENT);
@@ -64,9 +67,9 @@ public class GroupProfileActivity extends AppCompatActivity {
         mAdapter = new FileAdapter(this, AccessPermission.VIEWER);
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchGroupProfileEntries(mAdapter, mGroup.getGroupID());
+        mEntryDatabase.downloadGroupProfileEntries(mAdapter, mGroup.getGroupID());
 
-        mDataUtils.checkGroupAdmin(mSettings, mGroup.getGroupID());
+        mGroupDatabase.checkGroupAdmin(mSettings, mGroup.getGroupID());
 
         // my_child_toolbar is defined in the layout file
         Toolbar myChildToolbar =
@@ -89,7 +92,7 @@ public class GroupProfileActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mGroupImage.setImageURI(null);
-        mDataUtils.getGroupPic(mGroupImage, R.drawable.default_profile, mGroup.getProfilePicturePath());
+        mGroupDatabase.downloadGroupPic(mGroupImage, R.drawable.default_profile, mGroup.getProfilePicturePath());
 
     }
 
@@ -123,7 +126,7 @@ public class GroupProfileActivity extends AppCompatActivity {
     }
 
     public void joinGroup(){
-        mDataUtils.addGroupRequest(mJoinGroup, mGroup);
+        mGroupDatabase.uploadGroupRequest(mJoinGroup, mGroup);
 
     }
 }

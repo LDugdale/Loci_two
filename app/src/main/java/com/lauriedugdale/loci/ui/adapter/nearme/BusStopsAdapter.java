@@ -10,17 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.BusStop;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by mnt_x on 31/07/2017.

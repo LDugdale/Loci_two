@@ -9,11 +9,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -22,8 +19,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -31,15 +26,12 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
-import com.lauriedugdale.loci.ui.activity.social.CreateGroup;
-import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 import com.lauriedugdale.loci.utils.SocialUtils;
-
-import org.w3c.dom.Text;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,7 +41,8 @@ public class GroupSettingsActivity extends AppCompatActivity {
 
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
-    private DataUtils mDataUtils;
+    private GroupDatabase mGroupDatabase;
+    private UserDatabase mUserDatabase;
 
     private Group mGroup;
 
@@ -68,7 +61,9 @@ public class GroupSettingsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mDataUtils = new DataUtils(this);
+        mGroupDatabase = new GroupDatabase(this);
+        mUserDatabase = new UserDatabase(this);
+
         mGroup = getIntent().getParcelableExtra(Intent.ACTION_OPEN_DOCUMENT);
 
         mUploadImage = (LinearLayout) findViewById(R.id.upload_image_wrapper);
@@ -84,7 +79,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
             mAdmin.setChecked(false);
             mEveryone.setChecked(true);
         }
-        mDataUtils.getGroupPic(mCurrentImage, R.drawable.default_profile, mGroup.getProfilePicturePath());
+        mGroupDatabase.downloadGroupPic(mCurrentImage, R.drawable.default_profile, mGroup.getProfilePicturePath());
 
         chooseProfilePicture();
         onSelectAdminClicked();
@@ -132,12 +127,12 @@ public class GroupSettingsActivity extends AppCompatActivity {
         apply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDataUtils.changeAdminPermissions(mGroup, adapter.getCheckedItems());
+                mGroupDatabase.changeAdminPermissions(mGroup, adapter.getCheckedItems());
                 popupWindow.dismiss();
             }
         });
 
-        mDataUtils.fetchUsersToSelect(adapter, mGroup);
+        mUserDatabase.downloadUsersToSelect(adapter, mGroup);
     }
 
     public void onRadioButtonClicked(View view) {
@@ -149,12 +144,12 @@ public class GroupSettingsActivity extends AppCompatActivity {
             case R.id.radio_everyone:
                 if (checked)
                     mGroup.setEveryoneAdmin("everyone");
-                    mDataUtils.changeWhoPosts(mGroup);
+                    mGroupDatabase.changeWhoPosts(mGroup);
                     break;
             case R.id.radio_admin:
                 if (checked)
                     mGroup.setEveryoneAdmin("admin");
-                    mDataUtils.changeWhoPosts(mGroup);
+                    mGroupDatabase.changeWhoPosts(mGroup);
                     break;
         }
     }
@@ -191,7 +186,7 @@ public class GroupSettingsActivity extends AppCompatActivity {
                     stream = getContentResolver().openInputStream(data.getData());
                     Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
-                    mDataUtils.setNewPofilePicture(mGroup, SocialUtils.postDataToFirebase(this, bitmap));
+                    mGroupDatabase.uploadNewPofilePicture(mGroup, SocialUtils.postDataToFirebase(this, bitmap));
 
                     stream.close();
                     mCurrentImage.setImageBitmap(bitmap);

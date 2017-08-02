@@ -23,7 +23,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 
 import java.io.FileNotFoundException;
@@ -38,7 +40,9 @@ public class CreateGroup extends AppCompatActivity {
     // Recyclerview
     private SelectForGroupAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private DataUtils mDataUtils;
+
+    private GroupDatabase mGroupDatabase;
+    private UserDatabase mUserDatabase;
 
     // UI elements
     private ImageView mGroupImage;
@@ -56,7 +60,9 @@ public class CreateGroup extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_group);
 
-        mDataUtils = new DataUtils(this);
+        mGroupDatabase = new GroupDatabase(this);
+        mUserDatabase = new UserDatabase(this);
+
         isPrivate = false;
 
         // connect UI elements
@@ -71,7 +77,7 @@ public class CreateGroup extends AppCompatActivity {
         mAdapter = new SelectForGroupAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchUserFriends(mAdapter);
+        mUserDatabase.downloadUserFriends(mAdapter);
 
         groupImageChoose();
         nextButton();
@@ -122,11 +128,11 @@ public class CreateGroup extends AppCompatActivity {
             }
 
             if (mUploadData == null){
-                mDataUtils.createGroupWithoutPic(mAdapter.getCheckedItems(),
+                mGroupDatabase.uploadGroupWithoutPic(mAdapter.getCheckedItems(),
                         mGroupName.getText().toString(),
                         isPrivate);
             } else {
-                mDataUtils.createGroupWithPic(mAdapter.getCheckedItems(),
+                mGroupDatabase.uploadGroupWithPic(mAdapter.getCheckedItems(),
                         mGroupName.getText().toString(),
                         mUploadData,
                         isPrivate);

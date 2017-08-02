@@ -33,7 +33,8 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
 
@@ -71,7 +72,7 @@ public class UploadPageOneFragment extends Fragment {
     private ImageView mImageUpload;
     private TextView mUploadTitle;
 
-    private DataUtils mDataUtils;
+    private GroupDatabase mGroupDtabase;
 
     private Uri mUploadData;
     private int mUploadType;
@@ -95,7 +96,7 @@ public class UploadPageOneFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_upload_page_one, container, false);
         mSelectedGroup = new Group("Everyone");
 
-        mDataUtils = new DataUtils(getActivity());
+        mGroupDtabase = new GroupDatabase(getActivity());
         mPermissionType = DataUtils.ANYONE;
         mUploadType = DataUtils.NO_MEDIA;
 
@@ -386,7 +387,7 @@ public class UploadPageOneFragment extends Fragment {
         mAdapter = new FetchGroupsAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchUserAcessibleGroups(mAdapter);
+        mGroupDtabase.downloadUserAcessibleGroups(mAdapter);
 
         done.setOnClickListener(new View.OnClickListener() {
             @Override

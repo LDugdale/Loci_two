@@ -9,22 +9,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
+
+import com.lauriedugdale.loci.data.EntryDatabase;
+import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 import com.lauriedugdale.loci.ui.fragment.EntryFragment;
 
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class ImageEntryActivity extends AppCompatActivity implements EntryFragment.OnFragmentInteractionListener  {
     public static final String TAG = "ImageEntryActivity";
 
-    private DataUtils mDataUtils;
+    private EntryStorage mEntryStorage;
 
     private GeoEntry mGeoEntry;
 
@@ -35,7 +34,7 @@ public class ImageEntryActivity extends AppCompatActivity implements EntryFragme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_entry);
 
-        mDataUtils = new DataUtils(this);
+        mEntryStorage = new EntryStorage(this);
 
         // get the GeoEntry to display info on this page
         mGeoEntry = getIntent().getParcelableExtra(Intent.ACTION_OPEN_DOCUMENT);
@@ -43,7 +42,7 @@ public class ImageEntryActivity extends AppCompatActivity implements EntryFragme
         mHeroImage = (ImageView) findViewById(R.id.view_entry_hero_image);
 
         // fetch Image from database and display it
-        mDataUtils.readEntry(mHeroImage, mGeoEntry.getEntryID(), mGeoEntry.getFilePath());
+        mEntryStorage.getFilePic(mHeroImage,mGeoEntry);
         imageListener();
 
         if (findViewById(R.id.fragment_container) != null) {

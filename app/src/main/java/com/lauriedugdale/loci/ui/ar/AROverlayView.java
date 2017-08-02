@@ -12,11 +12,10 @@ import android.opengl.Matrix;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.maps.android.SphericalUtil;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
@@ -40,7 +39,7 @@ public class AROverlayView extends View {
     private float[] rotatedProjectionMatrix = new float[16];
     private Location mLocation;
     private Location mLocationOld;
-    private DataUtils mDataUtils;
+    private EntryDatabase mEntryDatabase;
     private FilterOptions mFilterOptions;
     private ArrayList<CameraPoint> mEntryList;
 
@@ -69,7 +68,7 @@ public class AROverlayView extends View {
         this.mContext = context;
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        mDataUtils = new DataUtils(context);
+        mEntryDatabase = new EntryDatabase(context);
         mFilterOptions = new FilterOptions();
         mEntryList = new ArrayList<CameraPoint>();
         mGroupedX = new HashMap<Integer, ArrayList<CameraPoint>>();
@@ -283,7 +282,7 @@ public class AROverlayView extends View {
 
     public void entriesQuery(){
         LatLngBounds bounds = LocationUtils.toBounds(mLocation.getLatitude(), mLocation.getLongitude(), 1609.34);
-        mDataUtils.readAllEntriesForAR(bounds.southwest.latitude,
+        mEntryDatabase.downloadAllEntriesForAR(bounds.southwest.latitude,
                 bounds.northeast.latitude,
                 mFilterOptions.getNumericalFromDate(),
                 mFilterOptions.getNumericalToDate(),

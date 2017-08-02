@@ -7,9 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
 
+import com.lauriedugdale.loci.data.EntryDatabase;
+import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.DataUtils;
 
 import java.io.FileInputStream;
 
@@ -41,8 +43,8 @@ public class FullScreenActivity extends AppCompatActivity {
         } else if (getIntent().hasExtra(Intent.ACTION_OPEN_DOCUMENT)) {
             // get the GeoEntry to display info on this page
             GeoEntry geoEntry = getIntent().getParcelableExtra(Intent.ACTION_OPEN_DOCUMENT);
-            DataUtils dataUtils = new DataUtils(this);
-            dataUtils.readEntry(mFullscreenImage, geoEntry.getEntryID(), geoEntry.getFilePath());
+            EntryStorage entryStorage = new EntryStorage(this);
+            entryStorage.getFilePic(mFullscreenImage, geoEntry);
         }
 
     }

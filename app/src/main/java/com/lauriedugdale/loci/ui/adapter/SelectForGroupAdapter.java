@@ -5,21 +5,19 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Laurie Dugdale
@@ -30,7 +28,7 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
     // Store the context and cursor for easy access
     private Context mContext;
     private List<User> mUsers;
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     private HashMap<String, String> mCheckedItems;
 
@@ -43,7 +41,7 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
     public SelectForGroupAdapter(Context context) {
         this.mContext = context;
         mUsers = new ArrayList<User>();
-        mDataUtils = new DataUtils(context);
+        mUserDatabase = new UserDatabase(context);
 
         mCheckedItems = new HashMap<String, String>();
     }
@@ -89,7 +87,7 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
         // set username
         viewHolder.mName.setText(user.getUsername());
 
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+        mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
         if (mCheckedItems.containsKey(user.getUserID())){
             viewHolder.mCheckedItem.setChecked(true);

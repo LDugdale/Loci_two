@@ -11,7 +11,8 @@ import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.EntryDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 
 /**
@@ -22,7 +23,7 @@ public class SharedFiles extends Fragment {
 
     private FileAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private DataUtils mDataUtils;
+    private EntryDatabase mEntryDatabase;
 
     @Nullable
     @Override
@@ -30,7 +31,8 @@ public class SharedFiles extends Fragment {
         View view = inflater.inflate(R.layout.fragment_shared_files, container, false);
         setHasOptionsMenu(true);
 
-        mDataUtils = new DataUtils(getActivity());
+        mEntryDatabase = new EntryDatabase(getActivity());
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_files);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -38,7 +40,7 @@ public class SharedFiles extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
 
         // TODO sort out duplication issue or make singlevalueeventlistner trigger twice when switching between fragments
-        mDataUtils.fetchUserSharedFiles(mAdapter);
+        mEntryDatabase.downloadUserSharedEntries(mAdapter);
         return view;
     }
 }

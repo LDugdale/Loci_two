@@ -11,7 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
@@ -25,7 +26,7 @@ public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAd
 
     private FriendsAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     public static SocialFragment create(){
         return new SocialFragment();
@@ -37,7 +38,7 @@ public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAd
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
         setHasOptionsMenu(true);
 
-        mDataUtils = new DataUtils(getActivity());
+        mUserDatabase = new UserDatabase(getActivity());
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_friends);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
@@ -45,7 +46,7 @@ public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAd
         mAdapter = new FriendsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
-        mDataUtils.fetchUserFriends(mAdapter);
+        mUserDatabase.downloadUserFriends(mAdapter);
         return view;
     }
 

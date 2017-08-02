@@ -2,19 +2,15 @@ package com.lauriedugdale.loci;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
-import com.lauriedugdale.loci.data.DataUtils;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.utils.DataUtils;
 
 /**
  * Created by mnt_x on 28/06/2017.

@@ -10,6 +10,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.utils.DataUtils;
 
 /**
  * Created by mnt_x on 29/07/2017.

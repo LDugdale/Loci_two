@@ -6,24 +6,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
-import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
-import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
 import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**

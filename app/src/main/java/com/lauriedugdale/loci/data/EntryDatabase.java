@@ -6,31 +6,35 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
+import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.HeroNearMeAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.NearMeEntryAdapter;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.utils.FilterView;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
@@ -43,38 +47,18 @@ import java.util.HashMap;
  * @author Laurie Dugdale
  */
 
-public class EntryDatabase {
+public class EntryDatabase extends LociData {
 
     private static final String TAG = EntryDatabase.class.getSimpleName();
 
-    private Context mContext;
-    private DatabaseReference mDatabase;
-    private FirebaseStorage mStorage;
-    private FirebaseUser mUser;
 
     public EntryDatabase(Context context) {
-        mUser = FirebaseAuth.getInstance().getCurrentUser();
-        mContext = context;
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mStorage = FirebaseStorage.getInstance();
-    }
-
-    /**
-     * Gets the user ID of rhe logged in User
-     * @return the user ID
-     */
-    public String getCurrentUID() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String uid = null;
-        if (user != null) {
-            uid = user.getUid();
-        }
-        return uid;
+        super(context);
     }
 
     /**
      * -------------------------------------------------------------------------------------
-     * ------------------------------------ EntryUpload ------------------------------------
+     * ----------------------------------- Entry Upload ------------------------------------
      * -------------------------------------------------------------------------------------
      */
 
@@ -90,8 +74,8 @@ public class EntryDatabase {
 
         Log.d(TAG, "Uploading GeoEntry location too 'entry_location'");
 
-        mDatabase = FirebaseDatabase.getInstance().getReference("entry_location");
-        GeoFire geoFire = new GeoFire(mDatabase);
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("entry_location");
+        GeoFire geoFire = new GeoFire(database);
         geoFire.setLocation(entryKey, new GeoLocation(latitude, longitude));
     }
 
@@ -111,7 +95,7 @@ public class EntryDatabase {
         Log.d(TAG, "Uploading GeoEntry");
 
         final String uid = getCurrentUID();
-        StorageReference storageRef = mStorage.getReference();
+        StorageReference storageRef = getStorage().getReference();
 
         StorageReference ref = storageRef.child(getCurrentUID() + "/type/"  + DataUtils.getDateTime());
         UploadTask uploadTask = ref.putFile(path);
@@ -129,7 +113,7 @@ public class EntryDatabase {
                 final Uri downloadUrl = taskSnapshot.getDownloadUrl();
 
                 GeoEntry file = new GeoEntry(uid,
-                        mUser.getDisplayName(),
+                        getUser().getDisplayName(),
                         title,
                         description,
                         location.getLatitude(),
@@ -142,7 +126,7 @@ public class EntryDatabase {
                         group.getGroupID(),
                         DataUtils.FROM_SELF);
 
-                DatabaseReference entryRef = mDatabase.child("entries");
+                DatabaseReference entryRef = getDatabase().child("entries");
                 DatabaseReference pushEntryRef = entryRef.push();
                 String entryID = pushEntryRef.getKey();
                 file.setEntryID(entryID);
@@ -171,7 +155,7 @@ public class EntryDatabase {
         final String uid = getCurrentUID();
 
         GeoEntry file = new GeoEntry(uid,
-                mUser.getDisplayName(),
+                getUser().getDisplayName(),
                 title,
                 description,
                 location.getLatitude(),
@@ -184,7 +168,7 @@ public class EntryDatabase {
                 group.getGroupID(),
                 DataUtils.FROM_SELF);
 
-        DatabaseReference entryRef = mDatabase.child("entries");
+        DatabaseReference entryRef = getDatabase().child("entries");
         DatabaseReference pushEntryRef = entryRef.push();
         String entryID = pushEntryRef.getKey();
         file.setEntryID(entryID);
@@ -296,8 +280,8 @@ public class EntryDatabase {
                                             northEast.latitude, northEast.longitude);
         double km = meters * 0.001;
 
-        mDatabase = FirebaseDatabase.getInstance().getReference("entry_location");
-        GeoFire geoFire = new GeoFire(mDatabase);
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("entry_location");
+        GeoFire geoFire = new GeoFire(database);
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(center.latitude, center.longitude), km );
 
         final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("file_permission");
@@ -449,8 +433,8 @@ public class EntryDatabase {
 
         final String currentUID = getCurrentUID();
 
-        mDatabase = FirebaseDatabase.getInstance().getReference("entry_location");
-        GeoFire geoFire = new GeoFire(mDatabase);
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("entry_location");
+        GeoFire geoFire = new GeoFire(database);
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(currentLocation.getLatitude(), currentLocation.getLongitude()), 8); // 5 mile radius
 
         final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("file_permission");
@@ -530,6 +514,214 @@ public class EntryDatabase {
             @Override
             public void onGeoQueryError(DatabaseError error) {
                 Log.d(TAG, "There was an error with this query: " + error);
+            }
+        });
+    }
+
+    public void downloadProfileEntries(final FileAdapter adapter, String userID){
+        String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(currentUID).orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        ref.child("anyone").orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void downloadGroupProfileEntries(final FileAdapter adapter, String groupID){
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(groupID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void downloadGroupEntries(String groupID, final FilterOptions fo, final HashMap<String, GeoEntry> entryMap, final EntriesDownloadedListener listener){
+        // Get a reference to our posts
+        final long fromTime = fo.getNumericalFromDate();
+        final long toTime = fo.getNumericalToDate();
+        final SparseBooleanArray typesMap = fo.getCheckedTypes();
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_files");
+        ref.child(groupID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                        entryMap.put(entry.getEntryID(), entry);
+                    }
+                }
+                listener.onEntriesDownloaded();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+
+
+    public void downloadUserEntries(final String userID, final FilterOptions fo, final HashMap<String, GeoEntry> entryMap, final EntriesDownloadedListener listener){
+        String currentUID = getCurrentUID();
+        final long fromTime = fo.getNumericalFromDate();
+        final long toTime = fo.getNumericalToDate();
+        final SparseBooleanArray typesMap = fo.getCheckedTypes();
+
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("file_permission");
+        ref.child(currentUID).orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                        entryMap.put(entry.getEntryID(), entry);
+                    }
+                }
+                ref.child("anyone").orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                            GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                            long date = entry.getUploadDate();
+                            if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                                entryMap.put(entry.getEntryID(), entry);
+                            }
+                        }
+                        listener.onEntriesDownloaded();
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void downloadAllEntriesForAR(final double latitudeStart, final double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final ArrayList<CameraPoint> entryList){
+        String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("file_permission");
+        ref.child(currentUID).orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                        entryList.add(new CameraPoint(entry));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        ref.child("anyone").orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    long date = entry.getUploadDate();
+                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                        entryList.add(new CameraPoint(entry));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void downloadUserEntries(final FileAdapter adapter){
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("files");
+        ref.orderByChild("creator").equalTo(getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    adapter.addToFiles(entry);
+                    // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void downloadUserSharedEntries(final FileAdapter adapter){
+        final String uID = getCurrentUID();
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("file_permission");
+        ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    if(!entry.getCreator().equals(uID)) {
+                        adapter.addToFiles(entry);
+                        // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
             }
         });
     }

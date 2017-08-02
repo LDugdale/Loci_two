@@ -4,11 +4,10 @@ import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.util.SparseBooleanArray;
 
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.utils.FilterView;
 
 import java.text.ParseException;
-import java.util.Date;
 import java.util.Locale;
 
 /**

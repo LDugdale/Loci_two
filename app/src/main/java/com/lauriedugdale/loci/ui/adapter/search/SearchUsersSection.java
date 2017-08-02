@@ -9,9 +9,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class SearchUsersSection extends StatelessSection {
 
     private Context mContext;
     private List<User> mUsers;
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     public SearchUsersSection(Context context) {
         // call constructor with layout resources for this Section header and items
@@ -38,7 +39,7 @@ public class SearchUsersSection extends StatelessSection {
 
         mContext = context;
         mUsers = new ArrayList<User>();
-        mDataUtils = new DataUtils(context);
+        mUserDatabase = new UserDatabase(context);
 
     }
 
@@ -71,7 +72,7 @@ public class SearchUsersSection extends StatelessSection {
         // set username
         userViewHolder.mName.setText(user.getUsername());
         // set profile picture
-        mDataUtils.getProfilePic(userViewHolder.mProfilePic, R.drawable.default_profile);
+        mUserDatabase.downloadProfilePic(userViewHolder.mProfilePic, R.drawable.default_profile);
 
 
         userViewHolder.mRootView.setOnClickListener(new View.OnClickListener() {

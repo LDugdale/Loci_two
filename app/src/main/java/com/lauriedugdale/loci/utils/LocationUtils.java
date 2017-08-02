@@ -11,7 +11,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
-import com.lauriedugdale.loci.data.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;

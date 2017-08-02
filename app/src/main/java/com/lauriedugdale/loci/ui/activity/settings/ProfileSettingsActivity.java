@@ -22,7 +22,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.utils.SocialUtils;
 
 import java.io.FileNotFoundException;
@@ -33,7 +34,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     private LinearLayout mUploadImage;
     private ImageView mCurrentImage;
@@ -46,15 +47,15 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_settings);
 
-        mDataUtils = new DataUtils(this);
+        mUserDatabase = new UserDatabase(this);
 
         mUploadImage = (LinearLayout) findViewById(R.id.upload_image_wrapper);
         mCurrentImage = (ImageView) findViewById(R.id.current_picture);
         mBio = (EditText) findViewById(R.id.profile_bio);
         mApplySettings = (Button) findViewById(R.id.profile_apply);
 
-        mDataUtils.getProfilePic(mCurrentImage, R.drawable.default_profile);
-        mDataUtils.getProfileBio(mBio);
+        mUserDatabase.downloadProfilePic(mCurrentImage, R.drawable.default_profile);
+        mUserDatabase.downloadProfileBio(mBio);
 
         // my_child_toolbar is defined in the layout file
         Toolbar myChildToolbar =
@@ -78,7 +79,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         mApplySettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDataUtils.setProfileBio(mBio.getText().toString());
+                mUserDatabase.uploadProfileBio(mBio.getText().toString());
             }
         });
     }
@@ -112,7 +113,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                     stream = getContentResolver().openInputStream(data.getData());
                     Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
-                    mDataUtils.setNewPofilePicture(SocialUtils.postDataToFirebase(this, bitmap));
+                    mUserDatabase.uploadNewPofilePicture(SocialUtils.postDataToFirebase(this, bitmap));
 
                     stream.close();
                     mCurrentImage.setImageBitmap(bitmap);

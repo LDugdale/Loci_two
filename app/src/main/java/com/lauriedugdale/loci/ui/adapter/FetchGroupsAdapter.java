@@ -5,19 +5,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.DataUtils;
+import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
-import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -29,7 +27,7 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
     // Store the context and cursor for easy access
     private Context mContext;
     private List<Group> mGroups;
-    private DataUtils mDataUtils;
+    private UserDatabase mUserDatabase;
 
     private Group mSelectedGroup;
     public int mSelectedItem = -1;
@@ -42,7 +40,7 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
      */
     public FetchGroupsAdapter(Context context) {
         this.mContext = context;
-        mDataUtils = new DataUtils(context);
+        mUserDatabase = new UserDatabase(context);
 
         mGroups = new ArrayList<Group>();
         mGroups.add(new Group("Everyone"));
@@ -86,7 +84,7 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
 
         viewHolder.mName.setText(group.getGroupName());
 
-        mDataUtils.getProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+        mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
         viewHolder.mCheckedItem.setChecked(position == mSelectedItem);
 
