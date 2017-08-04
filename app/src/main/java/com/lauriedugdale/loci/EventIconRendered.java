@@ -40,7 +40,7 @@ public class EventIconRendered extends DefaultClusterRenderer<EntryItem> {
 
     @Override
     protected int getColor(int clusterSize) {
-        return ContextCompat.getColor(mContext, R.color.colorPrimary);
+        return ContextCompat.getColor(mContext, R.color.colorSecondary);
     }
 
     /**

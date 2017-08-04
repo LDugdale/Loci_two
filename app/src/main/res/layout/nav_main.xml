@@ -13,7 +13,6 @@
         android:layout_width="110dp"
         android:layout_height="110dp"
         android:layout_gravity="center|bottom"
-        android:alpha="0.4"
         android:src="@drawable/background_circle"
         android:layout_marginBottom="22dp"/>
 
@@ -38,7 +37,6 @@
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:layout_gravity="center"
-            android:alpha="0.4"
             android:src="@drawable/background_circle"/>
 
         <ImageView
@@ -62,7 +60,6 @@
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:layout_gravity="center"
-            android:alpha="0.4"
             android:src="@drawable/background_circle"/>
 
         <ImageView

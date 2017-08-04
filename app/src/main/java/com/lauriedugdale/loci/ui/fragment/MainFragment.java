@@ -75,11 +75,11 @@ import java.util.Map;
  */
 
 public class MainFragment extends BaseFragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMapLongClickListener,
-        GoogleMap.OnMapClickListener,
-        GoogleMap.OnMarkerClickListener {
+                                                                GoogleApiClient.OnConnectionFailedListener,
+                                                                GoogleMap.OnInfoWindowClickListener,
+                                                                GoogleMap.OnMapLongClickListener,
+                                                                GoogleMap.OnMapClickListener,
+                                                                GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 

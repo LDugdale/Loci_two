@@ -1,14 +1,18 @@
 package com.lauriedugdale.loci.ui.fragment;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TabHost;
+import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.ui.activity.NotificationActivity;
@@ -46,12 +50,35 @@ public class SocialFragment extends BaseFragment {
 
         mTabHost = (FragmentTabHost)rootView.findViewById(android.R.id.tabhost);
         mTabHost.setup(getActivity(), getChildFragmentManager(), R.id.social_tab_content);
-
         mTabHost.addTab(mTabHost.newTabSpec("friends").setIndicator("Friends"),
                 FriendsFragment.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("groups").setIndicator("Groups"),
                 GroupsFragment.class, null);
 
+        for(int i=0;i < mTabHost.getTabWidget().getChildCount();i++) {
+            mTabHost.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(getActivity(), R.color.colorPrimaryDark))));
+            TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+                tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(getActivity(), R.color.light_grey))));
+                tv.setTextSize(18);
+                tv.setAllCaps(false);
+        }
+
+        mTabHost.getTabWidget().setCurrentTab(1);
+        TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(mTabHost.getCurrentTab()).findViewById(android.R.id.title);
+            tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(getActivity(), R.color.colorSecondary))));
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                for(int i=0;i < mTabHost.getTabWidget().getChildCount();i++) {
+                    TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+                        tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(getActivity(), R.color.light_grey))));
+                }
+                TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(mTabHost.getCurrentTab()).findViewById(android.R.id.title);
+                       tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(getActivity(), R.color.colorSecondary))));
+
+            }
+        });
 
         return rootView;
     }

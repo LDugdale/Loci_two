@@ -1,6 +1,9 @@
 package com.lauriedugdale.loci.ui.activity.social;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.support.v4.app.FragmentTabHost;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,12 +12,16 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.ui.fragment.social.FriendsFragment;
+import com.lauriedugdale.loci.ui.fragment.social.GroupsFragment;
+import com.lauriedugdale.loci.ui.fragment.social.UserProfileEntriesFragment;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
@@ -34,6 +41,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private FileAdapter mAdapter;
     private TextView mAdd;
 
+    private FragmentTabHost mTabHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,13 +64,6 @@ public class UserProfileActivity extends AppCompatActivity {
         mUsername.setText(mUser.getUsername());
         mBio.setText(mUser.getBio());
         locateAll();
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.rv_user_files);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FileAdapter(this, AccessPermission.VIEWER);
-        mRecyclerView.setAdapter(mAdapter);
-        mEntryDatabase.downloadProfileEntries(mAdapter, mUser.getUserID());
 
         // my_child_toolbar is defined in the layout file
         Toolbar myChildToolbar =
@@ -90,6 +91,44 @@ public class UserProfileActivity extends AppCompatActivity {
                 intent.setAction("user_entries");
                 intent.putExtra("user_entries", mUser);
                 startActivity(intent);
+            }
+        });
+    }
+
+    private void setUpTabs(){
+
+        Bundle userBundle = new Bundle();
+        userBundle.putParcelable("user", mUser);
+
+        mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+        mTabHost.setup(this, getSupportFragmentManager(), R.id.user_profile_tab_content);
+        mTabHost.addTab(mTabHost.newTabSpec("friends").setIndicator("Friends"),
+                FriendsFragment.class, userBundle);
+        mTabHost.addTab(mTabHost.newTabSpec("entries").setIndicator("Entries"),
+                UserProfileEntriesFragment.class, userBundle);
+
+        for(int i=0;i < mTabHost.getTabWidget().getChildCount();i++) {
+            mTabHost.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(this, R.color.colorPrimaryDark))));
+            TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+            tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(this, R.color.light_grey))));
+            tv.setTextSize(18);
+            tv.setAllCaps(false);
+        }
+
+        mTabHost.getTabWidget().setCurrentTab(1);
+        TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(mTabHost.getCurrentTab()).findViewById(android.R.id.title);
+        tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(this, R.color.colorSecondary))));
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                for(int i=0;i < mTabHost.getTabWidget().getChildCount();i++) {
+                    TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+                    tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(UserProfileActivity.this, R.color.light_grey))));
+                }
+                TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(mTabHost.getCurrentTab()).findViewById(android.R.id.title);
+                tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(UserProfileActivity.this, R.color.colorSecondary))));
+
             }
         });
     }

@@ -236,6 +236,6 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
 
         int color = (int) mArgbEvaluator.evaluate(fractionFromCenter, mCenterColor, mSideColor);
 
-        mCenterImage.setColorFilter(color);
+//        mCenterImage.setColorFilter(color);
     }
 }
