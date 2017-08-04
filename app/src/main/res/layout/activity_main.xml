@@ -41,7 +41,7 @@
             app:contentInsetLeft="0dp"
             app:contentInsetStart="0dp"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/transparent_white"
+            android:background="@color/transparent_primary"
             android:titleTextColor="@color/white">
 
             <LinearLayout
@@ -61,6 +61,7 @@
                     android:layout_marginLeft="8dp"
                     android:text="@string/search"
                     android:textSize="@dimen/h3"
+                    android:textColor="@color/white"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" />

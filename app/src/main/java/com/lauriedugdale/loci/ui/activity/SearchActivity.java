@@ -65,8 +65,7 @@ public class SearchActivity extends AppCompatActivity {
         mClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(SearchActivity.this, MainActivity.class);
-                startActivity(intent);
+                finish();
             }
         });
 

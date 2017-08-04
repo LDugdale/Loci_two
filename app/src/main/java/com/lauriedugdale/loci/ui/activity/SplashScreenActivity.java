@@ -26,11 +26,6 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private static final String TAG = SplashScreenActivity.class.getSimpleName();
 
-
-//    public static final int PERMISSIONS_REQUEST_LOCATION = 900;
-//    public static final int PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 901;
-//    public static final int PERMISSIONS_REQUEST_CAMERA = 902;
-
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 900;
 
 

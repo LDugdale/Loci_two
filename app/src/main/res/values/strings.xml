@@ -111,9 +111,10 @@
     <string name="who_posts">Who can post?</string>
 
     // Near me
-    <string name="friends_post">Friends who have posted near you</string>
-    <string name="groups_post">Groups who have posted near you</string>
-    <string name="anyone_post">Other entries near you</string>
+    <string name="friends_post">Friends</string>
+    <string name="groups_post">Groups</string>
+    <string name="anyone_post">Everyone</string>
+    <string name="bus_post">Bus stops</string>
 
 
 </resources>
