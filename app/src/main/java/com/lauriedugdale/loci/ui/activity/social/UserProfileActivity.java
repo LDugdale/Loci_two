@@ -2,6 +2,8 @@ package com.lauriedugdale.loci.ui.activity.social;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -22,6 +24,7 @@ import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.ui.fragment.social.FriendsFragment;
 import com.lauriedugdale.loci.ui.fragment.social.GroupsFragment;
 import com.lauriedugdale.loci.ui.fragment.social.UserProfileEntriesFragment;
+import com.lauriedugdale.loci.ui.fragment.social.UserProfileFriendsFragment;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
@@ -37,8 +40,6 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView mUsername;
     private TextView mBio;
     private ImageView mLocateAll;
-    private RecyclerView mRecyclerView;
-    private FileAdapter mAdapter;
     private TextView mAdd;
 
     private FragmentTabHost mTabHost;
@@ -62,7 +63,15 @@ public class UserProfileActivity extends AppCompatActivity {
 
         mUserDatabase.downloadNonLoggedInProfilePic(mUser.getUserID(), mProfileImage, R.drawable.default_profile);
         mUsername.setText(mUser.getUsername());
+
+        if (mUser.getBio() == null){
+            mBio.setVisibility(View.GONE);
+        } else {
+            mBio.setText(mUser.getBio());
+        }
+
         mBio.setText(mUser.getBio());
+
         locateAll();
 
         // my_child_toolbar is defined in the layout file
@@ -73,10 +82,16 @@ public class UserProfileActivity extends AppCompatActivity {
         // Get a support ActionBar corresponding to this toolbar
         ActionBar ab = getSupportActionBar();
 
+        final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_material);
+        upArrow.setColorFilter(getResources().getColor(R.color.light_grey), PorterDuff.Mode.SRC_ATOP);
+        getSupportActionBar().setHomeAsUpIndicator(upArrow);
+
         ab.setTitle("");
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
+
+        setUpTabs();
 
         addFriend();
     }
@@ -102,10 +117,10 @@ public class UserProfileActivity extends AppCompatActivity {
 
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), R.id.user_profile_tab_content);
-        mTabHost.addTab(mTabHost.newTabSpec("friends").setIndicator("Friends"),
-                FriendsFragment.class, userBundle);
         mTabHost.addTab(mTabHost.newTabSpec("entries").setIndicator("Entries"),
                 UserProfileEntriesFragment.class, userBundle);
+        mTabHost.addTab(mTabHost.newTabSpec("friends").setIndicator("Friends"),
+                UserProfileFriendsFragment.class, userBundle);
 
         for(int i=0;i < mTabHost.getTabWidget().getChildCount();i++) {
             mTabHost.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(this, R.color.colorPrimaryDark))));

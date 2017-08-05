@@ -289,6 +289,28 @@ public class UserDatabase extends LociData {
         });
     }
 
+    public void downloadUserFriendsForProfile(final String uID, final FriendsAdapter adapter){
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("friends");
+
+        ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    User user = postSnapshot.getValue(User.class);
+                    adapter.addToUsers(user);
+                    // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
     public void downloadUsersToSelect(final SelectForGroupAdapter adapter, final Group group){
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -303,23 +325,23 @@ public class UserDatabase extends LociData {
 
                 uID[0] = dataSnapshot.getKey();
                 access[0] = (long) dataSnapshot.getValue();
-                if (access[0] != SocialUtils.CREATOR || !uID.equals(getCurrentUID())) {
 
-                    ref.child(uID[0]).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            User user = dataSnapshot.getValue(User.class);
-                            if(access[0] == SocialUtils.ADMIN){
-                                adapter.getCheckedItems().put(uID[0], user.getUsername());
-                            }
+                ref.child(uID[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        User user = dataSnapshot.getValue(User.class);
+                        if(access[0] == SocialUtils.ADMIN){
+                            adapter.getCheckedItems().put(uID[0], user.getUsername());
                             adapter.addToUsers(user);
                         }
+                        adapter.addToUsers(user);
+                    }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                        }
-                    });
-                }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
             }
 
             @Override

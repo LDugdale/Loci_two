@@ -4,7 +4,7 @@
         <item
             android:id="@+id/edit_profile"
             android:title="Edit Profile"
-            android:icon="@drawable/ic_edit"/>
+            android:icon="@drawable/ic_edit" />
 
         <item
             android:id="@+id/user_files"

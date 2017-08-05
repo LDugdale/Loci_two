@@ -15,25 +15,26 @@ import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
+import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
 
 /**
  * Created by mnt_x on 04/08/2017.
  */
 
-public class UserProfileEntriesFragment extends Fragment {
+public class UserProfileFriendsFragment extends Fragment implements FriendsAdapter.SocialAdapterOnClickHandler{
 
     private RecyclerView mRecyclerView;
-    private FileAdapter mAdapter;
+    private FriendsAdapter mAdapter;
 
     private User mUser;
 
-    private EntryDatabase mEntryDatabase;
+    private UserDatabase mUserDatabase;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mEntryDatabase = new EntryDatabase(getActivity());
+        mUserDatabase = new UserDatabase(getActivity());
 
         Bundle arguments = getArguments();
         mUser = arguments.getParcelable("user");
@@ -42,16 +43,21 @@ public class UserProfileEntriesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_user_profile_entries, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_user_profile_friends, container, false);
 
 
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_user_files);
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_user_friends);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FileAdapter(getActivity(), AccessPermission.VIEWER);
+        mAdapter = new FriendsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
-        mEntryDatabase.downloadProfileEntries(mAdapter, mUser.getUserID());
+        mUserDatabase.downloadUserFriendsForProfile(mUser.getUserID(), mAdapter);
 
         return rootView;
+    }
+
+    @Override
+    public void onSocialClick(User user) {
+
     }
 }

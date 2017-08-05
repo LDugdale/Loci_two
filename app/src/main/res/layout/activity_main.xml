@@ -78,6 +78,9 @@
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
         android:layout_gravity="start"
+        app:itemTextColor="@color/white"
+        app:itemIconTint="@color/colorSecondary"
+        android:background="@color/colorPrimaryDark"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/menu_navigation"/>
 

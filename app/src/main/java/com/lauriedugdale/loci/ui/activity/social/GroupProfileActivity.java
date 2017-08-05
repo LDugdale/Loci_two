@@ -1,26 +1,29 @@
 package com.lauriedugdale.loci.ui.activity.social;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.support.v4.app.FragmentTabHost;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TabHost;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.GroupDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
+import com.lauriedugdale.loci.ui.fragment.social.GroupProfileEntriesFragment;
+import com.lauriedugdale.loci.ui.fragment.social.GroupProfileMembersFragment;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.ui.activity.settings.GroupSettingsActivity;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 
 public class GroupProfileActivity extends AppCompatActivity {
 
@@ -34,11 +37,10 @@ public class GroupProfileActivity extends AppCompatActivity {
     private ImageView mGroupImage;
     private TextView mGroupName;
     private ImageView mLocateAll;
-    private RecyclerView mRecyclerView;
-    private FileAdapter mAdapter;
     private ImageView mSettings;
     private TextView mJoinGroup;
 
+    private FragmentTabHost mTabHost;
 
 
     @Override
@@ -61,14 +63,6 @@ public class GroupProfileActivity extends AppCompatActivity {
         mGroupName.setText(mGroup.getGroupName());
         locateAll();
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.rv_group_files);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FileAdapter(this, AccessPermission.VIEWER);
-        mRecyclerView.setAdapter(mAdapter);
-
-        mEntryDatabase.downloadGroupProfileEntries(mAdapter, mGroup.getGroupID());
-
         mGroupDatabase.checkGroupAdmin(mSettings, mGroup.getGroupID());
 
         // my_child_toolbar is defined in the layout file
@@ -81,11 +75,55 @@ public class GroupProfileActivity extends AppCompatActivity {
 
         ab.setTitle("");
 
+        final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_material);
+        upArrow.setColorFilter(getResources().getColor(R.color.light_grey), PorterDuff.Mode.SRC_ATOP);
+        getSupportActionBar().setHomeAsUpIndicator(upArrow);
+
+
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
+        setUpTabs();
         joinGroup();
         openSettings();
+    }
+
+    private void setUpTabs() {
+
+        Bundle groupBundle = new Bundle();
+        groupBundle.putParcelable("group", mGroup);
+
+        mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+        mTabHost.setup(this, getSupportFragmentManager(), R.id.user_profile_tab_content);
+        mTabHost.addTab(mTabHost.newTabSpec("entries").setIndicator("Entries"),
+                GroupProfileEntriesFragment.class, groupBundle);
+        mTabHost.addTab(mTabHost.newTabSpec("members").setIndicator("Members"),
+                GroupProfileMembersFragment.class, groupBundle);
+
+        for (int i = 0; i < mTabHost.getTabWidget().getChildCount(); i++) {
+            mTabHost.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#" + Integer.toHexString(ContextCompat.getColor(this, R.color.colorPrimaryDark))));
+            TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+            tv.setTextColor(Color.parseColor("#" + Integer.toHexString(ContextCompat.getColor(this, R.color.light_grey))));
+            tv.setTextSize(18);
+            tv.setAllCaps(false);
+        }
+
+        mTabHost.getTabWidget().setCurrentTab(1);
+        TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(mTabHost.getCurrentTab()).findViewById(android.R.id.title);
+        tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(this, R.color.colorSecondary))));
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                for(int i=0;i < mTabHost.getTabWidget().getChildCount();i++) {
+                    TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+                    tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(GroupProfileActivity.this, R.color.light_grey))));
+                }
+                TextView tv = (TextView) mTabHost.getTabWidget().getChildAt(mTabHost.getCurrentTab()).findViewById(android.R.id.title);
+                tv.setTextColor(Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(GroupProfileActivity.this, R.color.colorSecondary))));
+
+            }
+        });
     }
 
     @Override

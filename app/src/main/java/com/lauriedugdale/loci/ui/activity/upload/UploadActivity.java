@@ -1,5 +1,7 @@
 package com.lauriedugdale.loci.ui.activity.upload;
 
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
@@ -39,6 +41,10 @@ public class UploadActivity extends AppCompatActivity implements UploadPageOneFr
 
         // Get a support ActionBar corresponding to this toolbar
         ActionBar ab = getSupportActionBar();
+
+        final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_material);
+        upArrow.setColorFilter(getResources().getColor(R.color.light_grey), PorterDuff.Mode.SRC_ATOP);
+        getSupportActionBar().setHomeAsUpIndicator(upArrow);
 
         ab.setTitle("Post entry");
 
