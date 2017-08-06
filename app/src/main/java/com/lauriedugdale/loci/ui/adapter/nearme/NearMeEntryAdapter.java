@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.EntryUtils;
@@ -32,6 +33,8 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
     private Context mContext;
     private List<GeoEntry> mEntries;
 
+    private UserDatabase mUserDatabase;
+
     /**
      * NearMeAdapter constructor
      *
@@ -39,6 +42,7 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
      */
     public NearMeEntryAdapter(Context context) {
         this.mContext = context;
+        mUserDatabase = new UserDatabase(context);
         mEntries = new ArrayList<GeoEntry>();
     }
 
@@ -90,12 +94,10 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
 
         // set entry picture
         EntryUtils.getFilePic(viewHolder.mFilePic, entry);
-
+        // set author picture
+        mUserDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), viewHolder.mAuthorPic, R.drawable.default_profile);
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
-        viewHolder.mDate.setText(dateString);
         // set author
         viewHolder.mAuthor.setText(entry.getCreatorName());
 
@@ -130,10 +132,10 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
 
         // The UI elements
         public TextView mDistance;
-        public TextView mDate;
         public TextView mTitle;
         public ImageView mFilePic;
         public ImageView mLocateFile;
+        public ImageView mAuthorPic;
         public TextView mAuthor;
 
 
@@ -144,9 +146,9 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
             // Find the UI elements
             mTitle = (TextView) itemView.findViewById(R.id.if_name);
             mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
+            mAuthorPic = (ImageView) itemView.findViewById(R.id.if_author_pic);
             mLocateFile = (ImageView) itemView.findViewById(R.id.if_locate_file);
             mDistance = (TextView) itemView.findViewById(R.id.info_bar_marker_distance);
-            mDate = (TextView) itemView.findViewById(R.id.info_bar_marker_date);
             mAuthor = (TextView) itemView.findViewById(R.id.info_bar_marker_author);
         }
     }

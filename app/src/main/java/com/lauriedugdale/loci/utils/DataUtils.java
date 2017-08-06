@@ -1,59 +1,9 @@
 package com.lauriedugdale.loci.utils;
 
-import android.content.Context;
 import android.icu.util.Calendar;
-import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.util.SparseBooleanArray;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
-import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
-import com.lauriedugdale.loci.data.dataobjects.Comment;
-import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.data.dataobjects.Group;
-import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.data.dataobjects.UserFriend;
-import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
-import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
-import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
-import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
-import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
-import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
-import com.lauriedugdale.loci.ui.adapter.search.SearchEntriesSection;
-import com.lauriedugdale.loci.ui.adapter.search.SearchGroupsSection;
-import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;
-import com.lauriedugdale.loci.utils.FilterView;
-import com.lauriedugdale.loci.utils.SocialUtils;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-
-import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 /**
  * Created by mnt_x on 14/06/2017.

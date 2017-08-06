@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryStorage;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.EntryUtils;
@@ -32,6 +33,7 @@ public class SearchEntriesSection extends StatelessSection {
     private Context mContext;
     private List<GeoEntry> mEntries;
     private EntryStorage mEntryStorage;
+    private UserDatabase mUserDatabase;
 
 
     public SearchEntriesSection(Context context) {
@@ -44,6 +46,7 @@ public class SearchEntriesSection extends StatelessSection {
         mContext = context;
         mEntries = new ArrayList<GeoEntry>();
         mEntryStorage = new EntryStorage(context);
+        mUserDatabase = new UserDatabase(context);
 
 
     }
@@ -77,26 +80,22 @@ public class SearchEntriesSection extends StatelessSection {
         viewHolder.mTitle.setText(entry.getTitle());
 
         // set file picture
-        EntryUtils.getFilePic(viewHolder.mFilePic, entry);
+//        EntryUtils.getFilePic(viewHolder.mFilePic, entry);
+        mUserDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), viewHolder.mFilePic, R.drawable.default_profile);
+
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
-        viewHolder.mDate.setText(dateString);
         // set author
         viewHolder.mAuthor.setText(entry.getCreatorName());
 
         viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent("single_entry");
-                intent.putExtra("entry", mEntries.get(viewHolder.getAdapterPosition()));
-                LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
-
-                Intent aIntent = new Intent(mContext, MainActivity.class);
-                aIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                mContext.startActivity(aIntent);
+                Intent intent = new Intent(mContext, MainActivity.class);
+                intent.setAction("single_entry");
+                intent.putExtra("entry", mEntries.get(position));
+                mContext.startActivity(intent);
             }
         });
 
@@ -107,7 +106,6 @@ public class SearchEntriesSection extends StatelessSection {
 
         // The UI elements
         public TextView mDistance;
-        public TextView mDate;
         public TextView mTitle;
         public ImageView mFilePic;
         public ImageView mLocateFile;
@@ -118,10 +116,9 @@ public class SearchEntriesSection extends StatelessSection {
 
             // Find the UI elements
             mTitle = (TextView) itemView.findViewById(R.id.if_name);
-            mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
+            mFilePic = (ImageView) itemView.findViewById(R.id.if_author_pic);
             mLocateFile = (ImageView) itemView.findViewById(R.id.if_locate_file);
             mDistance = (TextView) itemView.findViewById(R.id.info_bar_marker_distance);
-            mDate = (TextView) itemView.findViewById(R.id.info_bar_marker_date);
             mAuthor = (TextView) itemView.findViewById(R.id.info_bar_marker_author);
         }
     }

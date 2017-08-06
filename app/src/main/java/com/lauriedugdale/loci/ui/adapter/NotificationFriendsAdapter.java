@@ -92,6 +92,14 @@ public class NotificationFriendsAdapter extends RecyclerView.Adapter<Notificatio
                 removeEntry(position);
             }
         });
+
+        viewHolder.mRejectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUserDatabase.removeRequest(user.getUserID());
+                removeEntry(position);
+            }
+        });
     }
 
 

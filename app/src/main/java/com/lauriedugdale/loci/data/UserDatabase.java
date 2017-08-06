@@ -23,14 +23,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.AdminCheckListener;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
-import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
+import com.lauriedugdale.loci.ui.adapter.social.FriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
+import com.lauriedugdale.loci.ui.adapter.social.GroupMembersAdapter;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.utils.SocialUtils;
 
@@ -109,7 +109,6 @@ public class UserDatabase extends LociData {
                     addButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            getDatabase().child("friend_requests").child(currentUID).child(toUser).setValue(status);
                             getDatabase().child("friend_requests").child(toUser).child(currentUID).setValue(status).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
@@ -180,6 +179,24 @@ public class UserDatabase extends LociData {
     public void uploadProfileBio(String bio){
         String userID = getCurrentUID();
         getDatabase().child("users/" + userID).child("bio").setValue(bio);
+    }
+
+    public void removeRequest(String selectedUID){
+        String currentUID = getCurrentUID();
+        getDatabase().child("friend_requests").child(currentUID).child(selectedUID).setValue(null);
+        getDatabase().child("friend_requests").child(selectedUID).child(currentUID).setValue(null);
+    }
+
+    public void removeFriend(String selectedUID){
+        String currentUID = getCurrentUID();
+
+        getDatabase().child("friends").child(currentUID + "/" + selectedUID).setValue(null);
+        getDatabase().child("friends").child(selectedUID + "/" + currentUID).setValue(null);
+        getDatabase().child("friend_requests").child(currentUID).child(selectedUID).setValue(null);
+        getDatabase().child("friend_requests").child(selectedUID).child(currentUID).setValue(null);
+
+        EntryDatabase entryDatabase = new EntryDatabase(getContext());
+        entryDatabase.removeFriendEntries(currentUID, selectedUID);
     }
 
     /**
@@ -362,6 +379,63 @@ public class UserDatabase extends LociData {
         });
     }
 
+    public void downloadGroupMembers(final GroupMembersAdapter adapter, final Group group){
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("users");
+        final String [] uID = new String [1];
+        final long [] access = new long [1];
+
+
+        GroupDatabase groupDatabase = new GroupDatabase(super.getContext());
+        groupDatabase.checkGroupAdmin(null, group.getGroupID(), new AdminCheckListener() {
+            @Override
+            public void onAdminChecked(boolean isAdmin) {
+
+                adapter.setAdmin(isAdmin);
+                getDatabase().child("group_permission").child(group.getGroupID()).addChildEventListener(new ChildEventListener() {
+
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+
+                        uID[0] = dataSnapshot.getKey();
+                        access[0] = (long) dataSnapshot.getValue();
+
+                        ref.child(uID[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                User user = dataSnapshot.getValue(User.class);
+                                adapter.addToUsers(user);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+            }
+        });
+
+    }
+
 
     public void downloadProfileBio(final EditText text){
         String userID = getCurrentUID();
@@ -399,7 +473,7 @@ public class UserDatabase extends LociData {
                 User user = dataSnapshot.getValue(User.class);
 
                 String photoUrl = user.getProfilePath();
-                if(photoUrl != null){
+                if(photoUrl != null ){
                     StorageReference storageRef = getStorage().getReferenceFromUrl(photoUrl);
                     Glide.with(getContext())
                             .using(new FirebaseImageLoader())

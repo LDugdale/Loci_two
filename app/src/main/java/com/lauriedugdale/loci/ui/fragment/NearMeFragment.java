@@ -59,6 +59,7 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     private ConstraintLayout mAnyoneWrapper;
     private ConstraintLayout mBussesWrapper;
 
+
     private RecyclerView mFriendsRecyclerView;
     private RecyclerView mGroupsRecyclerView;
     private RecyclerView mAnyoneRecyclerView;
@@ -125,6 +126,12 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     @Override
     public void onEntriesDownloaded() {
 
+        if (mHeroAdapter.hasEntries()){
+            mHeroRecyclerView.setVisibility(View.VISIBLE);
+        } else {
+            mHeroRecyclerView.setVisibility(View.GONE);
+        }
+
         if (mFriendsAdapter.hasEntries()){
             mFriendsWrapper.setVisibility(View.VISIBLE);
         } else {
@@ -143,7 +150,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
             mAnyoneWrapper.setVisibility(View.GONE);
         }
 
-        addHeroImages();
     }
 
 
@@ -161,26 +167,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         mFriendsAdapter.clearData();
         mGroupsAdapter.clearData();
         mAnyoneAdapter.clearData();
-    }
-
-    public void addHeroImages(){
-
-//        if (mHeroImages.size() >= 1 && mHeroImages.size() <= 2 ){
-//
-//            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(0));
-//            mHeroOne.setVisibility(View.VISIBLE);
-//        } else if(mHeroImages.size() >= 3){
-//
-//            final int[] ints = new Random().ints(0, mHeroImages.size()).distinct().limit(3).toArray();
-//            mEntryStorage.getFilePic(mHeroOne, mHeroImages.get(ints[0]));
-//            mEntryStorage.getFilePic(mHeroTwo, mHeroImages.get(ints[1]));
-//            mEntryStorage.getFilePic(mHeroThree, mHeroImages.get(ints[2]));
-//            mHeroTwoThreeWrapper.setVisibility(View.VISIBLE);
-//        } else if (mHeroImages.size() == 0){
-//
-//            mHeroOne.setVisibility(View.GONE);
-//            mHeroTwoThreeWrapper.setVisibility(View.GONE);
-//        }
     }
 
 
@@ -262,7 +248,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     @Override
     public void onPause() {
         super.onPause();
-        emptyLists();
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mDataReceiver);
     }
 

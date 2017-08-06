@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.UserDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 
 import java.util.ArrayList;
@@ -88,6 +87,24 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
         viewHolder.mName.setText(user.getUsername());
 
         mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+
+        if (mCheckedItems.containsKey(user.getUserID())){
+            viewHolder.mCheckedItem.setChecked(true);
+        } else {
+            viewHolder.mCheckedItem.setChecked(false);
+        }
+
+        viewHolder.mCheckedItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    mCheckedItems.put(user.getUserID(), user.getUsername());
+                } else {
+                    mCheckedItems.remove(user.getUserID());
+                }
+            }
+        });
+
     }
 
 
@@ -119,6 +136,8 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
             // Find the UI elements
             mName = (TextView) itemView.findViewById(R.id.isfg_name);
             mProfilePic = (ImageView) itemView.findViewById(R.id.isfg_profile_pic);
+            mCheckedItem = (CheckBox) itemView.findViewById(R.id.isfg_user_checkbox);
+
         }
     }
 }

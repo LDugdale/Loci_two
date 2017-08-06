@@ -4,11 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="wrap_content"
     android:gravity="center">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/top_info_bar"
+        android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true">
@@ -19,23 +20,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="8dp"
-            android:layout_marginLeft="8dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginLeft="0dp"
             app:layout_constraintLeft_toLeftOf="parent" />
-
-        <TextView
-            android:id="@+id/info_bar_marker_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="8dp"
-            android:text="date"
-            android:textAlignment="textEnd"
-            app:layout_constraintHorizontal_bias="0.815"
-            app:layout_constraintLeft_toRightOf="@+id/info_bar_marker_distance"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/if_name"
@@ -44,19 +31,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="32dp"
-            app:layout_constraintLeft_toRightOf="@+id/if_file_pic"
-            android:layout_marginLeft="8dp" />
+            app:layout_constraintLeft_toRightOf="@+id/if_author_pic"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/info_bar_marker_author"
+            android:layout_marginRight="8dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_bias="0.0" />
 
-        <ImageView
-            android:id="@+id/if_file_pic"
+        <com.lauriedugdale.loci.CircularImageView
+            android:id="@+id/if_author_pic"
             android:layout_alignParentRight="true"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginTop="10dp"
             app:layout_constraintTop_toBottomOf="@+id/info_bar_marker_distance"
-            android:layout_marginLeft="8dp"
+            android:layout_marginLeft="0dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="8dp" />
@@ -68,28 +58,27 @@
             android:alpha="0.8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintLeft_toRightOf="@+id/if_file_pic"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="0dp"
-            app:layout_constraintTop_toBottomOf="@+id/if_name"
+            app:layout_constraintLeft_toRightOf="@+id/if_author_pic"
+            android:layout_marginLeft="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintVertical_bias="1.0" />
+            android:layout_marginBottom="40dp" />
 
         <ImageView
             android:id="@+id/if_locate_file"
+            android:background="@drawable/background_circle_secondary_colour"
             android:src="@drawable/ic_my_location"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:scaleType="centerInside"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginRight="16dp"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="16dp"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="8dp"
-            app:layout_constraintVertical_bias="1.0" />
+            android:layout_marginTop="0dp"
+            app:layout_constraintVertical_bias="0.0"
+            android:layout_marginRight="0dp"
+            app:layout_constraintRight_toRightOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 

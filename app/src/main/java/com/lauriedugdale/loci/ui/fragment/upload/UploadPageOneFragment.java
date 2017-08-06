@@ -31,9 +31,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
@@ -145,7 +147,8 @@ public class UploadPageOneFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // if user has not entered a title return
-                if (mTitle.toString().equals("")){
+                if (mTitle.getText().toString().equals("") || mTitle.getText().toString() == null){
+                    Toast.makeText(getActivity(), getString(R.string.empty_title), Toast.LENGTH_LONG).show();
                     return;
                 }
 

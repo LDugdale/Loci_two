@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
@@ -34,7 +35,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     // Store the context and cursor for easy access
     private Context mContext;
     private List<GeoEntry> mFiles;
-    private EntryStorage mEntryStorage;
+    private UserDatabase mUserDatabase;
     private AccessPermission mAccess;
 
     /**
@@ -45,7 +46,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public FileAdapter(Context context, AccessPermission access) {
         this.mContext = context;
         mFiles = new ArrayList<GeoEntry>();
-        mEntryStorage = new EntryStorage(context);
+        mUserDatabase = new UserDatabase(context);
         mAccess = access;
     }
 
@@ -88,13 +89,12 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         viewHolder.mTitle.setText(entry.getTitle());
 
         // set file picture
-        EntryUtils.getFilePic(viewHolder.mFilePic, entry);
+        EntryUtils.getFilePic(viewHolder.mAuthorPic, entry);
+        mUserDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), viewHolder.mAuthorPic, R.drawable.default_profile);
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
-        viewHolder.mDate.setText(dateString);
+
         // set author
         viewHolder.mAuthor.setText(entry.getCreatorName());
 
@@ -129,9 +129,8 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
         // The UI elements
         public TextView mDistance;
-        public TextView mDate;
         public TextView mTitle;
-        public ImageView mFilePic;
+        public ImageView mAuthorPic;
         public ImageView mLocateFile;
         public TextView mAuthor;
 
@@ -142,10 +141,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
             // Find the UI elements
             mTitle = (TextView) itemView.findViewById(R.id.if_name);
-            mFilePic = (ImageView) itemView.findViewById(R.id.if_file_pic);
+            mAuthorPic = (ImageView) itemView.findViewById(R.id.if_author_pic);
             mLocateFile = (ImageView) itemView.findViewById(R.id.if_locate_file);
             mDistance = (TextView) itemView.findViewById(R.id.info_bar_marker_distance);
-            mDate = (TextView) itemView.findViewById(R.id.info_bar_marker_date);
             mAuthor = (TextView) itemView.findViewById(R.id.info_bar_marker_author);
         }
     }

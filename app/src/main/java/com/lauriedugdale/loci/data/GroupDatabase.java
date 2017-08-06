@@ -3,6 +3,7 @@ package com.lauriedugdale.loci.data;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,6 +20,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.lauriedugdale.loci.AdminCheckListener;
+import com.lauriedugdale.loci.EntriesDownloadedListener;
+import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
@@ -48,7 +52,6 @@ public class GroupDatabase extends LociData {
     public void uploadGroupRequest(final TextView joinButton, final Group group){
         final String currentUID = getCurrentUID();
 
-        // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("group_access");
 
@@ -197,6 +200,38 @@ public class GroupDatabase extends LociData {
         });
     }
 
+
+    public void changeAdminPermission(final Group group, final String idToCheck, final Menu menu){
+
+        final String uID = "";
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_permission");
+
+        ref.child(group.getGroupID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.hasChild(idToCheck)){
+                    DataSnapshot postSnapshot = dataSnapshot.child(idToCheck);
+
+                    long access = (long)postSnapshot.getValue();
+
+                    if (access != SocialUtils.ADMIN){
+                        getDatabase().child("group_permission").child(group.getGroupID()).child(idToCheck).setValue(SocialUtils.ADMIN);
+                        menu.findItem(R.id.make_admin).setTitle("Remove admin");
+                    } else if (access == SocialUtils.ADMIN){
+                        getDatabase().child("group_permission").child(group.getGroupID()).child(idToCheck).setValue(SocialUtils.VIEWER);
+                        menu.findItem(R.id.make_admin).setTitle("Make admin");
+
+                    }
+                }
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
     public void changeWhoPosts(final Group group){
 
         getDatabase().child("groups").child(group.getGroupID()).setValue(group);
@@ -252,6 +287,20 @@ public class GroupDatabase extends LociData {
                 getDatabase().child("groups/" + group.getGroupID()).child("profilePicturePath").setValue(url);
             }
         });
+    }
+
+    public void removeGroupMember(String gID, String uID){
+
+        if (uID == null) {
+            uID = getCurrentUID();
+        }
+
+        getDatabase().child("group_access").child(uID).setValue(null);
+        getDatabase().child("group_permission").child(gID).child(uID).setValue(null);
+        getDatabase().child("group_members").child(gID + "/"  + getCurrentUID()).setValue(null);
+
+        EntryDatabase entryDatabase = new EntryDatabase(getContext());
+        entryDatabase.removeGroupEntries(gID, uID);
     }
     /**
      * -------------------------------------------------------------------------------------
@@ -350,7 +399,7 @@ public class GroupDatabase extends LociData {
         });
     }
 
-    public void checkGroupAdmin(final ImageView settingsButton, String groupID){
+    public void checkGroupAdmin(final ImageView settingsButton, String groupID, final AdminCheckListener listener){
 
         final String uID = getCurrentUID();
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -359,7 +408,7 @@ public class GroupDatabase extends LociData {
         ref.child(groupID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
+                boolean isAdmin = false;
                 if (dataSnapshot.hasChild(uID)){
                     long access = (long)dataSnapshot.child(uID).getValue();
 
@@ -367,8 +416,44 @@ public class GroupDatabase extends LociData {
                         access = access - SocialUtils.EVERYONE_POSTS;
                     }
                     if (access == SocialUtils.CREATOR || access == SocialUtils.ADMIN){
-                        settingsButton.setVisibility(View.VISIBLE);
+                        if (settingsButton != null) {
+                            settingsButton.setVisibility(View.VISIBLE);
+                        }
+                        isAdmin = true;
                     }
+                }
+                if (listener != null) {
+                    listener.onAdminChecked(isAdmin);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void checkNonLoggedInGroupAdmin(final String uID, String groupID, final AdminCheckListener listener){
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("group_permission");
+
+        ref.child(groupID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean isAdmin = false;
+                if (dataSnapshot.hasChild(uID)){
+                    long access = (long)dataSnapshot.child(uID).getValue();
+
+                    if(access > 20){
+                        access = access - SocialUtils.EVERYONE_POSTS;
+                    }
+                    if (access == SocialUtils.CREATOR || access == SocialUtils.ADMIN){
+
+                        isAdmin = true;
+                    }
+                }
+                if (listener != null) {
+                    listener.onAdminChecked(isAdmin);
                 }
             }
             @Override

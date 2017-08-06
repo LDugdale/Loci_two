@@ -12,10 +12,9 @@ import android.view.ViewGroup;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.UserDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.social.UserProfileActivity;
-import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
+import com.lauriedugdale.loci.ui.adapter.social.FriendsAdapter;
 import com.lauriedugdale.loci.ui.fragment.SocialFragment;
 
 /**

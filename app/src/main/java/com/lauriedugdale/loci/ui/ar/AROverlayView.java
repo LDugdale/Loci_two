@@ -281,9 +281,7 @@ public class AROverlayView extends View {
     }
 
     public void entriesQuery(){
-        LatLngBounds bounds = LocationUtils.toBounds(mLocation.getLatitude(), mLocation.getLongitude(), 1609.34);
-        mEntryDatabase.downloadAllEntriesForAR(bounds.southwest.latitude,
-                bounds.northeast.latitude,
+        mEntryDatabase.downloadAllEntriesForAR(mLocation,
                 mFilterOptions.getNumericalFromDate(),
                 mFilterOptions.getNumericalToDate(),
                 mFilterOptions.getCheckedTypes(),

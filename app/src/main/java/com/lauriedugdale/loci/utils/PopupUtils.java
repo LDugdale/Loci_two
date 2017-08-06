@@ -31,7 +31,9 @@ public class PopupUtils {
 
     public static void showClusterInfoPopup(Context context, View anchorView, ArrayList<?> clusterList, boolean mDisplayingCustomEntries, final LociNavView nav) {
 
-        nav.setInvisible();
+        if (nav != null){
+            nav.setInvisible();
+        }
         final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
                 new int[] { android.R.attr.actionBarSize });
 
@@ -72,7 +74,9 @@ public class PopupUtils {
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
-                nav.setVisible();
+                if (nav != null) {
+                    nav.setVisible();
+                }
             }
         });
 

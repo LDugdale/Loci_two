@@ -103,17 +103,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     private HashMap<String, GeoEntry> mEntryMap; // keeps track of the entries downloaded from the server
     private ClusterManager<EntryItem> mClusterManager;
 
-    private FusedLocationProviderClient mFusedLocationClient; // used for getting the current lcoation
-
-    // time controls
-    private final static String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
-    private final static String DATE = "dd-MM-yyyy";
-    private SimpleDateFormat mDateTime;
-    private Calendar mCalendar;
-    private TextView mDisplayFromDate;
-    private TextView mDisplayToDate;
-    private DatePickerDialog mFromTimePicker;
-    private DatePickerDialog mToTimePicker;
+    private FusedLocationProviderClient mFusedLocationClient; // used for getting the current location
 
     // filter variables
     private FilterOptions mFilterOptions;
@@ -625,14 +615,11 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
 
     public void showFilterPopup(View anchorView) {
 
-        ((MainActivity)getActivity()).getmTabsView().setInvisible();
         // TODO check boxes for media types and date pickers to and from dates
         View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_filter, null);
 
         // PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
         final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
-
-
 
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
@@ -648,9 +635,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
 
         // connect time UI elements
-        mDisplayFromDate = (TextView) popupView.findViewById(R.id.display_from_date);
-        mDisplayToDate = (TextView) popupView.findViewById(R.id.display_to_date);
-
         final CheckBox checkBoxImage = (CheckBox) popupView.findViewById(R.id.checkbox_image);
         final CheckBox checkBoxAudio = (CheckBox) popupView.findViewById(R.id.checkbox_audio);
         final CheckBox checkBoxPost = (CheckBox) popupView.findViewById(R.id.checkbox_post);
@@ -678,8 +662,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         }
         
         mTempFilterOptions = new FilterOptions();
-        mDisplayToDate.setText(mFilterOptions.getToDate());
-        mDisplayFromDate.setText(mFilterOptions.getFromDate());
 
         checkBoxImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -728,8 +710,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                 popupWindow.dismiss();
             }
         });
-
-        dateTimeListeners();
         onViewFilterSelected(popupView);
     }
 
@@ -785,56 +765,5 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                 }
             }
         });
-    }
-
-    public void dateTimeListeners(){
-
-        mDateTime = new SimpleDateFormat(DATE_TIME, Locale.UK);
-
-        mCalendar = Calendar.getInstance();
-
-
-        // listner for text field, launches android calendar
-        mDisplayFromDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFromTimePicker.show();
-            }
-        });
-
-        // listner for text field, launches android calendar
-        mDisplayToDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mToTimePicker.show();
-            }
-        });
-
-
-        // date listner update when changed
-        mFromTimePicker = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                mCalendar.set(year, monthOfYear, dayOfMonth);
-                mDateTime.applyPattern(DATE);
-                String fromDate = mDateTime.format(mCalendar.getTime());
-                mDisplayFromDate.setText(fromDate);
-                mTempFilterOptions.setFromDate(fromDate);
-            }
-
-        },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
-
-        // date listner update when changed
-        mToTimePicker = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                mCalendar.set(year, monthOfYear, dayOfMonth);
-                mDateTime.applyPattern(DATE);
-                String toDate = mDateTime.format(mCalendar.getTime());
-                mDisplayToDate.setText(toDate);
-                mTempFilterOptions.setToDate(toDate);
-            }
-
-        },mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
     }
 }

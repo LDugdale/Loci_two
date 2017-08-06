@@ -31,7 +31,7 @@
     <string name="btn_remove">Remove</string>
     <string name="btn_sign_out">Sign Out</string>
     <string name="lbl_forgot_password">Forgot password?</string>
-    <string name="forgot_password_msg">We just need your registered Email Id to sent you password reset instructions.</string>
+    <string name="forgot_password_msg">We just need your registered Email.</string>
 
 
     <string name="show_entry">Open</string>
@@ -74,11 +74,8 @@
     <string name="entry_viewable_friends">Just Friends</string>
     <string name="entry_viewable_none">Only me</string>
 
-    <string name="drag_marker_notice">Drag the marker!</string>
-    <string name="marker_advice">(Hold down to move)</string>
-    <string name="done">Done</string>
 
-    <string name="filter_title">Filter search results</string>
+    <string name="filter_title">Filter entries</string>
     <string name="type_filter_title">Choose media type</string>
     <string name="date_filter_title">Choose date</string>
     <string name="add_filters">Apply</string>
@@ -116,5 +113,10 @@
     <string name="anyone_post">Everyone</string>
     <string name="bus_post">Bus stops</string>
 
+    // Upload
+    <string name="empty_title">Please enter a title</string>
+    <string name="drag_marker_notice">Drag the marker!</string>
+    <string name="marker_advice">(Hold down to move)</string>
+    <string name="done">Done</string>
 
 </resources>

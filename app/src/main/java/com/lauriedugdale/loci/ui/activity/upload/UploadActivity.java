@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 
+import com.lauriedugdale.loci.NoSwipeViewPager;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.adapter.pageradapter.UploadActivityAdapter;
@@ -18,7 +19,7 @@ import com.lauriedugdale.loci.ui.fragment.upload.UploadPageOneFragment;
 
 public class UploadActivity extends AppCompatActivity implements UploadPageOneFragment.OnNextButtonClickedListener {
 
-    private ViewPager mViewPager;
+    private NoSwipeViewPager mViewPager;
     private UploadActivityAdapter mAdapter;
 
     @Override
@@ -27,7 +28,8 @@ public class UploadActivity extends AppCompatActivity implements UploadPageOneFr
         setContentView(R.layout.activity_upload);
 
         //find view pager and Adapter for managing fragments
-        mViewPager = (ViewPager) findViewById(R.id.au_view_pager);
+        mViewPager = (NoSwipeViewPager) findViewById(R.id.au_view_pager);
+        mViewPager.setPagingEnabled(false);
         mAdapter = new UploadActivityAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mAdapter);
 

@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.EntryItem;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
@@ -29,6 +30,7 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
     private Context mContext;
     private ArrayList<EntryItem> mEntryItems;
     private ArrayList<GeoEntry> mGeoEntries;
+    private UserDatabase mUserDatabase;
     private DataType type;
 
     private enum DataType {
@@ -43,6 +45,7 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
      */
     public MapClusterAdapter(Context context, ArrayList<?> clusterList) {
         this.mContext = context;
+        mUserDatabase = new UserDatabase(context);
         if(clusterList != null && clusterList.get(0) instanceof EntryItem) {
             mEntryItems = (ArrayList<EntryItem>) clusterList;
             type = DataType.EntryItem;
@@ -87,15 +90,12 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
         viewHolder.mTitle.setText(entry.getTitle());
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
-        viewHolder.mDate.setText(dateString);
         // set author
         viewHolder.mAuthor.setText(entry.getCreatorName());
         // check distance, if its too far away hide the show entry button
         LocationUtils.checkDistance(mContext, viewHolder.mShowEntry, entry.getLatitude(), entry.getLongitude());
         // set image
-        EntryUtils.getFilePic(viewHolder.mEntryType, entry);
+        mUserDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), viewHolder.mEntryAuthor, R.drawable.default_profile);
         // add action listner
         viewHolder.mShowEntry.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,10 +133,9 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
 
         // The UI elements
         public TextView mDistance;
-        public TextView mDate;
         public TextView mTitle;
         public TextView mShowEntry;
-        public ImageView mEntryType;
+        public ImageView mEntryAuthor;
         public TextView mAuthor;
 
 
@@ -147,9 +146,8 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
             // Find the UI elements
             mTitle = (TextView) itemView.findViewById(R.id.cluster_info_bar_title);
             mShowEntry = (TextView) itemView.findViewById(R.id.cluster_info_bar_show_entry);
-            mEntryType = (ImageView) itemView.findViewById(R.id.cluster_info_bar_type);
+            mEntryAuthor = (ImageView) itemView.findViewById(R.id.cluster_info_bar_type);
             mDistance = (TextView) itemView.findViewById(R.id.cluster_info_bar_marker_distance);
-            mDate = (TextView) itemView.findViewById(R.id.cluster_info_bar_marker_date);
             mAuthor = (TextView) itemView.findViewById(R.id.cluster_info_bar_marker_author);
 
         }

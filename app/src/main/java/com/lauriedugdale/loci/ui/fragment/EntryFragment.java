@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.lauriedugdale.loci.CommentUploadedListener;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.CommentsDatabase;
@@ -79,8 +80,10 @@ public class EntryFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
 
         // if description is empty hide it
-        if (mDescription.getText() == null || mDescription.getText().equals("")){
+        if (mGeoEntry.getDescription() == null){
             mDescription.setVisibility(View.GONE);
+        } else {
+            mDescription.setVisibility(View.VISIBLE);
         }
 
         // add comments to adapter
@@ -112,15 +115,25 @@ public class EntryFragment extends Fragment {
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(mComment.getText().toString().equals("") || mComment.getText().toString() == null ){
+                    return;
+                }
+
                 mCommentsDatabase.uploadComment(
                         new Comment(
-                            mGeoEntry.getEntryID(),
-                            mComment.getText().toString(),
-                            mCommentsDatabase.getCurrentUID(),
-                            mCommentsDatabase.getCurrentUsername(),
-                            DataUtils.getDateTime()),
-                            mGeoEntry.getEntryID()
-                        );
+                                mGeoEntry.getEntryID(),
+                                mComment.getText().toString(),
+                                mCommentsDatabase.getCurrentUID(),
+                                mCommentsDatabase.getCurrentUsername(),
+                                DataUtils.getDateTime()),
+                                mGeoEntry.getEntryID(),
+                                new CommentUploadedListener() {
+                                    @Override
+                                    public void onCommentUploaded() {
+                                        mComment.setText("");
+                                    }
+                                });
             }
         });
     }

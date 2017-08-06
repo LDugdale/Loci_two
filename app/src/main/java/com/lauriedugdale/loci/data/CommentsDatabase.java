@@ -1,12 +1,16 @@
 package com.lauriedugdale.loci.data;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.lauriedugdale.loci.CommentUploadedListener;
 import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
 import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
@@ -28,12 +32,17 @@ public class CommentsDatabase extends LociData {
      * -------------------------------------------------------------------------------------
      */
 
-    public void uploadComment(Comment comment, String entryID) {
+    public void uploadComment(Comment comment, String entryID, final CommentUploadedListener listener) {
 
         DatabaseReference entryRef = getDatabase().child("comments/" + entryID);
         DatabaseReference pushEntryRef = entryRef.push();
         comment.setCommentID(pushEntryRef.getKey());
-        pushEntryRef.setValue(comment);
+        pushEntryRef.setValue(comment).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                listener.onCommentUploaded();
+            }
+        });
     }
 
     /**

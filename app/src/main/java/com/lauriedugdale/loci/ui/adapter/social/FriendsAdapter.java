@@ -1,17 +1,19 @@
-package com.lauriedugdale.loci.ui.adapter;
+package com.lauriedugdale.loci.ui.adapter.social;
 
 import android.content.Context;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.GroupDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.utils.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private List<User> mUsers;
 
     private UserDatabase mUserDatabase;
+    private GroupDatabase mGroupDatabase;
+
+    private boolean isAdmin;
 
     // This interface handles clicks on items within this Adapter. This is populated from the constructor
     // Call the instance in this variable to call the onClick method whenever and item is clicked in the list.
@@ -51,10 +56,15 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         this.mClickHandler = clickHandler;
         mUsers = new ArrayList<User>();
         mUserDatabase = new UserDatabase(context);
+        mGroupDatabase = new GroupDatabase(context);
     }
 
     public void addToUsers(User user){
         mUsers.add(user);
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 
     @Override
@@ -76,15 +86,42 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
 
-        User user = mUsers.get(position);
+        final User user = mUsers.get(position);
 
         // set username
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
         mUserDatabase.downloadNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
+
+        viewHolder.mOptions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //creating a popup menu
+                final PopupMenu popup = new PopupMenu(mContext, viewHolder.mOptions);
+                //inflating menu from xml resource
+                popup.inflate(R.menu.friend_options);
+
+                //adding click listener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.remove_friend:
+                                mUserDatabase.removeFriend(user.getUserID());
+                                mUsers.remove(position);
+                                notifyDataSetChanged();
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                //displaying the popup
+                popup.show();
+            }
+        });
     }
 
 
@@ -108,6 +145,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         // The UI elements
         public TextView mName;
         public ImageView mProfilePic;
+        public ImageView mRightArrow;
+        public TextView mViewOptions;
+        public TextView mOptions;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -115,6 +155,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             // Find the UI elements
             mName = (TextView) itemView.findViewById(R.id.ise_name);
             mProfilePic = (ImageView) itemView.findViewById(R.id.ise_profile_pic);
+            mRightArrow = (ImageView) itemView.findViewById(R.id.ise_right_arrow);
+            mOptions = (TextView) itemView.findViewById(R.id.ise_view_options);
+
+            mRightArrow.setVisibility(View.GONE);
+            mOptions.setVisibility(View.VISIBLE);
 
             // set the listener as this class
             itemView.setOnClickListener(this);

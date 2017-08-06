@@ -154,7 +154,7 @@ public class EntryDatabase extends LociData {
     public void uploadEntryWithoutFile(final int permissions, final String title, final String description, final int type, final Group group, Location location) {
         final String uid = getCurrentUID();
 
-        GeoEntry file = new GeoEntry(uid,
+        GeoEntry entry = new GeoEntry(uid,
                 getUser().getDisplayName(),
                 title,
                 description,
@@ -168,20 +168,22 @@ public class EntryDatabase extends LociData {
                 group.getGroupID(),
                 DataUtils.FROM_SELF);
 
+
+
         DatabaseReference entryRef = getDatabase().child("entries");
         DatabaseReference pushEntryRef = entryRef.push();
         String entryID = pushEntryRef.getKey();
-        file.setEntryID(entryID);
-        pushEntryRef.setValue(file);
+        entry.setEntryID(entryID);
 
         // organise entry in a separate place to make it easy to search the entries each use has access too
-        uploadEntryAccessPermission(permissions, uid, file, group.getGroupID());
+        entry =  uploadEntryAccessPermission(permissions, uid, entry, group.getGroupID());
+
+        pushEntryRef.setValue(entry);
+
         // upload the location of geoentry
         uploadEntryLocation(entryID, location.getLatitude(), location.getLongitude());
 
     }
-
-    //TODO consider not putting a full geoentry in file_permission but instead just the bits we need
 
     /**
      * Upload entry to extra location, listed either by the group ID, the userID or under Anyone for files that anyone can access.
@@ -191,20 +193,19 @@ public class EntryDatabase extends LociData {
      * @param file
      * @param groupID
      */
-    private void uploadEntryAccessPermission(final int permissions, String ownerID, final GeoEntry file, String groupID){
+    private GeoEntry uploadEntryAccessPermission(final int permissions, String ownerID, final GeoEntry file, String groupID){
         final DatabaseReference filePermission = FirebaseDatabase.getInstance().getReference();
 
         final String entryID = file.getEntryID();
-        System.out.println("AKLFJSAKLFJASKFJFAL " + permissions);
         if (permissions == DataUtils.ANYONE) {
             file.setFromWho(DataUtils.FROM_ANYONE);
-            filePermission.child("file_permission").child("anyone/" + entryID).setValue(file);
+            filePermission.child("entry_permission").child("anyone/" + entryID).setValue(true);
         } else if (permissions ==  DataUtils.NO_ONE) {
             file.setFromWho(DataUtils.FROM_SELF);
-            filePermission.child("file_permission").child(ownerID + "/" + entryID).setValue(file);
+            filePermission.child("entry_permission").child(ownerID + "/" + entryID).setValue(true);
         } else if (permissions == DataUtils.FRIENDS) {
             file.setFromWho(DataUtils.FROM_SELF);
-            filePermission.child("file_permission").child(ownerID + "/" + entryID).setValue(file);
+            filePermission.child("entry_permission").child(ownerID + "/" + entryID).setValue(true);
             file.setFromWho(DataUtils.FROM_FRIEND);
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference ref = database.getReference("friends");
@@ -213,7 +214,7 @@ public class EntryDatabase extends LociData {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         User friend = postSnapshot.getValue(User.class);
-                        filePermission.child("file_permission").child(friend.getUserID() + "/" + entryID).setValue(file);
+                        filePermission.child("entry_permission").child(friend.getUserID() + "/" + entryID).setValue(true);
                     }
                 }
 
@@ -223,9 +224,11 @@ public class EntryDatabase extends LociData {
             });
         } else {
             file.setFromWho(DataUtils.FROM_GROUP);
-            filePermission.child("file_permission").child(groupID + "/" + entryID).setValue(file);
+            filePermission.child("entry_permission").child(groupID + "/" + entryID).setValue(true);
             addEntryPermissionForGroupMembers(groupID, file, filePermission);
         }
+
+        return file;
     }
 
     /**
@@ -243,7 +246,7 @@ public class EntryDatabase extends LociData {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     String userID = postSnapshot.getKey();
-                    filePermission.child("file_permission").child(userID + "/" + entry.getEntryID()).setValue(entry);
+                    filePermission.child("entry_permission").child(userID + "/" + entry.getEntryID()).setValue(true);
                 }
             }
 
@@ -253,6 +256,163 @@ public class EntryDatabase extends LociData {
         });
     }
 
+    public void removeGroupEntries(final String gID, final String uID){
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
+        // remove entries by the id being removed from the group id in entry_permission
+        ref.child(gID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+
+                            if (entry.getCreator().equals(uID)){
+                                postSnapshot.getRef().setValue(null);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        eRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+
+                    if (entry.getGroupID().equals(gID)) {
+                        postSnapshot.getRef().child("groupID").setValue(null);
+                        postSnapshot.getRef().child("groupName").setValue(null);
+                        postSnapshot.getRef().child("fromWho").setValue(DataUtils.FROM_SELF);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        final DatabaseReference gmRef = database.getReference("group_members");
+        gmRef.child(gID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    User user = postSnapshot.getValue(User.class);
+
+                    if (!user.getUserID().equals(getCurrentUID())) {
+                        ref.child(user.getUserID()).orderByChild("creator").equalTo(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                    postSnapshot.getRef().setValue(null);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+                    }
+
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void removeFriendEntries(final String currentUID, final String selectedUID){
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
+        // remove entries by the id being removed from the group id in entry_permission
+        ref.child(currentUID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+
+                            if (entry.getCreator().equals(selectedUID)){
+                                postSnapshot.getRef().setValue(null);
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        // remove entries by the id being removed from the group id in entry_permission
+        ref.child(selectedUID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+
+                            if (entry.getCreator().equals(currentUID)){
+                                postSnapshot.getRef().setValue(null);
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+    }
 
     /**
      * -------------------------------------------------------------------------------------
@@ -284,7 +444,9 @@ public class EntryDatabase extends LociData {
         GeoFire geoFire = new GeoFire(database);
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(center.latitude, center.longitude), km );
 
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("file_permission");
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
 
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -298,16 +460,27 @@ public class EntryDatabase extends LociData {
 
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
-                            if (entry == null) {
-                                return;
-                            }
-                            long date = entry.getUploadDate();
-                            if (fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
-                                entryMap.put(entry.getEntryID(), entry);
-                            }
-                            listener.onEntriesDownloaded();
 
+                            String entryKey = dataSnapshot.getKey();
+                            eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                    if (entry == null) {
+                                        return;
+                                    }
+                                    long date = entry.getUploadDate();
+                                    if (fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                                        entryMap.put(entry.getEntryID(), entry);
+                                    }
+                                    listener.onEntriesDownloaded();
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
                         }
 
                         @Override
@@ -319,17 +492,27 @@ public class EntryDatabase extends LociData {
 
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
-                            if (entry == null) {
-                                return;
-                            }
-                            long date = entry.getUploadDate();
-                            if (fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
-                                entryMap.put(entry.getEntryID(), entry);
-                            }
-                            listener.onEntriesDownloaded();
 
+                            String entryKey = dataSnapshot.getKey();
+                            eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                    if (entry == null) {
+                                        return;
+                                    }
+                                    long date = entry.getUploadDate();
+                                    if (fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                                        entryMap.put(entry.getEntryID(), entry);
+                                    }
+                                    listener.onEntriesDownloaded();
+                                }
 
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
                         }
 
                         @Override
@@ -339,19 +522,34 @@ public class EntryDatabase extends LociData {
                 // If filter is set to view GROUPS!
                 } else if (fo.getFilterView() == FilterView.groups) {
                     final String uID = getCurrentUID();
-                    ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    ref.child(uID + "/" + key).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                                if (entry == null){
-                                    return;
+                            String entryKey = dataSnapshot.getKey();
+
+                            if (entryKey == null){
+                                return;
+                            }
+
+                            eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                    if(entry.getFromWho() == DataUtils.FROM_GROUP) {
+
+                                        long date = entry.getUploadDate();
+                                        if (fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                                            entryMap.put(entry.getEntryID(), entry);
+                                        }
+                                        listener.onEntriesDownloaded();
+                                    }
                                 }
 
-                                if(entry.getFromWho() == DataUtils.FROM_GROUP) {
-                                    entryMap.put(entry.getEntryID(), entry);
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
                                 }
-                            }
+                            });
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
@@ -361,19 +559,35 @@ public class EntryDatabase extends LociData {
                 } else if (fo.getFilterView() == FilterView.user) {
 
                     final String uID = getCurrentUID();
-                    ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    ref.child(uID + "/" + key).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                                if (entry == null){
-                                    return;
+
+                            String entryKey = dataSnapshot.getKey();
+
+                            if (entryKey == null){
+                                return;
+                            }
+
+                            eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                    if(entry.getFromWho() == DataUtils.FROM_SELF) {
+
+
+                                        entryMap.put(entry.getEntryID(), entry);
+                                        listener.onEntriesDownloaded();
+                                    }
                                 }
 
-                                if(entry.getFromWho() == DataUtils.FROM_SELF) {
-                                    entryMap.put(entry.getEntryID(), entry);
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
                                 }
-                            }
+                            });
+
+
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
@@ -386,16 +600,33 @@ public class EntryDatabase extends LociData {
                     ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                                if (entry == null){
-                                    return;
+
+                            String entryKey = dataSnapshot.getKey();
+
+                            if (entryKey == null){
+                                return;
+                            }
+
+                            eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                    if(entry.getFromWho() == DataUtils.FROM_FRIEND) {
+
+                                        long date = entry.getUploadDate();
+                                        if (fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                                            entryMap.put(entry.getEntryID(), entry);
+                                        }
+                                        listener.onEntriesDownloaded();
+                                    }
                                 }
 
-                                if(entry.getFromWho() == DataUtils.FROM_FRIEND) {
-                                    entryMap.put(entry.getEntryID(), entry);
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
                                 }
-                            }
+                            });
+
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
@@ -429,6 +660,104 @@ public class EntryDatabase extends LociData {
         });
     }
 
+
+    public void downloadAllEntriesForAR(Location currentLocation, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final ArrayList<CameraPoint> entryList){
+        final String currentUID = getCurrentUID();
+
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("entry_location");
+        GeoFire geoFire = new GeoFire(database);
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(currentLocation.getLatitude(), currentLocation.getLongitude()), 8); // 5 mile radius
+
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                Log.d(TAG, String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
+
+
+
+                ref.child(currentUID + "/" + key).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String entryKey = dataSnapshot.getKey();
+                        eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                if (entry == null) {
+                                    return;
+                                }
+                                long date = entry.getUploadDate();
+                                if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                                    entryList.add(new CameraPoint(entry));
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
+                ref.child("anyone/" + key).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String entryKey = dataSnapshot.getKey();
+                        eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                if (entry == null) {
+                                    return;
+                                }
+                                long date = entry.getUploadDate();
+                                if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                                    entryList.add(new CameraPoint(entry));
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+                Log.d(TAG, String.format("Key %s is no longer in the search area", key));
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+                Log.d(TAG, String.format("Key %s moved within the search area to [%f,%f]", key, location.latitude, location.longitude));
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                Log.d(TAG, "All initial data has been loaded and events have been fired!");
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+                Log.d(TAG, "There was an error with this query: " + error);
+            }
+        });
+    }
+
     public void downloadNearMe(final Location currentLocation, final HeroNearMeAdapter hAdapter, final NearMeEntryAdapter fAdapter, final NearMeEntryAdapter gAdapter, final NearMeEntryAdapter aAdapter, final EntriesDownloadedListener listener){
 
         final String currentUID = getCurrentUID();
@@ -437,7 +766,8 @@ public class EntryDatabase extends LociData {
         GeoFire geoFire = new GeoFire(database);
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(currentLocation.getLatitude(), currentLocation.getLongitude()), 8); // 5 mile radius
 
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("file_permission");
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
 
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -447,22 +777,36 @@ public class EntryDatabase extends LociData {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
-                        if (entry == null) {
-                            return;
-                        }
 
-                        if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
-                            hAdapter.addToEntries(entry);
-                            listener.onEntriesDownloaded();
+                        String entryKey = dataSnapshot.getKey();
+                        eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                if (entry == null) {
+                                    return;
+                                }
 
-                        }
+                                if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
+                                    hAdapter.addToEntries(entry);
+                                    listener.onEntriesDownloaded();
 
-                        if (entry.getFromWho() == DataUtils.FROM_FRIEND){
-                            fAdapter.addToEntries(entry);
-                        } else if (entry.getFromWho() == DataUtils.FROM_GROUP){
-                            gAdapter.addToEntries(entry);
-                        }
+                                }
+
+                                if (entry.getFromWho() == DataUtils.FROM_FRIEND){
+                                    fAdapter.addToEntries(entry);
+                                } else if (entry.getFromWho() == DataUtils.FROM_GROUP){
+                                    gAdapter.addToEntries(entry);
+                                }
+
+                                listener.onEntriesDownloaded();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
 
                     @Override
@@ -474,19 +818,32 @@ public class EntryDatabase extends LociData {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
 
-                        if (entry == null) {
-                            return;
-                        }
+                        String entryKey = dataSnapshot.getKey();
+                        eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
+                                GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
 
-                            hAdapter.addToEntries(entry);
-                            listener.onEntriesDownloaded();
+                                if (entry == null) {
+                                    return;
+                                }
 
-                        }
-                        aAdapter.addToEntries(entry);
+                                if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
+
+                                    hAdapter.addToEntries(entry);
+                                    listener.onEntriesDownloaded();
+
+                                }
+                                aAdapter.addToEntries(entry);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
 
                     @Override
@@ -522,13 +879,30 @@ public class EntryDatabase extends LociData {
         String currentUID = getCurrentUID();
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("file_permission");
+        DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
         ref.child(currentUID).orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    adapter.addToFiles(entry);
+
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+                            adapter.addToFiles(entry);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
             @Override
@@ -540,8 +914,23 @@ public class EntryDatabase extends LociData {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    adapter.addToFiles(entry);
+
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+                            adapter.addToFiles(entry);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
             @Override
@@ -553,13 +942,29 @@ public class EntryDatabase extends LociData {
     public void downloadGroupProfileEntries(final FileAdapter adapter, String groupID){
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("file_permission");
+        DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
         ref.child(groupID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    adapter.addToFiles(entry);
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+                            adapter.addToFiles(entry);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
             @Override
@@ -575,19 +980,35 @@ public class EntryDatabase extends LociData {
         final SparseBooleanArray typesMap = fo.getCheckedTypes();
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("group_files");
+        DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
         ref.child(groupID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
 
-                    long date = entry.getUploadDate();
-                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
-                        entryMap.put(entry.getEntryID(), entry);
-                    }
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+                            long date = entry.getUploadDate();
+                            if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                                entryMap.put(entry.getEntryID(), entry);
+                                listener.onEntriesDownloaded();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
-                listener.onEntriesDownloaded();
             }
 
             @Override
@@ -606,58 +1027,36 @@ public class EntryDatabase extends LociData {
 
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference ref = database.getReference("file_permission");
+        final DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
         ref.child(currentUID).orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
 
-                    long date = entry.getUploadDate();
-                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
-                        entryMap.put(entry.getEntryID(), entry);
-                    }
-                }
-                ref.child("anyone").orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+
                             long date = entry.getUploadDate();
-                            if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
+                            if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
                                 entryMap.put(entry.getEntryID(), entry);
+                                listener.onEntriesDownloaded();
+
                             }
                         }
-                        listener.onEntriesDownloaded();
 
-                    }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-    }
-
-    public void downloadAllEntriesForAR(final double latitudeStart, final double latitudeEnd, final long fromTime, final long toTime, final SparseBooleanArray typesMap, final ArrayList<CameraPoint> entryList){
-        String currentUID = getCurrentUID();
-        // Get a reference to our posts
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference ref = database.getReference("file_permission");
-        ref.child(currentUID).orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    long date = entry.getUploadDate();
-                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
-                        entryList.add(new CameraPoint(entry));
-                    }
+                        }
+                    });
                 }
             }
 
@@ -666,15 +1065,32 @@ public class EntryDatabase extends LociData {
             }
         });
 
-        ref.child("anyone").orderByChild("latitude").startAt(latitudeStart).endAt(latitudeEnd).addValueEventListener(new ValueEventListener() {
+        ref.child("anyone").orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    long date = entry.getUploadDate();
-                    if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())) {
-                        entryList.add(new CameraPoint(entry));
-                    }
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+
+                            long date = entry.getUploadDate();
+                            if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
+                                entryMap.put(entry.getEntryID(), entry);
+                                listener.onEntriesDownloaded();
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
 
@@ -686,7 +1102,7 @@ public class EntryDatabase extends LociData {
 
     public void downloadUserEntries(final FileAdapter adapter){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("files");
+        DatabaseReference ref = database.getReference("entries");
         ref.orderByChild("creator").equalTo(getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -707,17 +1123,34 @@ public class EntryDatabase extends LociData {
     public void downloadUserSharedEntries(final FileAdapter adapter){
         final String uID = getCurrentUID();
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("file_permission");
+        DatabaseReference ref = database.getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
         ref.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    if(!entry.getCreator().equals(uID)) {
-                        adapter.addToFiles(entry);
-                        // notify the adapter that data has been changed in order for it to be displayed in recyclerview
-                        adapter.notifyDataSetChanged();
-                    }
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+                            if(!entry.getCreator().equals(uID)) {
+
+                                adapter.addToFiles(entry);
+                                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
             @Override

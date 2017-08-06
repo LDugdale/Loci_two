@@ -17,6 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".ui.activity.MainActivity"
             android:screenOrientation="portrait"
@@ -40,10 +41,6 @@
         <activity
             android:name=".ui.activity.auth.LoginActivity"
             android:screenOrientation="portrait">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
         </activity>
         <activity
             android:name=".ui.activity.auth.SignupActivity"
@@ -73,12 +70,10 @@
 
         <activity
             android:name=".ui.activity.entry.AudioEntryActivity"
+            android:theme="@style/FullScreenTheme"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
-        <!-- <activity -->
-        <!-- android:name=".NavDraw" -->
-        <!-- android:label="@string/title_activity_nav_draw" -->
-        <!-- android:theme="@style/AppTheme" /> -->
+
         <activity
             android:name=".ui.activity.NotificationActivity"
             android:parentActivityName=".ui.activity.MainActivity"
@@ -99,6 +94,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.entry.NoMediaActivity"
+            android:theme="@style/FullScreenTheme"
             android:parentActivityName=".ui.activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity

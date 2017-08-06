@@ -87,15 +87,6 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
         mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
 
         viewHolder.mCheckedItem.setChecked(position == mSelectedItem);
-
-
-//        viewHolder.mCheckedItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-////                mSelectedID = group.getGroupID();
-//            }
-//        });
-
     }
 
 

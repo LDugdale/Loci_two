@@ -63,7 +63,7 @@ public class GroupProfileActivity extends AppCompatActivity {
         mGroupName.setText(mGroup.getGroupName());
         locateAll();
 
-        mGroupDatabase.checkGroupAdmin(mSettings, mGroup.getGroupID());
+        mGroupDatabase.checkGroupAdmin(mSettings, mGroup.getGroupID(), null);
 
         // my_child_toolbar is defined in the layout file
         Toolbar myChildToolbar =

@@ -9,13 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
-import com.lauriedugdale.loci.ui.adapter.FriendsAdapter;
+import com.lauriedugdale.loci.ui.adapter.social.FriendsAdapter;
 
 /**
  * Created by mnt_x on 04/08/2017.

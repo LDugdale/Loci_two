@@ -2,6 +2,7 @@ package com.lauriedugdale.loci.ui.adapter.nearme;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +12,10 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryStorage;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
+import com.lauriedugdale.loci.ui.activity.MainActivity;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +34,7 @@ public class HeroNearMeAdapter extends RecyclerView.Adapter<HeroNearMeAdapter.Vi
     private Context mContext;
     private List<GeoEntry> mEntries;
     private EntryStorage mEntryStorage;
+    private UserDatabase mUserDatabase;
 
     /**
      * NearMeAdapter constructor
@@ -40,6 +45,7 @@ public class HeroNearMeAdapter extends RecyclerView.Adapter<HeroNearMeAdapter.Vi
         this.mContext = context;
         mEntries = new ArrayList<GeoEntry>();
         mEntryStorage = new EntryStorage(context);
+        mUserDatabase = new UserDatabase(context);
     }
 
     public void addToEntries(GeoEntry entry){
@@ -86,10 +92,21 @@ public class HeroNearMeAdapter extends RecyclerView.Adapter<HeroNearMeAdapter.Vi
 
         final GeoEntry entry = mEntries.get(position);
 
-        System.out.println("THIS IS THEJSKLFJSLKFJSKF " + entry.getTitle());
-
         // set entry picture
         mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
+        viewHolder.mAuthor.setText(entry.getCreatorName());
+        viewHolder.mTitle.setText(entry.getTitle());
+
+        mUserDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), viewHolder.mAuthorPic, R.drawable.default_profile);
+
+        viewHolder.mWrapper.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent startViewEntryIntent = new Intent(mContext, LocationUtils.getEntryDestinationClass(entry.getFileType()));
+                startViewEntryIntent.putExtra(Intent.ACTION_OPEN_DOCUMENT, entry);
+                mContext.startActivity(startViewEntryIntent);
+            }
+        });
     }
 
     @Override
@@ -111,12 +128,20 @@ public class HeroNearMeAdapter extends RecyclerView.Adapter<HeroNearMeAdapter.Vi
 
         // The UI elements
         public ImageView mFilePic;
+        public ImageView mAuthorPic;
+        public TextView mAuthor;
+        public TextView mTitle;
+        public ConstraintLayout mWrapper;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             // Find the UI elements
             mFilePic = (ImageView) itemView.findViewById(R.id.ihnm_hero_image);
+            mAuthor = (TextView) itemView.findViewById(R.id.info_bar_marker_author);
+            mAuthorPic = (ImageView) itemView.findViewById(R.id.if_author_pic);
+            mTitle = (TextView) itemView.findViewById(R.id.if_name);
+            mWrapper = (ConstraintLayout) itemView.findViewById(R.id.details_wrapper);
         }
     }
 }
