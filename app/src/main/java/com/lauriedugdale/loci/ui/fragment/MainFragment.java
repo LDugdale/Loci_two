@@ -180,6 +180,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             mViewingName.setText(mUser.getUsername());
         } else if (mCurrentlyDisplaying.equals("single_entry")) {
             mViewingName.setText(mEntry.getTitle());
+
         } else if (mCurrentlyDisplaying.equals("geofence_entries")) {
             mViewingName.setText("Nearby entries");
         } else if (mCurrentlyDisplaying.equals("group_entries")) {
@@ -493,7 +494,17 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                 .tilt(0.3f)
                 .build();
 
-        getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position));
+        getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                PopupUtils.showMarkerInfoPopup(getActivity(), mMainLayout, mEntry, mDisplayingCustomEntries);
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
     }
 
     private void addAllEntriesToMap() {
@@ -559,14 +570,20 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     }
 
     private CameraPosition setCameraPosition(Location location){
-        CameraPosition position = CameraPosition.builder()
-                .target( new LatLng( location.getLatitude(),
-                        location.getLongitude() ) )
-                .zoom( 16f )
-                .bearing( 0.0f )
-                .tilt( 0f )
-                .build();
-        return position;
+
+        if (location != null) {
+
+            CameraPosition position = CameraPosition.builder()
+                    .target(new LatLng(location.getLatitude(),
+                            location.getLongitude()))
+                    .zoom(16f)
+                    .bearing(0.0f)
+                    .tilt(0f)
+                    .build();
+            return position;
+        } else {
+            return null;
+        }
     }
 
     private void initCamera( Location location ) {

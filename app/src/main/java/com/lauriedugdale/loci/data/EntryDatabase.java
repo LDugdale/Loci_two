@@ -199,13 +199,13 @@ public class EntryDatabase extends LociData {
         final String entryID = file.getEntryID();
         if (permissions == DataUtils.ANYONE) {
             file.setFromWho(DataUtils.FROM_ANYONE);
-            filePermission.child("entry_permission").child("anyone/" + entryID).setValue(true);
+            filePermission.child("entry_permission").child("anyone/" + entryID + "/queryTitle").setValue(file.getQueryTitle());
         } else if (permissions ==  DataUtils.NO_ONE) {
             file.setFromWho(DataUtils.FROM_SELF);
-            filePermission.child("entry_permission").child(ownerID + "/" + entryID).setValue(true);
+            filePermission.child("entry_permission").child(ownerID + "/" + entryID + "/queryTitle").setValue(file.getQueryTitle());
         } else if (permissions == DataUtils.FRIENDS) {
             file.setFromWho(DataUtils.FROM_SELF);
-            filePermission.child("entry_permission").child(ownerID + "/" + entryID).setValue(true);
+            filePermission.child("entry_permission").child(ownerID + "/" + entryID + "/queryTitle").setValue(file.getQueryTitle());
             file.setFromWho(DataUtils.FROM_FRIEND);
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference ref = database.getReference("friends");
@@ -214,7 +214,7 @@ public class EntryDatabase extends LociData {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         User friend = postSnapshot.getValue(User.class);
-                        filePermission.child("entry_permission").child(friend.getUserID() + "/" + entryID).setValue(true);
+                        filePermission.child("entry_permission").child(friend.getUserID() + "/" + entryID + "/queryTitle").setValue(file.getQueryTitle());
                     }
                 }
 
@@ -224,7 +224,7 @@ public class EntryDatabase extends LociData {
             });
         } else {
             file.setFromWho(DataUtils.FROM_GROUP);
-            filePermission.child("entry_permission").child(groupID + "/" + entryID).setValue(true);
+            filePermission.child("entry_permission").child(groupID + "/" + entryID + "/queryTitle" ).setValue(file.getQueryTitle());
             addEntryPermissionForGroupMembers(groupID, file, filePermission);
         }
 
@@ -675,8 +675,6 @@ public class EntryDatabase extends LociData {
             public void onKeyEntered(String key, GeoLocation location) {
                 Log.d(TAG, String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
 
-
-
                 ref.child(currentUID + "/" + key).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -777,7 +775,9 @@ public class EntryDatabase extends LociData {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-
+                        if (dataSnapshot.getValue() == null){
+                            return;
+                        }
                         String entryKey = dataSnapshot.getKey();
                         eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -789,8 +789,6 @@ public class EntryDatabase extends LociData {
 
                                 if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
                                     hAdapter.addToEntries(entry);
-                                    listener.onEntriesDownloaded();
-
                                 }
 
                                 if (entry.getFromWho() == DataUtils.FROM_FRIEND){
@@ -818,7 +816,9 @@ public class EntryDatabase extends LociData {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-
+                        if (dataSnapshot.getValue() == null){
+                            return;
+                        }
                         String entryKey = dataSnapshot.getKey();
                         eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -833,10 +833,11 @@ public class EntryDatabase extends LociData {
                                 if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
 
                                     hAdapter.addToEntries(entry);
-                                    listener.onEntriesDownloaded();
 
                                 }
                                 aAdapter.addToEntries(entry);
+                                listener.onEntriesDownloaded();
+
                             }
 
                             @Override
@@ -875,18 +876,17 @@ public class EntryDatabase extends LociData {
         });
     }
 
-    public void downloadProfileEntries(final FileAdapter adapter, String userID){
+    public void downloadProfileEntries(final FileAdapter adapter, final String userID){
         String currentUID = getCurrentUID();
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("entry_permission");
         final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
 
-        ref.child(currentUID).orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+        ref.child(currentUID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-
                     String entryKey = postSnapshot.getKey();
                     eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -895,7 +895,9 @@ public class EntryDatabase extends LociData {
                             if (entry == null) {
                                 return;
                             }
-                            adapter.addToFiles(entry);
+                            if (entry.getCreator().equals(userID)) {
+                                adapter.addToFiles(entry);
+                            }
                         }
 
                         @Override
@@ -910,7 +912,7 @@ public class EntryDatabase extends LociData {
             }
         });
 
-        ref.child("anyone").orderByChild("creator").equalTo(userID).addValueEventListener(new ValueEventListener() {
+        ref.child("anyone").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
@@ -923,8 +925,9 @@ public class EntryDatabase extends LociData {
                             if (entry == null) {
                                 return;
                             }
-                            adapter.addToFiles(entry);
-                        }
+                            if (entry.getCreator().equals(userID)) {
+                                adapter.addToFiles(entry);
+                            }                        }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {

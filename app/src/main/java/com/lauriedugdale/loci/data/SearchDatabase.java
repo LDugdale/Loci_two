@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
@@ -89,35 +90,69 @@ public class SearchDatabase extends LociData {
         });
 
         final String currentUID = getCurrentUID();
-        ref = database.getReference("file_permission");
+        ref = database.getReference("entry_permission");
         final DatabaseReference finalRef = ref;
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
         ref.child(currentUID).orderByChild("queryTitle").startAt(soFar).endAt(soFar + "\uf8ff").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(final DataSnapshot userDataSnapshot) {
                 entriesSection.clearData();
                 adapter.notifyDataSetChanged();
                 for (DataSnapshot postSnapshot : userDataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    entriesSection.addToEntries(entry);
+                    String entryKey = postSnapshot.getKey();
+                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                            if (entry == null) {
+                                return;
+                            }
+                            entriesSection.addToEntries(entry);
+                            adapter.notifyDataSetChanged();
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
-                adapter.notifyDataSetChanged();
 
                 finalRef.child("anyone").orderByChild("queryTitle").startAt(soFar).endAt(soFar + "\uf8ff").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        if (!dataSnapshot.hasChildren() && !userDataSnapshot.hasChildren()){
-                            entriesSection.setVisible(false);
-                        } else if (( dataSnapshot.hasChildren() || userDataSnapshot.hasChildren() ) && !entriesSection.isVisible()){
-                            entriesSection.setVisible(true);
-                        }
-
                         for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                            entriesSection.addToEntries(entry);
 
+                            String entryKey = postSnapshot.getKey();
+                            eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                    GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                    if (entry == null) {
+                                        return;
+                                    }
+
+                                    if (!dataSnapshot.hasChildren() && !userDataSnapshot.hasChildren()) {
+                                        entriesSection.setVisible(false);
+                                    } else if ((dataSnapshot.hasChildren() || userDataSnapshot.hasChildren()) && !entriesSection.isVisible()) {
+                                        entriesSection.setVisible(true);
+                                    }
+
+                                    entriesSection.addToEntries(entry);
+                                    adapter.notifyDataSetChanged();
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
                         }
-                        adapter.notifyDataSetChanged();
                     }
 
                     @Override

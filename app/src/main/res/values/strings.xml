@@ -107,6 +107,9 @@
     <string name="upload_image">Upload picture</string>
     <string name="who_posts">Who can post?</string>
 
+    // profile settings
+    <string name="enter_bio">Enter a bio</string>
+
     // Near me
     <string name="friends_post">Friends</string>
     <string name="groups_post">Groups</string>

@@ -27,8 +27,8 @@ public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAd
     private RecyclerView mRecyclerView;
     private UserDatabase mUserDatabase;
 
-    public static SocialFragment create(){
-        return new SocialFragment();
+    public static FriendsFragment create(){
+        return new FriendsFragment();
     }
 
     @Nullable
@@ -42,7 +42,7 @@ public class FriendsFragment extends Fragment implements FriendsAdapter.SocialAd
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_friends);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FriendsAdapter(getActivity(), this);
+        mAdapter = new FriendsAdapter(getActivity(), this, true);
         mRecyclerView.setAdapter(mAdapter);
 
         mUserDatabase.downloadUserFriends(mAdapter);

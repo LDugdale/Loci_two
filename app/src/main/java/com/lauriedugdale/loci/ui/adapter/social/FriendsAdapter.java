@@ -51,12 +51,13 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
      * @param context
      * @param clickHandler
      */
-    public FriendsAdapter(Context context, SocialAdapterOnClickHandler clickHandler) {
+    public FriendsAdapter(Context context, SocialAdapterOnClickHandler clickHandler, boolean isAdmin) {
         this.mContext = context;
         this.mClickHandler = clickHandler;
         mUsers = new ArrayList<User>();
         mUserDatabase = new UserDatabase(context);
         mGroupDatabase = new GroupDatabase(context);
+        this.isAdmin = isAdmin;
     }
 
     public void addToUsers(User user){
@@ -96,32 +97,38 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         // set profile picture
         mUserDatabase.downloadNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
 
-        viewHolder.mOptions.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //creating a popup menu
-                final PopupMenu popup = new PopupMenu(mContext, viewHolder.mOptions);
-                //inflating menu from xml resource
-                popup.inflate(R.menu.friend_options);
+        if (isAdmin) {
 
-                //adding click listener
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.remove_friend:
-                                mUserDatabase.removeFriend(user.getUserID());
-                                mUsers.remove(position);
-                                notifyDataSetChanged();
-                                break;
+            viewHolder.mRightArrow.setVisibility(View.GONE);
+            viewHolder.mOptions.setVisibility(View.VISIBLE);
+
+            viewHolder.mOptions.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //creating a popup menu
+                    final PopupMenu popup = new PopupMenu(mContext, viewHolder.mOptions);
+                    //inflating menu from xml resource
+                    popup.inflate(R.menu.friend_options);
+
+                    //adding click listener
+                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.remove_friend:
+                                    mUserDatabase.removeFriend(user.getUserID());
+                                    mUsers.remove(position);
+                                    notifyDataSetChanged();
+                                    break;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
-                //displaying the popup
-                popup.show();
-            }
-        });
+                    });
+                    //displaying the popup
+                    popup.show();
+                }
+            });
+        }
     }
 
 
@@ -158,8 +165,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             mRightArrow = (ImageView) itemView.findViewById(R.id.ise_right_arrow);
             mOptions = (TextView) itemView.findViewById(R.id.ise_view_options);
 
-            mRightArrow.setVisibility(View.GONE);
-            mOptions.setVisibility(View.VISIBLE);
 
             // set the listener as this class
             itemView.setOnClickListener(this);

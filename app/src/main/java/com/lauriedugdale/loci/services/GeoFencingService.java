@@ -11,6 +11,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
@@ -30,6 +34,7 @@ import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.utils.GeofencingUtils;
+import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 
@@ -52,6 +57,9 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
 
     private UserDatabase mUserDatabase;
     private Bundle mGeoEntries;
+
+    private Location mLocation;
+    private Location mOldLocation;
 
     public GeoFencingService() {
     }
@@ -120,10 +128,11 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
                         public void onLocationChanged(Location location) {
                             Log.d(TAG, "location update lat/long " + location.getLatitude() + "" + location.getLongitude());
 
-                            Intent intent = new Intent("location_update");
-                            intent.putExtra("latitude", location.getLatitude());
-                            intent.putExtra("longitude", location.getLongitude());
-                            LocalBroadcastManager.getInstance(GeoFencingService.this).sendBroadcast(intent);
+                            setLocation(location);
+//                            Intent intent = new Intent("location_update");
+//                            intent.putExtra("latitude", location.getLatitude());
+//                            intent.putExtra("longitude", location.getLongitude());
+//                            LocalBroadcastManager.getInstance(GeoFencingService.this).sendBroadcast(intent);
                         }
                     });
 
@@ -151,23 +160,90 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
         return builder.build();
     }
 
+    public void setLocation(Location location){
+
+        if (mLocation == null){
+            mLocation = location;
+            retrieveEntries();
+        } else if (LocationUtils.getDistanceInMeters(mLocation.getLatitude(), mLocation.getLongitude(), location.getLatitude(), location.getLongitude()) > 1609.34){
+            mLocation.setLatitude(location.getLatitude());
+            mLocation.setLongitude(location.getLongitude());
+            retrieveEntries();
+        }
+    }
+
 
     public void retrieveEntries(){
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("file_permission");
-        ref.child(mUserDatabase.getCurrentUID()).addValueEventListener(new ValueEventListener() {
+
+        if (mLocation == null){
+            return;
+        }
+
+        final String currentUID = mUserDatabase.getCurrentUID();
+
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("entry_location");
+        GeoFire geoFire = new GeoFire(database);
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(mLocation.getLatitude(), mLocation.getLongitude()), 8); // 5 mile radius
+
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("entry_permission");
+        final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
+
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-                    addToGeofenceList(entry);
-                }
-                // add the geofences
-                addGeofences();
+            public void onKeyEntered(String key, final GeoLocation location) {
+
+                ref.child(currentUID + "/" + key).addListenerForSingleValueEvent(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        String entryKey = dataSnapshot.getKey();
+                        eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                if (entry == null) {
+                                    return;
+                                }
+
+                                if (!entry.getCreator().equals(currentUID)){
+                                    addToGeofenceList(entry);
+                                    // add the geofences
+                                    addGeofences();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onKeyExited(String key) {
+                Log.d(TAG, String.format("Key %s is no longer in the search area", key));
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+                Log.d(TAG, String.format("Key %s moved within the search area to [%f,%f]", key, location.latitude, location.longitude));
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                Log.d(TAG, "All initial data has been loaded and events have been fired!");
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+                Log.d(TAG, "There was an error with this query: " + error);
             }
         });
     }

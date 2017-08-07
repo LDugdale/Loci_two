@@ -46,7 +46,7 @@ public class UserProfileFriendsFragment extends Fragment implements FriendsAdapt
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_user_friends);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new FriendsAdapter(getActivity(), this);
+        mAdapter = new FriendsAdapter(getActivity(), this, false);
         mRecyclerView.setAdapter(mAdapter);
         mUserDatabase.downloadUserFriendsForProfile(mUser.getUserID(), mAdapter);
 
