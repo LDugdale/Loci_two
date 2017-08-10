@@ -92,8 +92,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         return new NearMeFragment();
     }
 
-
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
