@@ -49,7 +49,7 @@ public class GroupProfileMembersFragment extends Fragment implements FriendsAdap
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new GroupMembersAdapter(getActivity(), mGroup);
         mRecyclerView.setAdapter(mAdapter);
-
+        mRecyclerView.setNestedScrollingEnabled(false);
 
         mUserDatabase.downloadGroupMembers(mAdapter, mGroup);
 

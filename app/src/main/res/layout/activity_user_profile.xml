@@ -8,6 +8,13 @@
     android:layout_height="match_parent"
     tools:context="com.lauriedugdale.loci.ui.activity.social.UserProfileActivity">
 
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.constraint.ConstraintLayout
+            android:descendantFocusability="blocksDescendants"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
     <android.support.constraint.ConstraintLayout
         android:id="@+id/profile_wrapper"
         android:layout_width="match_parent"
@@ -30,6 +37,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
 
         <ImageView
             android:id="@+id/profile_circle"
@@ -179,4 +187,7 @@
             android:background="@color/light_grey"/>
 
     </android.support.v4.app.FragmentTabHost>
+</android.support.constraint.ConstraintLayout>
+    </android.support.v4.widget.NestedScrollView>
+
 </android.support.constraint.ConstraintLayout>

@@ -530,6 +530,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                 } else {
                     //If the course was previously on screen
                     if (visibleMarkers.containsKey(entry.getEntryID())) {
+
                         mClusterManager.removeItem(visibleMarkers.get(entry.getEntryID()));
                         mClusterManager.cluster();
                         visibleMarkers.remove(entry.getEntryID());

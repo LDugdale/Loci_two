@@ -49,6 +49,8 @@ public class UserProfileFriendsFragment extends Fragment implements FriendsAdapt
         mAdapter = new FriendsAdapter(getActivity(), this, false);
         mRecyclerView.setAdapter(mAdapter);
         mUserDatabase.downloadUserFriendsForProfile(mUser.getUserID(), mAdapter);
+        mRecyclerView.setNestedScrollingEnabled(false);
+
 
         return rootView;
     }

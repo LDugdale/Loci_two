@@ -943,6 +943,7 @@ public class EntryDatabase extends LociData {
     }
 
     public void downloadGroupProfileEntries(final FileAdapter adapter, String groupID){
+
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("entry_permission");

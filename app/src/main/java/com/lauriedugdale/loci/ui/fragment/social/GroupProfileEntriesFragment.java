@@ -49,6 +49,7 @@ public class GroupProfileEntriesFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new FileAdapter(getActivity(), AccessPermission.VIEWER);
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setNestedScrollingEnabled(false);
 
         mEntryDatabase.downloadGroupProfileEntries(mAdapter, mGroup.getGroupID());
 

@@ -78,6 +78,8 @@ public class EntryFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new CommentsAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setNestedScrollingEnabled(false);
+
 
         // if description is empty hide it
         if (mGeoEntry.getDescription() == null){

@@ -51,6 +51,7 @@ public class UserProfileEntriesFragment extends Fragment {
         mAdapter = new FileAdapter(getActivity(), AccessPermission.VIEWER);
         mRecyclerView.setAdapter(mAdapter);
         mEntryDatabase.downloadProfileEntries(mAdapter, mUser.getUserID());
+        mRecyclerView.setNestedScrollingEnabled(false);
 
         return rootView;
     }
