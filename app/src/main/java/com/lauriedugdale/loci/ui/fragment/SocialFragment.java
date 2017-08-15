@@ -6,15 +6,19 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.NotificationDatabase;
 import com.lauriedugdale.loci.ui.activity.NotificationActivity;
 import com.lauriedugdale.loci.ui.activity.social.CreateGroup;
 import com.lauriedugdale.loci.ui.fragment.social.FriendsFragment;
@@ -28,6 +32,8 @@ public class SocialFragment extends BaseFragment {
 
     private FragmentTabHost mTabHost;
 
+    private NotificationDatabase mNotificationDatabase;
+
     public static SocialFragment create(){
 
         return new SocialFragment();
@@ -38,8 +44,7 @@ public class SocialFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-
-
+        mNotificationDatabase = new NotificationDatabase(getActivity());
     }
 
     @Nullable
@@ -110,6 +115,25 @@ public class SocialFragment extends BaseFragment {
         filterItem.setVisible(false);
         locationItem.setVisible(false);
         arItem.setVisible(false);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        MenuItem notificationItem = menu.findItem(R.id.action_notification);
+        MenuItemCompat.setActionView(notificationItem, R.layout.menu_item_notification);
+        RelativeLayout count = (RelativeLayout) MenuItemCompat.getActionView(notificationItem);
+
+        count.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), NotificationActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mNotificationDatabase.downloadUnseenNotifications(count);
     }
 
     @Override

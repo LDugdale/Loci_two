@@ -27,7 +27,6 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
     // Store the context and cursor for easy access
     private Context mContext;
     private List<Group> mGroups;
-    private UserDatabase mUserDatabase;
 
     private Group mSelectedGroup;
     public int mSelectedItem = -1;
@@ -40,7 +39,6 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
      */
     public FetchGroupsAdapter(Context context) {
         this.mContext = context;
-        mUserDatabase = new UserDatabase(context);
 
         mGroups = new ArrayList<Group>();
         mGroups.add(new Group("Everyone"));
@@ -84,8 +82,6 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
 
         viewHolder.mName.setText(group.getGroupName());
 
-        mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
-
         viewHolder.mCheckedItem.setChecked(position == mSelectedItem);
     }
 
@@ -109,7 +105,6 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
 
         // The UI elements
         public TextView mName;
-        public ImageView mProfilePic;
         public RadioButton mCheckedItem;
 
         public ViewHolder(View itemView) {
@@ -117,7 +112,6 @@ public class FetchGroupsAdapter extends RecyclerView.Adapter<FetchGroupsAdapter.
 
             // Find the UI elements
             mName = (TextView) itemView.findViewById(R.id.isg_name);
-            mProfilePic = (ImageView) itemView.findViewById(R.id.isg_profile_pic);
             mCheckedItem = (RadioButton) itemView.findViewById(R.id.isg_user_radiobutton);
 
             View.OnClickListener listener = new View.OnClickListener() {

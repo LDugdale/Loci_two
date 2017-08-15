@@ -18,8 +18,9 @@ import java.util.List;
  * Created by mnt_x on 29/06/2017.
  */
 
-public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = "ARCamera";
+public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback {
+
+    private static final String TAG = AugmentedCamera.class.getSimpleName();
 
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
@@ -36,7 +37,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
 
-    public ARCamera(Context context, SurfaceView surfaceView) {
+    public AugmentedCamera(Context context, SurfaceView surfaceView) {
         super(context);
 
         this.surfaceView = surfaceView;

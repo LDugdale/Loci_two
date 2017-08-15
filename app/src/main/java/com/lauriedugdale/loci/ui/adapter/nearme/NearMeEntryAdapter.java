@@ -86,7 +86,7 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(final NearMeEntryAdapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(final NearMeEntryAdapter.ViewHolder viewHolder, final int position) {
 
         final GeoEntry entry = mEntries.get(position);
 
@@ -100,14 +100,14 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, entry.getLatitude(), entry.getLongitude());
         // set author
         viewHolder.mAuthor.setText(entry.getCreatorName());
-
+        // Locate the file on the map
         viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
             Intent intent = new Intent(mContext, MainActivity.class);
             intent.setAction("single_entry");
-            intent.putExtra("entry", mEntries.get(viewHolder.getAdapterPosition()));
+            intent.putExtra("entry", mEntries.get(position));
             mContext.startActivity(intent);
             }
         });

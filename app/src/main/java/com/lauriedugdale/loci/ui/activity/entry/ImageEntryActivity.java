@@ -14,25 +14,25 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.utils.DataUtils;
-import com.lauriedugdale.loci.ui.activity.FullScreenActivity;
 import com.lauriedugdale.loci.ui.fragment.EntryFragment;
+import com.lauriedugdale.loci.utils.InterfaceUtils;
 
 import java.io.FileOutputStream;
-
+/**
+ * called for entries with an Image file
+ *
+ * @author Laurie Dugdale
+ */
 public class ImageEntryActivity extends AppCompatActivity implements EntryFragment.OnFragmentInteractionListener  {
 
-    public static final String TAG = "ImageEntryActivity";
+    private static final String TAG = ImageEntryActivity.class.getSimpleName();
 
     private EntryStorage mEntryStorage;
-
-    private GeoEntry mGeoEntry;
-
-    private ImageView mHeroImage;
+    private GeoEntry mGeoEntry; // stores the GeoEntry for this particular activity
+    private ImageView mHeroImage; // The Hero image displaying the image
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,70 +43,53 @@ public class ImageEntryActivity extends AppCompatActivity implements EntryFragme
 
         // get the GeoEntry to display info on this page
         mGeoEntry = getIntent().getParcelableExtra(Intent.ACTION_OPEN_DOCUMENT);
-
+        // find view
         mHeroImage = (ImageView) findViewById(R.id.view_entry_hero_image);
-
         // fetch Image from database and display it
         mEntryStorage.getFilePic(mHeroImage,mGeoEntry);
-        imageListener();
-
+        // attach the entry fragment EntryFragment
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {
                 return;
             }
-
             Fragment entryFragment = new EntryFragment();
-
             entryFragment.setArguments(getIntent().getExtras());
-
             getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, entryFragment).commit();
         }
 
-        // my_child_toolbar is defined in the layout file
-        Toolbar myChildToolbar =
-                (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(myChildToolbar);
+        InterfaceUtils.setUpToolbar(this, R.id.toolbar, "Entry");
 
-        // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
-
-        final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(getResources().getColor(R.color.light_grey), PorterDuff.Mode.SRC_ATOP);
-        getSupportActionBar().setHomeAsUpIndicator(upArrow);
-
-        ab.setTitle("Entry");
-
-        // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
+        imageListener();
     }
 
+    /**
+     * Set up lister for mHeroImage. On click the full screen activity is launched
+     * and the bitmap is passed to it
+     */
     public void imageListener(){
 
         mHeroImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 mHeroImage.buildDrawingCache();
                 Bitmap bitmap = mHeroImage.getDrawingCache();
 
                 try {
-                    //Write file
-                    String filename = "bitmap.png";
-                    FileOutputStream stream = openFileOutput(filename, Context.MODE_PRIVATE);
+                    // write the file
+                    String file = "bitmap.png";
+                    FileOutputStream stream = openFileOutput(file, Context.MODE_PRIVATE);
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                    //Cleanup
+                    // close the and clean
                     stream.close();
                     bitmap.recycle();
-
-                    //Pop intent
-                    Intent in1 = new Intent(v.getContext(), FullScreenActivity.class);
-                    in1.putExtra("image", filename);
-                    startActivity(in1);
+                    // create intent, pass it the image file, and start the activity
+                    Intent intent = new Intent(v.getContext(), FullScreenActivity.class);
+                    intent.putExtra("image", file);
+                    startActivity(intent);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
+                // clean
                 mHeroImage.destroyDrawingCache();
             }
         });

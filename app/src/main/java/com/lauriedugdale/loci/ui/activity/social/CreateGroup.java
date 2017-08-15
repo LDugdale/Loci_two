@@ -1,17 +1,10 @@
 package com.lauriedugdale.loci.ui.activity.social;
 
-import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,22 +18,24 @@ import android.widget.ImageView;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.GroupDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
+import com.lauriedugdale.loci.utils.InterfaceUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
+/**
+ * Responsible for allowing the user to create a group
+ *
+ * @author Laurie Dugdale
+ */
 public class CreateGroup extends AppCompatActivity {
-
-    //TODO create permissions class
-    public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
     // Recyclerview
     private SelectForGroupAdapter mAdapter;
     private RecyclerView mRecyclerView;
 
+    // the required database methods
     private GroupDatabase mGroupDatabase;
     private UserDatabase mUserDatabase;
 
@@ -52,6 +47,7 @@ public class CreateGroup extends AppCompatActivity {
     private Bitmap mBitmap;
     private CheckBox mPrivateGroup;
 
+    // true if the group is private
     private Boolean isPrivate;
 
 
@@ -71,31 +67,38 @@ public class CreateGroup extends AppCompatActivity {
         mNextButton = (ImageView) findViewById(R.id.next_group_page);
         mPrivateGroup = (CheckBox) findViewById(R.id.cg_private_checkbox);
 
+        // setup the recycler view
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_select_for_group);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new SelectForGroupAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
-
+        // download user friend data for the recyclerview
         mUserDatabase.downloadUserFriends(mAdapter);
 
+        InterfaceUtils.setUpToolbar(this, R.id.toolbar, "Create group");
+
         groupImageChoose();
-        nextButton();
+        onDonButtonClicked();
         privateCheckbox();
     }
 
+    /**
+     * Setup the listener for the group image, on click the user can select an image for the group
+     */
     public void groupImageChoose(){
         mGroupImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean result = checkPermission();
-                if(result) {
-                    galleryIntent();
-                }
+                // on click allow user to select file
+                galleryIntent();
             }
         });
     }
 
+    /**
+     * create intent for image chooser gallery
+     */
     private void galleryIntent() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -117,27 +120,35 @@ public class CreateGroup extends AppCompatActivity {
         });
     }
 
-    public void nextButton(){
+
+    /**
+     * Handles the click even for the done button
+     */
+    public void onDonButtonClicked(){
 
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-            if(mGroupName.getText().toString().length() < 1 ){
-                return;
-            }
+                // if group name is empty do not allow user to proceed
+                if(mGroupName.getText().toString().length() < 1 ){
+                    return;
+                }
 
-            if (mUploadData == null){
-                mGroupDatabase.uploadGroupWithoutPic(mAdapter.getCheckedItems(),
-                        mGroupName.getText().toString(),
-                        isPrivate);
-            } else {
-                mGroupDatabase.uploadGroupWithPic(mAdapter.getCheckedItems(),
-                        mGroupName.getText().toString(),
-                        mUploadData,
-                        isPrivate);
-            }
-            finish();
+                // if upload data is null upload group without a pic
+                if (mUploadData == null){
+                    mGroupDatabase.uploadGroupWithoutPic(mAdapter.getCheckedItems(),
+                            mGroupName.getText().toString(),
+                            isPrivate);
+                // else upload with a pic
+                } else {
+                    mGroupDatabase.uploadGroupWithPic(mAdapter.getCheckedItems(),
+                            mGroupName.getText().toString(),
+                            mUploadData,
+                            isPrivate);
+                }
+                // finish the activity
+                finish();
             }
         });
     }
@@ -146,15 +157,18 @@ public class CreateGroup extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // if successful
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == 1) {
+                // set the upload data to the field variable
                 mUploadData = data.getData();
                 InputStream stream = null;
                 try {
-
+                    // create bitmap from intent data
                     stream = getContentResolver().openInputStream(data.getData());
                     mBitmap = BitmapFactory.decodeStream(stream);
                     stream.close();
+                    // add the bitmap to the image
                     mGroupImage.setImageBitmap(mBitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -164,39 +178,6 @@ public class CreateGroup extends AppCompatActivity {
 
                 }
             }
-        }
-    }
-
-    public boolean checkPermission() {
-        int currentAPIVersion = Build.VERSION.SDK_INT;
-        if(currentAPIVersion>=android.os.Build.VERSION_CODES.M) {
-
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-                if (ActivityCompat.shouldShowRequestPermissionRationale(CreateGroup.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
-                    android.support.v7.app.AlertDialog.Builder alertBuilder = new android.support.v7.app.AlertDialog.Builder(this);
-                    alertBuilder.setCancelable(true);
-                    alertBuilder.setTitle("Permission necessary");
-                    alertBuilder.setMessage("External storage permission is necessary");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(CreateGroup.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-                        }
-                    });
-                    android.support.v7.app.AlertDialog alert = alertBuilder.create();
-                    alert.show();
-                } else {
-
-                    ActivityCompat.requestPermissions(CreateGroup.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return true;
         }
     }
 }

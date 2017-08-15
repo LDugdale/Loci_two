@@ -16,11 +16,12 @@
         android:elevation="1dp"/>
 
     <FrameLayout
-        android:id="@+id/camera_container_layout"
+        android:id="@+id/overlay_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <SurfaceView
-            android:id="@+id/surface_view"
+            android:id="@+id/camera_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </FrameLayout>

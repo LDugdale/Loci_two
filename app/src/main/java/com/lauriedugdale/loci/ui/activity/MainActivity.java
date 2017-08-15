@@ -20,7 +20,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.UserDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.services.GeoFencingService;
@@ -39,6 +38,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.ArrayList;
 
+/**
+ * The main activity holds the main fragments (SocialFragment, MainFragment, NearMeFragment)
+ * These are the main views of the applications.
+ *
+ * The GeoFencingService is also started when this is run.
+ *
+ * @author Laurie Dugdale
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -49,18 +56,21 @@ public class MainActivity extends AppCompatActivity {
     private TextView mUsername; // Current logged in username
     private TextView mEmail; // Current logged in email
     private ImageView mMenuProfileImage; // Current logged in profile
-    private TextView mSearch;
-    private ViewPager mViewPager;
-    private MainActivityAdapter mAdapter;
+    private TextView mSearch; // the search text in the actionbar
+    private ViewPager mViewPager; // the viewpager the container for switching between fragments
+    private MainActivityAdapter mAdapter; // contains the logic for switching between fragments
 
-    private LociNavView mTabsView;
+    private LociNavView mNavView; // Contains the logic for the main navigation
 
     private FirebaseAuth mAuth;
+    private UserDatabase mUserDatabase; // For accessing the user data from the database
 
-    private UserDatabase mUserDatabase;
-
-    public LociNavView getmTabsView() {
-        return mTabsView;
+    /**
+     * This getter is used for hiding the nav in certain situations
+     * @return returns the NavView
+     */
+    public LociNavView getNavView() {
+        return mNavView;
     }
 
     @Override
@@ -69,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mUserDatabase = new UserDatabase(this);
-
         mAuth = FirebaseAuth.getInstance();
 
         //find view pager and Adapter for managing fragments
@@ -79,8 +88,8 @@ public class MainActivity extends AppCompatActivity {
         mSearch = (TextView) findViewById(R.id.main_search);
 
         // find navigation tabs and start listeners
-        mTabsView = (LociNavView) findViewById(R.id.am_loci_tabs);
-        mTabsView.setUpWithViewPager(mViewPager, this);
+        mNavView = (LociNavView) findViewById(R.id.am_loci_tabs);
+        mNavView.setUpWithViewPager(mViewPager, this);
 
         // set initial fragment
         mViewPager.setCurrentItem(1);
@@ -89,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, GeoFencingService.class);
         startService(intent);
 
+        // When search is clicked launch the SearchActivity
         mSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,14 +114,15 @@ public class MainActivity extends AppCompatActivity {
             broadcastLocationsOnReceive(geofenceEntries);
         }
 
-
-
         // Find the toolbar and initialise the navigation drawer
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         initNavigationDrawer();
     }
 
+    /**
+     * Triggered in the main fragment once set up to broadcast any intents the MainActivity has
+     */
     public void displayToMap(){
         LocalBroadcastManager.getInstance(this).sendBroadcast(getIntent());
     }
@@ -119,8 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * When the main activity receives a geofence intent from the notifications this method is called
-     * to send the MainFragment, the data needed to display the markers or the Entry View.
-     * TODO consider using an interface instead of a LocalBroadcast
+     * to send the MainFragment, the data needed to display the markers or the Entry View
      * @param geofenceEntries
      */
     public void broadcastLocationsOnReceive(final ArrayList<GeoEntry> geofenceEntries){
@@ -159,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "Sending geofence_entries");
 
                     Intent intent = new Intent("geofence_entries");
+                    intent.setAction("geofence_entries");
                     intent.putExtra("entries", geofenceEntries);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(intent);
                 }
@@ -167,27 +178,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Getter for ViewPager
-     * used by MainFragment to set the page number when a broadcast is received
-     * @return
-     */
-    public ViewPager getViewPager() {
-        return mViewPager;
-    }
-
-    /**
      * Initialises the navigation drawer and
      */
     public void initNavigationDrawer() {
 
+        // Get NavigationView
         NavigationView navigationView = (NavigationView)findViewById(R.id.navigation_view);
+        // setup listener for handling menu item select events
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-
             int id = menuItem.getItemId();
             switch (id){
-
                 case R.id.edit_profile:
                     startActivity(new Intent(MainActivity.this, ProfileSettingsActivity.class));
                     break;
@@ -204,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        // find the elements in the nav header
         View header = navigationView.getHeaderView(0);
         mUsername = (TextView)header.findViewById(R.id.tv_username);
         mEmail = (TextView)header.findViewById(R.id.tv_email);
@@ -213,17 +215,16 @@ public class MainActivity extends AppCompatActivity {
         // Fetch the profile picture for the currently logged in user to display in the nav drawer
         mUserDatabase.downloadProfilePic(mMenuProfileImage, R.drawable.default_profile);
 
+        // setup the users details that are displayed in the navigation pane
+        ///TODO Maybe move this to UserDatabase class
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("users");
         ref.child(mUserDatabase.getCurrentUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     User user = dataSnapshot.getValue(User.class);
                     mUsername.setText(user.getUsername());
                     mEmail.setText(user.getEmail());
-
-                }
             }
 
             @Override
@@ -231,9 +232,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        // find drawer view
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer);
-
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout,mToolbar,R.string.openDrawer,R.string.closeDrawer){
 
             @Override
@@ -253,9 +253,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
+        //inflate menu
         getMenuInflater().inflate(R.menu.main, menu);
-
-
         return true;
     }
 }

@@ -115,6 +115,8 @@
     <string name="groups_post">Groups</string>
     <string name="anyone_post">Everyone</string>
     <string name="bus_post">Bus stops</string>
+    <string name="no_entries">There are no entries in your area</string>
+    <string name="be_the_first">Be the first to leave your mark!</string>
 
     // Upload
     <string name="empty_title">Please enter a title</string>

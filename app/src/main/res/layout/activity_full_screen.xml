@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.lauriedugdale.loci.ui.activity.FullScreenActivity"
+    tools:context="com.lauriedugdale.loci.ui.activity.entry.FullScreenActivity"
     android:background="@color/black">
 
     <ImageView

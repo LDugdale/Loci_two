@@ -23,12 +23,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.lauriedugdale.loci.AdminCheckListener;
+import com.lauriedugdale.loci.listeners.AdminCheckListener;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
 import com.lauriedugdale.loci.ui.adapter.social.FriendsAdapter;
-import com.lauriedugdale.loci.ui.adapter.NotificationFriendsAdapter;
+import com.lauriedugdale.loci.ui.adapter.notifications.NotificationFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
 import com.lauriedugdale.loci.ui.adapter.social.GroupMembersAdapter;
 import com.lauriedugdale.loci.utils.DataUtils;
@@ -462,6 +462,10 @@ public class UserDatabase extends LociData {
      * For reading a single GeoEntry
      */
     public void downloadNonLoggedInProfilePic(String userID, final ImageView image, final int drawableID) {
+
+        if (userID == null){
+            return;
+        }
 
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();

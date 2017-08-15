@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci;
+package com.lauriedugdale.loci.listeners;
 
 /**
  * Created by mnt_x on 12/07/2017.

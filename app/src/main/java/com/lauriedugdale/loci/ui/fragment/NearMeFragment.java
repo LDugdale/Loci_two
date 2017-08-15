@@ -11,31 +11,25 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
+import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.EntryStorage;
 import com.lauriedugdale.loci.data.TransportRest;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.adapter.nearme.BusStopsAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.HeroNearMeAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.NearMeEntryAdapter;
-
-import java.util.ArrayList;
-import java.util.Random;
 
 
 /**
@@ -71,6 +65,8 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     private NearMeEntryAdapter mAnyoneAdapter;
     private BusStopsAdapter mBusStopAdapter;
     private HeroNearMeAdapter mHeroAdapter;
+
+    private LinearLayout mNoEntries;
 
 
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
@@ -124,30 +120,41 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     @Override
     public void onEntriesDownloaded() {
 
+        boolean haveEntries = false;
+
         if (mHeroAdapter.hasEntries()){
             mHeroRecyclerView.setVisibility(View.VISIBLE);
+            haveEntries = true;
         } else {
             mHeroRecyclerView.setVisibility(View.GONE);
         }
 
         if (mFriendsAdapter.hasEntries()){
             mFriendsWrapper.setVisibility(View.VISIBLE);
+            haveEntries = true;
         } else {
             mFriendsWrapper.setVisibility(View.GONE);
         }
 
         if (mGroupsAdapter.hasEntries()){
             mGroupsWrapper.setVisibility(View.VISIBLE);
+            haveEntries = true;
         } else {
             mGroupsWrapper.setVisibility(View.GONE);
         }
 
         if (mAnyoneAdapter.hasEntries()){
             mAnyoneWrapper.setVisibility(View.VISIBLE);
+            haveEntries = true;
         } else {
             mAnyoneWrapper.setVisibility(View.GONE);
         }
 
+        if (!haveEntries){
+            mNoEntries.setVisibility(View.VISIBLE);
+        } else {
+            mNoEntries.setVisibility(View.GONE);
+        }
     }
 
 
@@ -200,6 +207,8 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         mBusRecyclerView.setAdapter(mBusStopAdapter);
         mHeroAdapter = new HeroNearMeAdapter(getActivity());
         mHeroRecyclerView.setAdapter(mHeroAdapter);
+
+        mNoEntries = (LinearLayout) rootView.findViewById(R.id.no_entries);
 
         return rootView;
     }
@@ -264,6 +273,7 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         arItem.setVisible(false);
         notificationItem.setVisible(false);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -20,12 +20,17 @@ import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
+/**
+ * This activity handles the main search functionality for the app
+ *
+ * @author Laurie Dugdale
+ */
 public class SearchActivity extends AppCompatActivity {
 
     private ImageView mClose;
     private EditText mSearch;
 
-    // private SelectFriendsAdapter mAdapter;
+    // the various sections and adapters required for displaying results
     private SectionedRecyclerViewAdapter mSectionAdapter;
     private RecyclerView mRecyclerView;
     private SearchDatabase mSearchDatabase;
@@ -62,6 +67,8 @@ public class SearchActivity extends AppCompatActivity {
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_search_friends);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mSectionAdapter);
+
+        // when close is clicked finish activity
         mClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,6 +81,8 @@ public class SearchActivity extends AppCompatActivity {
 
 
     public void handleSearch(){
+
+        // listen for changes in the EditText mSearch
         mSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -82,19 +91,18 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-                // if string is empty
+                // if string is empty clear data from the sections and hide them
                 if(s.toString().equals("")){
 
                     mUsersSection.clearData();
                     mUsersSection.setVisible(false);
-
                     mGroupsSection.clearData();
                     mGroupsSection.setVisible(false);
-
                     mFilesSection.clearData();
                     mFilesSection.setVisible(false);
 
                     mSectionAdapter.notifyDataSetChanged();
+                // else perform a search
                 } else {
                     mSearchDatabase.search(mSectionAdapter, mUsersSection, mGroupsSection, mFilesSection, s.toString().toUpperCase());
                 }

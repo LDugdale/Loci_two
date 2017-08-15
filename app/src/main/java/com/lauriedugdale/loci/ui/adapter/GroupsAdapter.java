@@ -4,23 +4,18 @@ import android.content.Context;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.AdminCheckListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.GroupDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.lauriedugdale.loci.utils.FilterView.user;
 
 /**
  * Created by mnt_x on 28/06/2017.
@@ -28,10 +23,8 @@ import static com.lauriedugdale.loci.utils.FilterView.user;
 
 public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder> {
 
-
-    // Store the context and cursor for easy access
-    private Context mContext;
-    private List<Group> mGroups;
+    private Context mContext; // the current context
+    private List<Group> mGroups;// the groups being displayed
 
     private GroupDatabase mGroupDatabase;
 
@@ -59,6 +52,10 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
         mGroupDatabase = new GroupDatabase(context);
     }
 
+    /**
+     * add to Groups and notify that the data set has changed
+     * @param group
+     */
     public void addToGroups(Group group){
         mGroups.add(group);
         notifyDataSetChanged();
@@ -89,24 +86,23 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
 
         // set username
         viewHolder.mName.setText(group.getGroupName());
-
         // set profile picture
         mGroupDatabase.downloadGroupPic(viewHolder.mGroupPic, R.drawable.default_profile, group.getProfilePicturePath());
-
+        // creates menu when options is clicked
         viewHolder.mOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //creating a popup menu
                 final PopupMenu popup = new PopupMenu(mContext, viewHolder.mOptions);
-                //inflating menu from xml resource
+                //inflate menu
                 popup.inflate(R.menu.group_options);
-
-                //adding click listener
+                // listener for the menu item click
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
+                            // remove friend option
                             case R.id.remove_friend:
+                                // remove member from group
                                 mGroupDatabase.removeGroupMember(group.getGroupID(), null);
                                 mGroups.remove(position);
                                 notifyDataSetChanged();
@@ -115,7 +111,6 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
                         return false;
                     }
                 });
-                //displaying the popup
                 popup.show();
             }
         });

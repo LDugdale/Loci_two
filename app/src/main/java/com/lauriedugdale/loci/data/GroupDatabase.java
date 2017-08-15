@@ -20,13 +20,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.lauriedugdale.loci.AdminCheckListener;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
+import com.lauriedugdale.loci.listeners.AdminCheckListener;
 import com.lauriedugdale.loci.R;
-import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
-import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.utils.SocialUtils;
@@ -153,9 +150,9 @@ public class GroupDatabase extends LociData {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                getDatabase().child("groups").child(group.getGroupID()).setValue(group);
                 final Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 group.setProfilePicturePath(downloadUrl.toString());
+                getDatabase().child("groups").child(group.getGroupID()).setValue(group);
                 getDatabase().child("group_access").child(getCurrentUID() + "/" + group.getGroupID()).setValue(group);
                 getDatabase().child("group_permission").child(group.getGroupID()).child(getCurrentUID()).setValue(SocialUtils.CREATOR);
                 getDatabase().child("group_members").child(group.getGroupID() + "/"  + getCurrentUID()).setValue(getCurrentUsername());
@@ -321,13 +318,11 @@ public class GroupDatabase extends LociData {
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
 
                 gID[0] = dataSnapshot.getKey();
-                ref.orderByChild(gID[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                ref.child(gID[0]).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            Group group = postSnapshot.getValue(Group.class);
-                            adapter.addToGroups(group);
-                        }
+                        Group group = dataSnapshot.getValue(Group.class);
+                        adapter.addToGroups(group);
                     }
 
                     @Override

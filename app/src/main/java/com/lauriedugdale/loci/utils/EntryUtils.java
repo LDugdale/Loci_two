@@ -5,9 +5,10 @@ import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 
 /**
- * Created by mnt_x on 01/08/2017.
+ * Contains helper methods for the GeoEntry classes
+ *
+ * @author Laurie Dugdale
  */
-
 public class EntryUtils {
 
     /**

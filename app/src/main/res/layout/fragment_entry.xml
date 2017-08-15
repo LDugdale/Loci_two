@@ -30,7 +30,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.lauriedugdale.loci.CircularImageView
+        <com.lauriedugdale.loci.ui.customviews.CircularImageView
             android:id="@+id/view_entry_author_pic"
             android:layout_width="48dp"
             android:layout_height="48dp"

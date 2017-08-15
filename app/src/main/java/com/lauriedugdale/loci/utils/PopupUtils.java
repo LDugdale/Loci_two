@@ -14,6 +14,8 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.data.dataobjects.BusStop;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.adapter.MapClusterAdapter;
 import com.lauriedugdale.loci.ui.nav.LociNavView;
@@ -127,18 +129,15 @@ public class PopupUtils {
         ImageView entryImage = (ImageView) popupView.findViewById(R.id.info_bar_type);
         TextView showEntry = (TextView) popupView.findViewById(R.id.info_bar_show_entry);
         TextView entryDistance = (TextView) popupView.findViewById(R.id.info_bar_marker_distance);
-        TextView entryDate = (TextView) popupView.findViewById(R.id.info_bar_marker_date);
         TextView entryAuthor = (TextView) popupView.findViewById(R.id.info_bar_marker_author);
 
         // set type image
-        EntryUtils.getFilePic(entryImage, entry);
+        UserDatabase userDatabase = new UserDatabase(context);
+        userDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), entryImage, R.drawable.default_profile);
         // set title
         entryTitle.setText(entry.getTitle());
         // display distance
         LocationUtils.displayDistance(entryDistance, context, entry.getLatitude(), entry.getLongitude());
-        // set date
-        String dateString = new java.text.SimpleDateFormat("EEE, d MMM 'at' HH:mm", Locale.UK).format(new Date( entry.getUploadDate()));
-        entryDate.setText(dateString);
         // set author
         entryAuthor.setText(entry.getCreatorName());
 
@@ -154,6 +153,56 @@ public class PopupUtils {
             }
 
         });
+    }
 
+    public static void showBusMarkerInfoPopup(final Context context, View anchorView, final BusStop busStop, boolean mDisplayingCustomEntries) {
+
+        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+
+        int actionBarSize = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+        int topMargin = 0;
+        if (mDisplayingCustomEntries){
+            topMargin = actionBarSize + 62 + 102;
+        } else {
+            topMargin = actionBarSize + 62;
+
+        }
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        View popupView = inflater.inflate(R.layout.popup_map_entry_info, null);
+
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        int location[] = new int[2];
+
+        // Get the View's(the one that was clicked in the Fragment) location
+        anchorView.getLocationOnScreen(location);
+
+        // Using location, the PopupWindow will be displayed right under anchorView
+        popupWindow.showAtLocation(anchorView, Gravity.TOP, 0, topMargin);
+
+        // connect time UI elements
+        TextView entryTitle = (TextView) popupView.findViewById(R.id.info_bar_title);
+        ImageView entryImage = (ImageView) popupView.findViewById(R.id.info_bar_type);
+        TextView showEntry = (TextView) popupView.findViewById(R.id.info_bar_show_entry);
+        TextView entryDistance = (TextView) popupView.findViewById(R.id.info_bar_marker_distance);
+        TextView entryAuthor = (TextView) popupView.findViewById(R.id.info_bar_marker_author);
+
+        // Dont need the image or show entry
+        showEntry.setVisibility(View.GONE);
+        entryImage.setVisibility(View.GONE);
+        // set title
+        entryTitle.setText(busStop.getName());
+        // display distance
+        LocationUtils.displayDistance(entryDistance, context, busStop.getLatitude(), busStop.getLongitude());
+        // set author
+        entryAuthor.setText(busStop.getLocality());
     }
 }

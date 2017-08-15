@@ -5,7 +5,7 @@ import android.icu.util.Calendar;
 import android.util.SparseBooleanArray;
 
 import com.lauriedugdale.loci.utils.DataUtils;
-import com.lauriedugdale.loci.utils.FilterView;
+import com.lauriedugdale.loci.FilterView;
 
 import java.text.ParseException;
 import java.util.Locale;

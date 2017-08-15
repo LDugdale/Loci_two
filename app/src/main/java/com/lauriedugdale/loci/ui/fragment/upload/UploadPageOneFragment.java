@@ -166,11 +166,8 @@ public class UploadPageOneFragment extends Fragment {
         mImageItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean result=checkPermission();
-                mChosenTask = SELECT_FILE;
-                if(result) {
-                    galleryIntent();
-                }
+            mChosenTask = SELECT_FILE;
+            galleryIntent();
             }
         });
     }
@@ -179,11 +176,8 @@ public class UploadPageOneFragment extends Fragment {
         mAudioItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean result=checkPermission();
-                mChosenTask = SELECT_AUDIO;
-                if(result) {
-                    audioIntent();
-                }
+            mChosenTask = SELECT_AUDIO;
+            audioIntent();
             }
         });
     }
@@ -192,11 +186,8 @@ public class UploadPageOneFragment extends Fragment {
         mCameraItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean result=checkPermission();
-                mChosenTask = REQUEST_CAMERA;
-                if(result) {
-                    cameraIntent();
-                }
+            mChosenTask = REQUEST_CAMERA;
+            cameraIntent();
             }
         });
     }
@@ -325,37 +316,6 @@ public class UploadPageOneFragment extends Fragment {
         return  displayName;
     }
 
-    public boolean checkPermission() {
-        int currentAPIVersion = Build.VERSION.SDK_INT;
-        if(currentAPIVersion>=android.os.Build.VERSION_CODES.M)
-        {
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    android.support.v7.app.AlertDialog.Builder alertBuilder = new android.support.v7.app.AlertDialog.Builder(getActivity());
-                    alertBuilder.setCancelable(true);
-                    alertBuilder.setTitle("Permission necessary");
-                    alertBuilder.setMessage("External storage permission is necessary");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-                        }
-                    });
-                    android.support.v7.app.AlertDialog alert = alertBuilder.create();
-                    alert.show();
-
-                } else {
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return true;
-        }
-    }
-
     private void onViewableSelectionClick(){
         mViewableSelection.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -370,8 +330,7 @@ public class UploadPageOneFragment extends Fragment {
 
         final View popupView = getActivity().getLayoutInflater().inflate(R.layout.popup_viewable, null);
 
-//        PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
-        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT , true);
+        final PopupWindow popupWindow = new PopupWindow(popupView, RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT , true);
 
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
@@ -387,6 +346,14 @@ public class UploadPageOneFragment extends Fragment {
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
 
         TextView done = (TextView) popupView.findViewById(R.id.done);
+        View background = popupView.findViewById(R.id.pv_background);
+
+        background.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
 
         mRecyclerView = (RecyclerView) popupView.findViewById(R.id.rv_select_group);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
@@ -435,14 +402,9 @@ public class UploadPageOneFragment extends Fragment {
         Activity activity = null;
 
         if (context instanceof Activity){
-            activity=(Activity) context;
+            activity = (Activity)context;
         }
 
-        try {
-            mCallback = (OnNextButtonClickedListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnNextButtonClickedListener");
-        }
+        mCallback = (OnNextButtonClickedListener) activity;
     }
 }

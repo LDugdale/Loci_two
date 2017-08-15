@@ -1,9 +1,10 @@
 package com.lauriedugdale.loci.utils;
 
 /**
- * Created by mnt_x on 05/07/2017.
+ * Contains helper methods and constants for the GeoFencing classes
+ *
+ * @author Laurie Dugdale
  */
-
 public final class GeofencingUtils {
 
     /**

@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.utils;
+package com.lauriedugdale.loci;
 
 /**
  * Created by mnt_x on 25/07/2017.

@@ -1,14 +1,10 @@
 package com.lauriedugdale.loci.data;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
-import android.util.JsonReader;
-import android.util.JsonToken;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
 import com.lauriedugdale.loci.data.dataobjects.BusStop;
 import com.lauriedugdale.loci.ui.adapter.nearme.BusStopsAdapter;
 import com.lauriedugdale.loci.utils.LocationUtils;
@@ -26,8 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
 
 
 /**

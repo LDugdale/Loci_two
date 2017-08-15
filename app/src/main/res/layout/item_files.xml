@@ -39,7 +39,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintHorizontal_bias="0.0" />
 
-        <com.lauriedugdale.loci.CircularImageView
+        <com.lauriedugdale.loci.ui.customviews.CircularImageView
             android:id="@+id/if_author_pic"
             android:layout_alignParentRight="true"
             android:layout_width="50dp"

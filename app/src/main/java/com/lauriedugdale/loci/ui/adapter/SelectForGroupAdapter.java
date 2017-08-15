@@ -19,21 +19,20 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * Adapter used when selecting which friends too add to a group during group creation
+ *
  * @author Laurie Dugdale
  */
 
 public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAdapter.ViewHolder> {
 
-    // Store the context and cursor for easy access
-    private Context mContext;
-    private List<User> mUsers;
-    private UserDatabase mUserDatabase;
-
-    private HashMap<String, String> mCheckedItems;
-
+    private Context mContext; // context
+    private List<User> mUsers; // users to display
+    private UserDatabase mUserDatabase; // access to the database
+    private HashMap<String, String> mCheckedItems; // stores the currently checked items
 
     /**
-     * Entry adapter constructor
+     * SelectForGroupAdapter constructor
      *
      * @param context
      */
@@ -41,20 +40,30 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
         this.mContext = context;
         mUsers = new ArrayList<User>();
         mUserDatabase = new UserDatabase(context);
-
         mCheckedItems = new HashMap<String, String>();
     }
 
+    /**
+     * add to the users list and notify the data set has changed
+     * @param user
+     */
     public void addToUsers(User user){
         mUsers.add(user);
         notifyDataSetChanged();
     }
 
+    /**
+     * empty the users list and notify the data set changed
+     */
     public void clearData(){
         mUsers.clear();
         notifyDataSetChanged();
     }
 
+    /**
+     * getter for the checked items hash map
+     * @return
+     */
     public HashMap<String, String> getCheckedItems() {
         return mCheckedItems;
     }
@@ -66,12 +75,8 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
     public SelectForGroupAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
-
-
         // inflate second item layout & return that viewHolder
         contactView = inflater.inflate(R.layout.item_select_for_group, parent, false);
-
-
         // Return a new holder instance
         return new SelectForGroupAdapter.ViewHolder(contactView);
     }
@@ -85,15 +90,15 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
         final User user = mUsers.get(position);
         // set username
         viewHolder.mName.setText(user.getUsername());
-
-        mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
-
+        // get the profile picture for the current user
+        mUserDatabase.downloadNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
+        // check if the current item is checked
         if (mCheckedItems.containsKey(user.getUserID())){
             viewHolder.mCheckedItem.setChecked(true);
         } else {
             viewHolder.mCheckedItem.setChecked(false);
         }
-
+        // listen for check changing and add or remove from map accordingly
         viewHolder.mCheckedItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -104,7 +109,6 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
                 }
             }
         });
-
     }
 
 
@@ -137,7 +141,6 @@ public class SelectForGroupAdapter extends RecyclerView.Adapter<SelectForGroupAd
             mName = (TextView) itemView.findViewById(R.id.isfg_name);
             mProfilePic = (ImageView) itemView.findViewById(R.id.isfg_profile_pic);
             mCheckedItem = (CheckBox) itemView.findViewById(R.id.isfg_user_checkbox);
-
         }
     }
 }

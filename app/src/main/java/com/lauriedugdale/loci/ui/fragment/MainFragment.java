@@ -1,14 +1,11 @@
 package com.lauriedugdale.loci.ui.fragment;
 
-import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
-import android.icu.text.SimpleDateFormat;
-import android.icu.util.Calendar;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -47,11 +43,10 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
-import com.lauriedugdale.loci.EntryItem;
-import com.lauriedugdale.loci.EventIconRendered;
-import com.lauriedugdale.loci.data.GroupDatabase;
-import com.lauriedugdale.loci.data.UserDatabase;
+import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
+import com.lauriedugdale.loci.map.EntryItem;
+import com.lauriedugdale.loci.map.EventIconRendered;
+import com.lauriedugdale.loci.data.dataobjects.BusStop;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
@@ -61,25 +56,26 @@ import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.ui.activity.AugmentedActivity;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
-import com.lauriedugdale.loci.utils.FilterView;
+import com.lauriedugdale.loci.FilterView;
 import com.lauriedugdale.loci.utils.PopupUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 
 /**
- * Created by mnt_x on 28/05/2017.
+ * This fragment contains the main map view
+ *
+ * @author Laurie Dugdale
  */
-
 public class MainFragment extends BaseFragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
                                                                 GoogleApiClient.OnConnectionFailedListener,
                                                                 GoogleMap.OnInfoWindowClickListener,
                                                                 GoogleMap.OnMapLongClickListener,
                                                                 GoogleMap.OnMapClickListener,
-                                                                GoogleMap.OnMarkerClickListener {
+                                                                GoogleMap.OnMarkerClickListener,
+                                                                ClusterManager.OnClusterItemClickListener<EntryItem> {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -118,12 +114,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     private User mUser;
     private Group mGroup;
     private GeoEntry mEntry;
+    private BusStop mBusStop;
     private ArrayList<GeoEntry> mGeofenceList;
     private boolean mFirstIdle;
     private boolean mDisplayingCustomEntries;
     private EntryItem mMarker;
 
-
+    // this broad cast receiver listens for events that require the displaying of specific entries on the map
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -151,15 +148,22 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
                 addEntry();
                 setupCurrentlyViewing();
             }
+            if ("bus_stop".equals(intent.getAction())) {
+                mCurrentlyDisplaying = "bus_stop";
+                mBusStop = intent.getParcelableExtra("bus_stop");
+                addBusEntry();
+                setupCurrentlyViewing();
+            }
             if ("geofence_entries".equals(intent.getAction())) {
                 mCurrentlyDisplaying = "geofence_entries";
                 mGeofenceList = intent.getParcelableArrayListExtra("entries");
                 for (GeoEntry e : mGeofenceList) {
                     mEntryMap.put(e.getEntryID(), e);
                 }
+                mFirstIdle = true;
+                setupCurrentlyViewing();
                 addAllEntriesToMap();
                 getBounds();
-
             }
         }
     };
@@ -180,11 +184,12 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             mViewingName.setText(mUser.getUsername());
         } else if (mCurrentlyDisplaying.equals("single_entry")) {
             mViewingName.setText(mEntry.getTitle());
-
         } else if (mCurrentlyDisplaying.equals("geofence_entries")) {
             mViewingName.setText("Nearby entries");
         } else if (mCurrentlyDisplaying.equals("group_entries")) {
             mViewingName.setText(mGroup.getGroupName());
+        } else if (mCurrentlyDisplaying.equals("bus_stop")) {
+            mViewingName.setText(mBusStop.getName());
         }
 
         mViewingClose.setOnClickListener(new View.OnClickListener() {
@@ -192,6 +197,10 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             public void onClick(View v) {
                 mViewingWindow.setVisibility(View.INVISIBLE);
                 mDisplayingCustomEntries = false;
+
+                if (mCurrentlyDisplaying.equals("bus_stop")) {
+                    mClusterManager.setOnClusterItemClickListener(MainFragment.this);
+                }
                 mCurrentlyDisplaying = "all";
                 if (mMarker != null) {
                     mClusterManager.removeItem(mMarker);
@@ -298,6 +307,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         filter.addAction("group_entries");
         filter.addAction("geofence_entries");
         filter.addAction("single_entry");
+        filter.addAction("bus_stop");
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mDataReceiver, filter);
 
         setUpMapIfNeeded();
@@ -358,20 +368,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         final EventIconRendered rendered = new EventIconRendered(getActivity().getApplicationContext(), googleMap, mClusterManager);
         mClusterManager.setRenderer(rendered);
 
-        mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<EntryItem>() {
-            @Override
-            public boolean onClusterItemClick(EntryItem entryItem) {
-                GeoEntry currentEntry = entryItem.getGeoEntry();
-                PopupUtils.showMarkerInfoPopup(getActivity(), mMainLayout, currentEntry, mDisplayingCustomEntries);
-                return true;
-            }
-        });
+        mClusterManager.setOnClusterItemClickListener(this);
 
         mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<EntryItem>() {
             @Override
             public boolean onClusterClick(Cluster<EntryItem> cluster) {
                 ArrayList<EntryItem> clusterList = (ArrayList) cluster.getItems();
-                PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, clusterList, mDisplayingCustomEntries, ((MainActivity)getActivity()).getmTabsView());
+                PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, clusterList, mDisplayingCustomEntries, ((MainActivity)getActivity()).getNavView());
                 return true;
             }
         });
@@ -386,6 +389,13 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
 
         ((MainActivity) getActivity()).displayToMap();
     }
+
+
+    @Override
+    public boolean onClusterItemClick(EntryItem entryItem) {
+        GeoEntry currentEntry = entryItem.getGeoEntry();
+        PopupUtils.showMarkerInfoPopup(getActivity(), mMainLayout, currentEntry, mDisplayingCustomEntries);
+        return true;    }
 
     private GoogleMap.OnCameraIdleListener getCameraIdleListener() {
         return new GoogleMap.OnCameraIdleListener() {
@@ -450,8 +460,8 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
     }
 
     private void getBounds() {
-
         if (mCurrentlyDisplaying.equals("all") || !mFirstIdle) {
+            System.out.println(mCurrentlyDisplaying);
             return;
         }
 
@@ -468,7 +478,7 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             @Override
             public void onFinish() {
                 if (mCurrentlyDisplaying.equals("geofence_entries")) {
-                    PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, mGeofenceList, mDisplayingCustomEntries, ((MainActivity)getActivity()).getmTabsView());
+                    PopupUtils.showClusterInfoPopup(getActivity(), mMainLayout, mGeofenceList, mDisplayingCustomEntries, ((MainActivity)getActivity()).getNavView());
                 }
 
             }
@@ -498,6 +508,34 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
             @Override
             public void onFinish() {
                 PopupUtils.showMarkerInfoPopup(getActivity(), mMainLayout, mEntry, mDisplayingCustomEntries);
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+    }
+
+
+    private void addBusEntry() {
+        mMarker = new EntryItem(mBusStop.getLatitude(), mBusStop.getLongitude(), mBusStop.getName(), 0, null);
+        mClusterManager.addItem(mMarker);
+        mClusterManager.cluster();
+
+        mClusterManager.setOnClusterItemClickListener(null);
+        CameraPosition position = CameraPosition.builder()
+                .target(new LatLng(mBusStop.getLatitude(),
+                        mBusStop.getLongitude()))
+                .zoom(16f)
+                .bearing(0.0f)
+                .tilt(0.3f)
+                .build();
+
+        getMap().animateCamera(CameraUpdateFactory.newCameraPosition(position), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                PopupUtils.showBusMarkerInfoPopup(getActivity(), mMainLayout, mBusStop, mDisplayingCustomEntries);
             }
 
             @Override
@@ -652,12 +690,21 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         // Using location, the PopupWindow will be displayed right under anchorView
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
 
+
+
         // connect time UI elements
         final CheckBox checkBoxImage = (CheckBox) popupView.findViewById(R.id.checkbox_image);
         final CheckBox checkBoxAudio = (CheckBox) popupView.findViewById(R.id.checkbox_audio);
         final CheckBox checkBoxPost = (CheckBox) popupView.findViewById(R.id.checkbox_post);
-
         Button button = (Button) popupView.findViewById(R.id.apply_filters);
+        View background = popupView.findViewById(R.id.pf_background);
+
+        background.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
 
 
         if (mFilterOptions.getCheckedTypes().get(DataUtils.NO_MEDIA)){

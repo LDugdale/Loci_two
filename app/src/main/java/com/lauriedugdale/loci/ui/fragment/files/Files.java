@@ -41,7 +41,6 @@ public class Files extends Fragment  {
         mAdapter = new FileAdapter(getActivity(), AccessPermission.OWNER);
         mRecyclerView.setAdapter(mAdapter);
 
-        // TODO sort out duplication issue or make singlevalueeventlistner trigger twice when switching between fragments
         mEntryDatabase.downloadUserEntries(mAdapter);
 
         return view;

@@ -7,7 +7,7 @@
     android:layout_height="100dp"
     android:gravity="center">
 
-    <com.lauriedugdale.loci.CircularImageView
+    <com.lauriedugdale.loci.ui.customviews.CircularImageView
         android:id="@+id/ig_group_pic"
         android:layout_alignParentLeft="true"
         android:layout_width="68dp"

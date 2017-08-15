@@ -12,7 +12,6 @@ import android.opengl.Matrix;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.utils.DataUtils;
@@ -30,7 +29,7 @@ import java.util.Map;
  * @author Laurie Dugdale
  */
 
-public class AROverlayView extends View {
+public class AugmentedOverlayView extends View {
 
     private Context mContext;
 
@@ -62,7 +61,7 @@ public class AROverlayView extends View {
     private int mPartition;
     private int mRadius;
 
-    public AROverlayView(Context context) {
+    public AugmentedOverlayView(Context context) {
         super(context);
 
         this.mContext = context;
@@ -261,7 +260,7 @@ public class AROverlayView extends View {
 
                     //Check if the x and y position of the touch is inside the bitmap
                     if (x > xPosition - mRadius && x < xPosition + mPartition && y > yPosition - mRadius && y < yPosition + mPartition) {
-                        ((AugmentedActivity)mContext).displaySelectEntries(e.getValue());
+                        ((AugmentedActivity)mContext).displayEntries(e.getValue());
                         return true;
                     }
                 }

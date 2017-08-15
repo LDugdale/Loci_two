@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.firebase.geofire.GeoFire;
@@ -31,35 +30,37 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.data.UserDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.utils.GeofencingUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
 
+/**
+ * This service is respomsible for monitoring the users location and periodically downloading nearby entries
+ * The nearby entries are added to the geofencing client, when a user enters a geofence boundary GeoFenceIntentService
+ * is called to launch a notification.
+ *
+ * @author Laurie Dugdale
+ */
 public class GeoFencingService extends Service implements OnCompleteListener<Void> {
     //TODO This class has two purposes - providing location to the "NearMeFragment" and Geofencing consider splitting
     //TODO Close this class shutting down all the open API connections
     //TODO Find a way to fetch location when app is not running
     //TODO mark in database an entry has been viewed
-    public static final String TAG = "GeoFencingService";
+    private static final String TAG = GeoFencingService.class.getSimpleName();
 
+    // set the intervals
     private static final long INTERVAL = 100000;
     private static final long FASTEST_INTERVAL = 50000;
 
     GoogleApiClient mGogleApiClient = null;
-
-    // Provides access to the geofencing api
-    private GeofencingClient mGeofencingClient;
+    private GeofencingClient mGeofencingClient; // Geofencing API access
     private ArrayList<Geofence> mGeofenceList; // List of geofences used
     private PendingIntent mGeofencePendingIntent; // Used when requesting to add or remove geofences
-
-    private UserDatabase mUserDatabase;
-    private Bundle mGeoEntries;
-
-    private Location mLocation;
-    private Location mOldLocation;
+    private UserDatabase mUserDatabase; // accessing the UserDatabase
+    private Bundle mGeoEntries; // Geo entries to be bundled for the GeoFenceIntentService
+    private Location mLocation; // current location
 
     public GeoFencingService() {
     }
@@ -73,37 +74,32 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
         mGeofencePendingIntent = null;
         mGeoEntries = new Bundle();
 
+        // set up google api client
         mGogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(@Nullable Bundle bundle) {
-                        Log.d(TAG, "Connected to GoogleApiClient");
                         startLocationMonitoring();
                         retrieveEntries();
                     }
 
                     @Override
                     public void onConnectionSuspended(int i) {
-                        Log.d(TAG, "Suspended connection to GoogleApiClient");
                     }
                 })
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Log.d(TAG, "Failed to connect to GoogleApiClient - " + connectionResult.getErrorMessage());
                     }
                 }).build();
 
+        // connect the google api client
         mGogleApiClient.connect();
 
-
         mGeofencingClient = LocationServices.getGeofencingClient(this);
-
         return Service.START_NOT_STICKY;
     }
-
-
 
     @Override
     public void onComplete(@NonNull Task<Void> task) {
@@ -114,6 +110,9 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
         }
     }
 
+    /**
+     * Start location monitoring
+     */
     private void startLocationMonitoring(){
         Log.d(TAG, "startLocationMonitoring");
         try {
@@ -137,29 +136,30 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
                     });
 
         } catch (SecurityException e){
-            Log.d(TAG, "SecurityException - " + e.getMessage());
+            Log.e(TAG, "SecurityException - " + e.getMessage());
         }
     }
 
     /**
-     * Builds and returns a GeofencingRequest. Specifies the list of geofences to be monitored.
-     * Also specifies how the geofence notifications are initially triggered.
+     * This method builds a GeofencingRequest. It is passed the list of geofences to be monitored
+     * and specifies how they should be triggered.
      */
     private GeofencingRequest getGeofencingRequest() {
+
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
 
-        // The INITIAL_TRIGGER_ENTER flag indicates that geofencing service should trigger a
-        // GEOFENCE_TRANSITION_ENTER notification when the geofence is added and if the device
-        // is already inside that geofence.
+        // triggers a GEOFENCE_TRANSITION_ENTER notificatio when a geofence is added
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-
-        // Add the geofences to be monitored by geofencing service.
+        // adds the geofences to be monitored
         builder.addGeofences(mGeofenceList);
 
-        // Return a GeofencingRequest.
         return builder.build();
     }
 
+    /**
+     *
+     * @param location
+     */
     public void setLocation(Location location){
 
         if (mLocation == null){
@@ -172,7 +172,9 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
         }
     }
 
-
+    /**
+     * downloads the entries from the database and add them to the Geofencing client
+     */
     public void retrieveEntries(){
 
         if (mLocation == null){
@@ -196,11 +198,11 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-
                         String entryKey = dataSnapshot.getKey();
                         eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
+
                                 GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
                                 if (entry == null) {
                                     return;
@@ -208,7 +210,6 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
 
                                 if (!entry.getCreator().equals(currentUID)){
                                     addToGeofenceList(entry);
-                                    // add the geofences
                                     addGeofences();
                                 }
                             }
@@ -248,12 +249,18 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
         });
     }
 
+    /**
+     * adds a GeoEntry too the geofence list
+     *
+     * @param entry GeoEntry to add
+     */
     private void addToGeofenceList(GeoEntry entry){
 
+        // add to the bundle to pass it to the geofence intent servcice
         mGeoEntries.putParcelable(entry.getEntryID(), entry);
 
         mGeofenceList.add(new Geofence.Builder()
-                // identifies the geofence
+                // set the id the same as the GeoEntry id to easily match them
                 .setRequestId(entry.getEntryID())
                 .setCircularRegion(
                         entry.getLatitude(),
@@ -261,18 +268,16 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
                         GeofencingUtils.GEOFENCE_RADIUS_IN_METERS
                 )
                 .setExpirationDuration(GeofencingUtils.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-                // track entry and exit of geofence
+                // setting tracking too entry and exit of a geofence
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
                         Geofence.GEOFENCE_TRANSITION_EXIT)
                 .build());
     }
 
     /**
-     * Gets a PendingIntent to send with the request to add or remove Geofences. Location Services
-     * issues the Intent inside this PendingIntent whenever a geofence transition occurs for the
-     * current list of geofences.
+     * Creates a PendingIntent, that is used when adding or removing a geofence.
      *
-     * @return A PendingIntent for the IntentService that handles geofence transitions.
+     * @return Pending intent that launches the GeoFennceIntentService
      */
     private PendingIntent getGeofencePendingIntent() {
         // Reuse the PendingIntent if we already have it.
@@ -280,16 +285,13 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
             return mGeofencePendingIntent;
         }
         Intent intent = new Intent(this, GeofenceIntentService.class);
+        // put the geofence bundle in the intent
         intent.putExtra("entries", mGeoEntries);
 
-
-        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-        // addGeofences() and removeGeofences().
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
     /**
-     * Adds geofences. This method should be called after the user has granted the location
-     * permission.
+     * Adds the geofences.
      */
     @SuppressWarnings("MissingPermission")
     private void addGeofences() {
@@ -302,8 +304,7 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
     }
 
     /**
-     * Removes geofences. This method should be called after the user has granted the location
-     * permission.
+     * Removes the geofences.
      */
     @SuppressWarnings("MissingPermission")
     private void removeGeofences() {

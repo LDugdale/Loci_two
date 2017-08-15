@@ -1,10 +1,11 @@
-package com.lauriedugdale.loci.audio;
+package com.lauriedugdale.loci.utils;
 
 /**
- * Created by mnt_x on 21/06/2017.
+ * Contains helper methods and constants for the audio classes
+ *
+ * @author Laurie Dugdale
  */
-
-public class AudioUtilities {
+public class AudioUtils {
 
     /**
      * Function to convert milliseconds time to
@@ -61,9 +62,8 @@ public class AudioUtilities {
      * returns current duration in milliseconds
      * */
     public static int progressToTimer(int progress, int totalDuration) {
-        int currentDuration = 0;
         totalDuration = (int) (totalDuration / 1000);
-        currentDuration = (int) ((((double)progress) / 100) * totalDuration);
+        int currentDuration = (int) ((((double)progress) / 100) * totalDuration);
 
         // return current duration in milliseconds
         return currentDuration * 1000;

@@ -1,0 +1,36 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="27dp"
+    android:layout_height="23dp"
+    android:layout_marginRight="5dp"
+    android:layout_gravity="right">
+
+    <ImageView
+        android:src="@drawable/ic_notifications"
+        android:layout_alignParentLeft="true"
+        android:layout_width="23dp"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:id="@+id/notification_count_wrapper"
+        android:visibility="gone"
+        android:gravity="top|right"
+        android:layout_width="27dp"
+        android:layout_height="27dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:clickable="true"
+            android:src="@drawable/background_circle_secondary_colour" />
+
+        <TextView
+            android:id="@+id/notification_count"
+            android:textSize="8sp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:gravity="center"
+            android:textColor="@color/white" />
+    </RelativeLayout>
+
+</RelativeLayout>

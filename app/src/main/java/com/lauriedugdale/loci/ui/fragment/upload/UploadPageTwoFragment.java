@@ -30,7 +30,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
-import com.lauriedugdale.loci.HideOverlayView;
+import com.lauriedugdale.loci.ui.customviews.CircularOverlay;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.dataobjects.Group;
@@ -48,7 +48,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
-    private HideOverlayView hideView;
+    private CircularOverlay mCircularView;
     private Location mCurrentLocation;
     private Marker mMarker;
 
@@ -88,7 +88,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true);
 
-        hideView = (HideOverlayView) view.findViewById(R.id.hideview);
+        mCircularView = (CircularOverlay) view.findViewById(R.id.circular_view);
         mDone = (ImageView) view.findViewById(R.id.au_done);
 
         // set up google maps API
@@ -185,7 +185,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
         Point radiusPoint = projection.toScreenLocation( SphericalUtil.computeOffset(cameraPosition.target, radius, 90));
         float radiusPx = (float) Math.sqrt(Math.pow(centerPoint.x - radiusPoint.x, 2));
 
-        hideView.reDraw(projection.toScreenLocation(mMarker.getPosition()), radiusPx);
+        mCircularView.draw(projection.toScreenLocation(mMarker.getPosition()), radiusPx);
     }
 
     private void initCamera( Location location ) {
@@ -261,13 +261,11 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
 }

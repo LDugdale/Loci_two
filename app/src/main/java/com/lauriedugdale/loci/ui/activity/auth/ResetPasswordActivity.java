@@ -15,55 +15,75 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.lauriedugdale.loci.R;
 
+/**
+ * Contains the UI logic for the reset password activity
+ *
+ * @author Laurie Dugdale
+ */
 public class ResetPasswordActivity extends AppCompatActivity {
 
-    private EditText inputEmail;
-    private Button btnReset, btnBack;
-    private FirebaseAuth auth;
-    private ProgressBar progressBar;
+    private EditText mEditTextEmail;
+    private Button mButtonReset;
+    private Button mButtonBack;
+    private FirebaseAuth mAuth;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
 
-        inputEmail = (EditText) findViewById(R.id.email);
-        btnReset = (Button) findViewById(R.id.btn_reset_password);
-        btnBack = (Button) findViewById(R.id.btn_back);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        // find UI elements
+        mEditTextEmail = (EditText) findViewById(R.id.email);
+        mButtonReset = (Button) findViewById(R.id.btn_reset_password);
+        mButtonBack = (Button) findViewById(R.id.btn_back);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        auth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
-        btnBack.setOnClickListener(new View.OnClickListener() {
+        mButtonBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
 
-        btnReset.setOnClickListener(new View.OnClickListener() {
+        onResetButtonClicked();
+    }
+
+    /**
+     * Listener for the reset button
+     */
+    private void onResetButtonClicked(){
+        mButtonReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                String email = inputEmail.getText().toString().trim();
+                // get email String
+                String email = mEditTextEmail.getText().toString().trim();
 
+                // if email is empty
                 if (TextUtils.isEmpty(email)) {
-                    Toast.makeText(getApplication(), "Enter your registered email id", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplication(), "Please enter the email you registered an account with", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                progressBar.setVisibility(View.VISIBLE);
-                auth.sendPasswordResetEmail(email)
+                // show progress bar
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                // use firebase auth API to sent the reset password email
+                mAuth.sendPasswordResetEmail(email)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(ResetPasswordActivity.this, "We have sent you instructions to reset your password!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ResetPasswordActivity.this, "We have sent you the instructions to reset your password!!", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(ResetPasswordActivity.this, "Failed to send reset email!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ResetPasswordActivity.this, "We were not able to send the reset email!", Toast.LENGTH_SHORT).show();
                                 }
 
-                                progressBar.setVisibility(View.GONE);
+                                // hide the progress bar
+                                mProgressBar.setVisibility(View.GONE);
                             }
                         });
             }

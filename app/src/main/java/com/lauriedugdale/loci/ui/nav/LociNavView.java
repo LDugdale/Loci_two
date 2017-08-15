@@ -59,14 +59,19 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
 
     public LociNavView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
         init();
     }
 
+    /**
+     * set the nav container to invisible
+     */
     public void setInvisible(){
         mContainer.setVisibility(INVISIBLE);
     }
 
+    /**
+     * set the nav container to visible
+     */
     public void setVisible(){
         mContainer.setVisibility(VISIBLE);
     }
@@ -77,33 +82,27 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
     private void init() {
         LayoutInflater.from(getContext()).inflate(R.layout.nav_main, this, true);
 
+        // find UI elements
         mCenterBackgroundImage = (ImageView) findViewById(R.id.vst_center_background_image);
         mCenterImage = (ImageView) findViewById(R.id.vst_center_image);
-//        mCenterImageAdd = (ImageView) findViewById(R.id.vst_center_image_add);
         mStartImage = (FrameLayout) findViewById(R.id.vst_start_image);
         mEndImage = (FrameLayout) findViewById(R.id.vst_end_image);
         mBottomImage = (ImageView) findViewById(R.id.vst_bottom_image);
-
         mIndicator = findViewById(R.id.vst_indicator_image);
-
         mContainer = (FrameLayout) findViewById(R.id.nav_menu);
 
+        // set colour
         mCenterColor = ContextCompat.getColor(getContext(), R.color.colorPrimary);
         mSideColor = ContextCompat.getColor(getContext(), R.color.colorPrimary);
 
-        mArgbEvaluator = new ArgbEvaluator();
-        mIndicatorTranslationX = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
 
-        /*
-         *
-         */
+        mIndicatorTranslationX = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         mBottomImage.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 
             @Override
             public void onGlobalLayout() {
                 mEndViewsTranslationX = (int) ((mBottomImage.getX() - mStartImage.getX() - 25) - mIndicatorTranslationX);
                 mBottomImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
                 mCenterTranslationY = getHeight() - mBottomImage.getBottom();
             }
         });
@@ -158,39 +157,27 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
      */
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-//        mCenterImageAdd.setAlpha(1 - positionOffset);
-
         if (position == 0) {
 
-            setColor(1 - positionOffset);
             moveViews( 1 - positionOffset);
             moveAndScaleCenter(1 - positionOffset);
             mIndicator.setTranslationX((positionOffset - 1) * mIndicatorTranslationX);
-//            mCenterImageAdd.setAlpha(positionOffset);
         } else if ( position == 1){
 
-            setColor(positionOffset);
             moveViews(positionOffset);
             moveAndScaleCenter(positionOffset);
             mIndicator.setTranslationX(positionOffset * mIndicatorTranslationX);
             if(positionOffset == 0.0f) {
-//                mCenterImageAdd.setAlpha(1f);
             }
-        } else if(position == 2){
-
-//            mCenterImageAdd.setAlpha(0f);
         }
-
     }
 
     @Override
     public void onPageSelected(int position) {
-
     }
 
     @Override
     public void onPageScrollStateChanged(int state) {
-
     }
 
     /**
@@ -216,26 +203,14 @@ public class LociNavView extends FrameLayout implements ViewPager.OnPageChangeLi
     }
 
     /**
+     * Move the Images when navigating between fragments
      *
      * @param fractionFromCenter
      */
     private void moveViews(float fractionFromCenter) {
         mStartImage.setTranslationX(fractionFromCenter * mEndViewsTranslationX);
         mEndImage.setTranslationX(-fractionFromCenter * mEndViewsTranslationX);
-
-
         mIndicator.setAlpha(fractionFromCenter);
         mIndicator.setScaleX(fractionFromCenter);
-    }
-
-    /**
-     *
-     * @param fractionFromCenter
-     */
-    private void setColor(float fractionFromCenter) {
-
-        int color = (int) mArgbEvaluator.evaluate(fractionFromCenter, mCenterColor, mSideColor);
-
-//        mCenterImage.setColorFilter(color);
     }
 }

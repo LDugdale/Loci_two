@@ -10,8 +10,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.lauriedugdale.loci.CommentUploadedListener;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
+import com.lauriedugdale.loci.listeners.CommentUploadedListener;
+import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
 import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
 
@@ -20,7 +20,6 @@ import com.lauriedugdale.loci.ui.adapter.CommentsAdapter;
  */
 
 public class CommentsDatabase extends LociData {
-
 
     public CommentsDatabase(Context context) {
         super(context);
@@ -43,6 +42,9 @@ public class CommentsDatabase extends LociData {
                 listener.onCommentUploaded();
             }
         });
+
+        NotificationDatabase notificationDatabase = new NotificationDatabase(getContext());
+        notificationDatabase.uploadCommentNotification(comment);
     }
 
     /**

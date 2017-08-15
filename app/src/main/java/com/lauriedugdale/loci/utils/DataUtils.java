@@ -6,9 +6,10 @@ import java.text.ParseException;
 import java.util.Locale;
 
 /**
- * Created by mnt_x on 14/06/2017.
+ * Contains helper methods and constants for the data classes
+ *
+ * @author Laurie Dugdale
  */
-
 public class DataUtils {
 
     // TODO write reject button - remove from database on reject

@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci;
+package com.lauriedugdale.loci.map;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
@@ -10,10 +10,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.utils.DataUtils;
 
 /**
- * Created by mnt_x on 28/06/2017.
+ * Custom DefaultClusterRenderer extended to customise certain parts of the Google API when using ClusterManager
+ *
+ * @author Laurie Dugdale
  */
 
 public class EventIconRendered extends DefaultClusterRenderer<EntryItem> {
@@ -57,7 +60,6 @@ public class EventIconRendered extends DefaultClusterRenderer<EntryItem> {
                 break;
             case DataUtils.IMAGE:
                 mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( mContext.getResources(), R.mipmap.image_marker ) ) );
-
                 break;
             case DataUtils.AUDIO:
                 mo.icon( BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource( mContext.getResources(), R.mipmap.audio_marker ) ) );
@@ -67,5 +69,4 @@ public class EventIconRendered extends DefaultClusterRenderer<EntryItem> {
                 break;
         }
     }
-
 }

@@ -10,6 +10,7 @@ import com.lauriedugdale.loci.ui.fragment.NearMeFragment;
 
 /**
  * Adapter for managing the Main Activity fragments
+ *
  * @author Laurie Dugdale
  */
 
@@ -20,6 +21,9 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
     }
 
     @Override
+    /**
+     * returns a fragment given a position
+     */
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
@@ -35,6 +39,9 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
     }
 
     @Override
+    /**
+     * The number of fragments
+     */
     public int getCount() {
         return 3;
     }

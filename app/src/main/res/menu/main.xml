@@ -5,21 +5,22 @@
     <item
         android:id="@+id/action_ar"
         android:orderInCategory="400"
-        android:title="Filter"
+        android:title="Augmented Reality"
         android:icon="@drawable/ic_visibility"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_add_group"
         android:orderInCategory="400"
-        android:title="Filter"
+        android:title="Add group"
         android:icon="@drawable/ic_group_add"
+        android:actionLayout="@layout/menu_item_notification"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_notification"
         android:orderInCategory="400"
-        android:title="Filter"
+        android:title="Notifications"
         android:icon="@drawable/ic_notifications"
         app:showAsAction="ifRoom"/>
 

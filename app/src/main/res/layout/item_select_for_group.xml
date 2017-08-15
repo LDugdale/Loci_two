@@ -7,7 +7,7 @@
     android:layout_height="50dp"
     android:gravity="center">
 
-    <ImageView
+    <com.lauriedugdale.loci.ui.customviews.CircularImageView
         android:id="@+id/isfg_profile_pic"
         android:layout_width="36dp"
         android:layout_height="36dp"

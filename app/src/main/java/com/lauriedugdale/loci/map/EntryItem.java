@@ -1,11 +1,13 @@
-package com.lauriedugdale.loci;
+package com.lauriedugdale.loci.map;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 
 /**
- * Created by mnt_x on 28/06/2017.
+ * Custom cluster item for the map extends the Maps API ClusterItem
+ *
+ * @author Laurie Dugdale
  */
 
 public class EntryItem implements ClusterItem {

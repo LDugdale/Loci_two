@@ -9,9 +9,10 @@ import android.provider.MediaStore;
 import java.io.ByteArrayOutputStream;
 
 /**
- * Created by mnt_x on 23/07/2017.
+ * Contains helper methods and constants for the social classes
+ *
+ * @author Laurie Dugdale
  */
-
 public class SocialUtils {
 
     public static final int VIEWER = 10;

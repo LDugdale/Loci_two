@@ -9,6 +9,7 @@
     android:gravity="center">
 
     <View
+        android:id="@+id/pf_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.5"

@@ -9,37 +9,35 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.EntryItem;
+import com.lauriedugdale.loci.map.EntryItem;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
-import com.lauriedugdale.loci.utils.EntryUtils;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
 /**
- * Created by mnt_x on 30/06/2017.
+ * The adapter for displaying either EntryItem or GeoEntry in a popupview when a cluster is clicked
+ *
+ * @author Laurie Dugdale
  */
-//TODO Consider use of generics for adapter classes
 public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.ViewHolder> {
 
-    // Store the context and cursor for easy access
-    private Context mContext;
-    private ArrayList<EntryItem> mEntryItems;
-    private ArrayList<GeoEntry> mGeoEntries;
-    private UserDatabase mUserDatabase;
-    private DataType type;
+    private Context mContext; // the current context
+    private ArrayList<EntryItem> mEntryItems; // the stored EntryItem items
+    private ArrayList<GeoEntry> mGeoEntries; // the stored GeoEntry items
+    private UserDatabase mUserDatabase; // access to the User part of the database
+    private DataType type; // the current data type the adapter is using
 
+    // enum to check which data type is being stored
     private enum DataType {
         EntryItem,
         GeoEntry
     }
 
     /**
-     * Entry adapter constructor
+     * MapClusterAdapter constructor
      *
      * @param context
      */
@@ -62,11 +60,8 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
     public MapClusterAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View contactView = null;
-
         // inflate second item layout & return that viewHolder
         contactView = inflater.inflate(R.layout.item_cluster_entry, parent, false);
-
-
         // Return a new holder instance
         return new MapClusterAdapter.ViewHolder(contactView);
     }
@@ -78,6 +73,8 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
     public void onBindViewHolder(MapClusterAdapter.ViewHolder viewHolder, int position) {
 
         GeoEntry e = new GeoEntry();
+
+        // check the data type being stored
         if (type == DataType.EntryItem) {
             EntryItem clusterItem = mEntryItems.get(position);
             e = clusterItem.getGeoEntry();

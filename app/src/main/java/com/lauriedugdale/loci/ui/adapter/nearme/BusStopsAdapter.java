@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.BusStop;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 import com.lauriedugdale.loci.utils.LocationUtils;
 
@@ -77,24 +78,23 @@ public class BusStopsAdapter extends RecyclerView.Adapter<BusStopsAdapter.ViewHo
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(final BusStopsAdapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(final BusStopsAdapter.ViewHolder viewHolder, final int position) {
 
         final BusStop busStop = mStops.get(position);
-
         viewHolder.mName.setText(busStop.getName());
 
         // Set distance
         LocationUtils.displayDistance(viewHolder.mDistance, mContext, busStop.getLatitude(), busStop.getLongitude());
         // set author
         viewHolder.mLocality.setText(busStop.getLocality());
-
+        // Locate the file on the map
         viewHolder.mLocateFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, MainActivity.class);
-                intent.setAction("single_entry");
-                intent.putExtra("entry", mStops.get(viewHolder.getAdapterPosition()));
+                intent.setAction("bus_stop");
+                intent.putExtra("bus_stop", mStops.get(position));
                 mContext.startActivity(intent);
             }
         });

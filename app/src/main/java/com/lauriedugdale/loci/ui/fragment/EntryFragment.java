@@ -14,8 +14,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lauriedugdale.loci.CommentUploadedListener;
-import com.lauriedugdale.loci.EntriesDownloadedListener;
+import com.lauriedugdale.loci.listeners.CommentUploadedListener;
+import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.CommentsDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;

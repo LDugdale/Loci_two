@@ -8,7 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="190dp">
 
-    <com.lauriedugdale.loci.CircularImageView
+    <com.lauriedugdale.loci.ui.customviews.CircularImageView
         android:id="@+id/menu_profile_image"
         android:layout_width="90dp"
         android:layout_height="90dp"

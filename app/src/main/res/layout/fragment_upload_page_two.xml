@@ -59,8 +59,8 @@
             android:layout_centerInParent="true"
             tools:layout="@layout/activity_upload" />
 
-        <com.lauriedugdale.loci.HideOverlayView
-            android:id="@+id/hideview"
+        <com.lauriedugdale.loci.ui.customviews.CircularOverlay
+            android:id="@+id/circular_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"

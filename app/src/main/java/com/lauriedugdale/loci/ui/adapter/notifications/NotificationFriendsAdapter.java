@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.adapter;
+package com.lauriedugdale.loci.ui.adapter.notifications;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
-import com.lauriedugdale.loci.utils.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -144,7 +144,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0">
 
-            <com.lauriedugdale.loci.CircularImageView
+            <com.lauriedugdale.loci.ui.customviews.CircularImageView
                 android:id="@+id/current_picture"
                 android:layout_width="100dp"
                 android:layout_height="100dp" />
