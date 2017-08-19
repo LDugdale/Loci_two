@@ -145,7 +145,7 @@ public final class LocationUtils {
                     if (isWithinBounds){
                         textView.setVisibility(View.VISIBLE);
                     } else {
-                        textView.setVisibility(View.GONE);
+                          textView.setVisibility(View.GONE);
                     }
                 }
             }
@@ -155,6 +155,7 @@ public final class LocationUtils {
     public static boolean isWithinBounds(Location location, GeoEntry entry){
 
         Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), entry.getLatitude(), entry.getLongitude());
+        System.out.println(distance);
         return (distance <= MAXIMUM_DISTANCE);
     }
 

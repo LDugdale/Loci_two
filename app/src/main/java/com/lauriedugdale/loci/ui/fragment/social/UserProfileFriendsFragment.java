@@ -8,24 +8,25 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.listeners.UsersDownloadedListener;
 import com.lauriedugdale.loci.ui.adapter.social.FriendsAdapter;
 
 /**
  * Created by mnt_x on 04/08/2017.
  */
 
-public class UserProfileFriendsFragment extends Fragment implements FriendsAdapter.SocialAdapterOnClickHandler{
+public class UserProfileFriendsFragment extends Fragment implements FriendsAdapter.SocialAdapterOnClickHandler, UsersDownloadedListener{
 
     private RecyclerView mRecyclerView;
     private FriendsAdapter mAdapter;
-
     private User mUser;
-
     private UserDatabase mUserDatabase;
+    private ProgressBar mProgressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,13 +43,14 @@ public class UserProfileFriendsFragment extends Fragment implements FriendsAdapt
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_user_profile_friends, container, false);
 
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.loading_indicator);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_user_friends);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new FriendsAdapter(getActivity(), this, false);
         mRecyclerView.setAdapter(mAdapter);
-        mUserDatabase.downloadUserFriendsForProfile(mUser.getUserID(), mAdapter);
+        mUserDatabase.downloadUserFriendsForProfile(mUser.getUserID(), mAdapter, this);
         mRecyclerView.setNestedScrollingEnabled(false);
 
 
@@ -58,5 +60,10 @@ public class UserProfileFriendsFragment extends Fragment implements FriendsAdapt
     @Override
     public void onSocialClick(User user) {
 
+    }
+
+    @Override
+    public void onUsersDownloaded() {
+        mProgressBar.setVisibility(View.GONE);
     }
 }

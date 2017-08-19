@@ -18,10 +18,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
@@ -30,6 +32,10 @@ import com.lauriedugdale.loci.data.TransportRest;
 import com.lauriedugdale.loci.ui.adapter.nearme.BusStopsAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.HeroNearMeAdapter;
 import com.lauriedugdale.loci.ui.adapter.nearme.NearMeEntryAdapter;
+import com.lauriedugdale.loci.utils.LocationUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -53,7 +59,6 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     private ConstraintLayout mAnyoneWrapper;
     private ConstraintLayout mBussesWrapper;
 
-
     private RecyclerView mFriendsRecyclerView;
     private RecyclerView mGroupsRecyclerView;
     private RecyclerView mAnyoneRecyclerView;
@@ -67,6 +72,8 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     private HeroNearMeAdapter mHeroAdapter;
 
     private LinearLayout mNoEntries;
+
+    private ProgressBar mProgressBar;
 
 
     private BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
@@ -119,6 +126,8 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
 
     @Override
     public void onEntriesDownloaded() {
+
+        mProgressBar.setVisibility(View.INVISIBLE);
 
         boolean haveEntries = false;
 
@@ -180,6 +189,8 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_near_me,container, false);
 
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.loading_indicator);
+
         mFriendsWrapper = (ConstraintLayout) rootView.findViewById(R.id.friends_post_wrapper);
         mGroupsWrapper = (ConstraintLayout) rootView.findViewById(R.id.groups_post_wrapper);
         mAnyoneWrapper = (ConstraintLayout) rootView.findViewById(R.id.anyone_post_wrapper);
@@ -238,12 +249,18 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    mLatitude = location.getLatitude();
-                    mLongitude = location.getLongitude();
-                    mLocation.setLatitude(mLatitude);
-                    mLocation.setLongitude(mLongitude);
-                    downloadBusStops();
-                    downloadEntries();
+
+                    float distanceBetween = LocationUtils.getDistanceInMeters(location.getLatitude(), location.getLongitude(), mLocation.getLatitude(), mLocation.getLongitude());
+                    double initialLocation = mLocation.getLatitude() + mLocation.getLongitude();
+
+                    if(initialLocation == 0.0 || distanceBetween < 8000) {
+                        mLatitude = location.getLatitude();
+                        mLongitude = location.getLongitude();
+                        mLocation.setLatitude(mLatitude);
+                        mLocation.setLongitude(mLongitude);
+                        downloadBusStops();
+                        downloadEntries();
+                    }
                 }
             }
         });
@@ -257,6 +274,24 @@ public class NearMeFragment extends BaseFragment implements EntriesDownloadedLis
         super.onPause();
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mDataReceiver);
     }
+//
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        ArrayList<GeoEntry> anyone = (ArrayList<GeoEntry>)mAnyoneAdapter.getAllEntries();
+//        outState.putParcelableArrayList("anyone", anyone);
+//
+//    }
+//
+//    @Override
+//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+//        super.onActivityCreated(savedInstanceState);
+//        if (getActivity().getIntent().hasExtra("anyone")) {
+//            ArrayList<GeoEntry> anyone = savedInstanceState.getParcelableArrayList("anyone");
+//            mAnyoneAdapter.addBulkEntries(anyone);
+//            mAnyoneAdapter.notifyDataSetChanged();
+//        }
+//    }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {

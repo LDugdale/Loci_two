@@ -8,26 +8,27 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.lauriedugdale.loci.AccessPermission;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
 import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.User;
+import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
 import com.lauriedugdale.loci.ui.adapter.FileAdapter;
 
 /**
  * Created by mnt_x on 04/08/2017.
  */
 
-public class UserProfileEntriesFragment extends Fragment {
+public class UserProfileEntriesFragment extends Fragment implements EntriesDownloadedListener {
 
     private RecyclerView mRecyclerView;
     private FileAdapter mAdapter;
-
     private User mUser;
-
     private EntryDatabase mEntryDatabase;
+    private ProgressBar mProgressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,15 +45,23 @@ public class UserProfileEntriesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_user_profile_entries, container, false);
 
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.loading_indicator);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.rv_user_files);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new FileAdapter(getActivity(), AccessPermission.VIEWER);
         mRecyclerView.setAdapter(mAdapter);
-        mEntryDatabase.downloadProfileEntries(mAdapter, mUser.getUserID());
+        mEntryDatabase.downloadProfileEntries(mAdapter, mUser.getUserID(), this);
         mRecyclerView.setNestedScrollingEnabled(false);
 
         return rootView;
+    }
+
+    @Override
+    public void onEntriesDownloaded() {
+        if (mProgressBar.getVisibility() != View.GONE) {
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 }

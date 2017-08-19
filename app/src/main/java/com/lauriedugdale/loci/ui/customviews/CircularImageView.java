@@ -25,8 +25,7 @@ public class CircularImageView extends android.support.v7.widget.AppCompatImageV
     {
         super( context );
     }
-    public CircularImageView( Context context, AttributeSet attrs )
-    {
+    public CircularImageView( Context context, AttributeSet attrs ){
         super( context, attrs );
     }
     public CircularImageView( Context context, AttributeSet attrs, int defStyle ) {

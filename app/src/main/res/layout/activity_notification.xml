@@ -10,7 +10,7 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/ar_toolbar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="56dp"
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
@@ -20,26 +20,71 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_friend_requests"
-        android:layout_width="match_parent"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/friend_requests_wrapper"
+        android:visibility="gone"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/card_background"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ar_toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/ar_toolbar">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_main_notifications"
-        android:layout_width="match_parent"
-        android:layout_height="214dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginTop="0dp"
+        <TextView
+            android:id="@+id/friend_notifications_text"
+            android:text="@string/friend_notifications"
+            android:textSize="@dimen/h3"
+            android:gravity="start"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout_editor_absoluteY="25dp"
+            tools:layout_editor_absoluteX="0dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_friend_requests"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/friend_notifications_text" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/notifcations_wrapper"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rv_friend_requests"
-        app:layout_constraintVertical_bias="0.52" />
+        app:layout_constraintTop_toBottomOf="@+id/friend_requests_wrapper">
 
+
+        <TextView
+            android:id="@+id/main_notifications_text"
+            android:text="@string/normal_notifications"
+            android:textSize="@dimen/h3"
+            android:gravity="start"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout_editor_absoluteY="25dp"
+            tools:layout_editor_absoluteX="0dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_main_notifications"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/main_notifications_text" />
+
+        </android.support.constraint.ConstraintLayout>
 </android.support.constraint.ConstraintLayout>

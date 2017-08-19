@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.NotificationDatabase;
@@ -31,6 +32,9 @@ public class NotificationActivity extends AppCompatActivity {
     private UserDatabase mUserDatabase; // access user section of database
     private NotificationDatabase mNotificationDatabase; // access notification section of database
 
+    private ConstraintLayout mFriendsWrapper;
+    private ConstraintLayout mNotifictationsWrapper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +45,8 @@ public class NotificationActivity extends AppCompatActivity {
         mFriendAdapter = new NotificationFriendsAdapter(this);
         mNotificationAdapter = new NotificationMainAdapter(this);
 
+        mNotifictationsWrapper = (ConstraintLayout) findViewById(R.id.notifcations_wrapper);
+        mFriendsWrapper = (ConstraintLayout) findViewById(R.id.friend_requests_wrapper);
         // find recycler views
         mFriendRecyclerView = (RecyclerView) findViewById(R.id.rv_friend_requests);
         mNotificationRecyclerView = (RecyclerView) findViewById(R.id.rv_main_notifications);
@@ -51,12 +57,13 @@ public class NotificationActivity extends AppCompatActivity {
         mFriendRecyclerView.setAdapter(mFriendAdapter);
         mNotificationRecyclerView.setAdapter(mNotificationAdapter);
         // download the initial friend requests if any onCreate
-        mUserDatabase.downloadFriendRequests(mFriendAdapter);
+        mUserDatabase.downloadFriendRequests(mFriendAdapter, mFriendsWrapper);
         // download the initial notifications if any onCreate
-        mNotificationDatabase.downloadNotifications(mNotificationAdapter);
+        mNotificationDatabase.downloadNotifications(mNotificationAdapter, mNotifictationsWrapper);
 
         // reset notification count
         mNotificationDatabase.uploadResetNotificationCount();
+
 
         // setup the toolbar
         InterfaceUtils.setUpToolbar(this, R.id.ar_toolbar, "Notifications");

@@ -5,6 +5,13 @@
     android:layout_height="match_parent"
     android:id="@+id/social_frag">
 
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_gravity="center|top"
+        android:layout_marginTop="150dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_friends"
         android:layout_width="match_parent"

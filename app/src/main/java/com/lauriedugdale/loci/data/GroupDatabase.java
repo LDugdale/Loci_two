@@ -23,6 +23,7 @@ import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.listeners.AdminCheckListener;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.Group;
+import com.lauriedugdale.loci.listeners.GroupDownloadedListener;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
 import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
 import com.lauriedugdale.loci.utils.DataUtils;
@@ -305,7 +306,7 @@ public class GroupDatabase extends LociData {
      * -------------------------------------------------------------------------------------
      */
 
-    public void downloadUserAcessibleGroups(final FetchGroupsAdapter adapter){
+    public void downloadUserAcessibleGroups(final FetchGroupsAdapter adapter, final GroupDownloadedListener listener){
 
         final String currentUID = getCurrentUID();
 
@@ -323,6 +324,7 @@ public class GroupDatabase extends LociData {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Group group = dataSnapshot.getValue(Group.class);
                         adapter.addToGroups(group);
+                        listener.onGroupDownloaded();
                     }
 
                     @Override
@@ -351,7 +353,7 @@ public class GroupDatabase extends LociData {
     }
 
 
-    public void downloadUserAcessibleGroups(final GroupsAdapter adapter){
+    public void downloadUserAcessibleGroups(final GroupsAdapter adapter, final GroupDownloadedListener listener){
 
         final String currentUID = getCurrentUID();
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -368,6 +370,7 @@ public class GroupDatabase extends LociData {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Group group = dataSnapshot.getValue(Group.class);
                         adapter.addToGroups(group);
+                        listener.onGroupDownloaded();
                     }
 
                     @Override

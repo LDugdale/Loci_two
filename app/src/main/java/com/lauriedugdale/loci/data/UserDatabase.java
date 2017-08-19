@@ -3,6 +3,7 @@ package com.lauriedugdale.loci.data;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,6 +28,7 @@ import com.lauriedugdale.loci.listeners.AdminCheckListener;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.data.dataobjects.User;
 import com.lauriedugdale.loci.data.dataobjects.UserFriend;
+import com.lauriedugdale.loci.listeners.UsersDownloadedListener;
 import com.lauriedugdale.loci.ui.adapter.social.FriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.notifications.NotificationFriendsAdapter;
 import com.lauriedugdale.loci.ui.adapter.SelectForGroupAdapter;
@@ -113,6 +115,8 @@ public class UserDatabase extends LociData {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     addButton.setText("Pending");
+                                    NotificationDatabase notificationDatabase = new NotificationDatabase(getContext());
+                                    notificationDatabase.uploadIncrementNotificationCount(toUser);
                                 }
                             });
                         }
@@ -128,7 +132,6 @@ public class UserDatabase extends LociData {
 
     public void uploadFriend(final User selectedUser){
         final String currentUID = getCurrentUID();
-
 
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -205,7 +208,7 @@ public class UserDatabase extends LociData {
      * -------------------------------------------------------------------------------------
      */
 
-    public void downloadFriendRequests(final NotificationFriendsAdapter adapter) {
+    public void downloadFriendRequests(final NotificationFriendsAdapter adapter, final ConstraintLayout view) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference ref = database.getReference("users");
         getDatabase().child("friend_requests").child(getCurrentUID()).addChildEventListener(new ChildEventListener() {
@@ -221,6 +224,12 @@ public class UserDatabase extends LociData {
                             adapter.addToUsers(user);
                             adapter.notifyDataSetChanged();
 
+
+                            if(adapter.getItemCount() == 0){
+                                view.setVisibility(View.GONE);
+                            } else {
+                                view.setVisibility(View.VISIBLE);
+                            }
                         }
 
                         @Override
@@ -276,37 +285,34 @@ public class UserDatabase extends LociData {
         });
     }
 
-    public void downloadUserFriends(final FriendsAdapter adapter){
+    public void downloadUserFriends(final FriendsAdapter adapter, final UsersDownloadedListener listener){
 
-        getDatabase().child("friends").child(getCurrentUID()).addChildEventListener(new ChildEventListener() {
 
+        final String currentUID = getCurrentUID();
+        // Get a reference to our posts
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("friends");
+
+        ref.child(currentUID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                UserFriend user = dataSnapshot.getValue(UserFriend.class);
-                adapter.addToUsers(user);
-                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    User user = postSnapshot.getValue(User.class);
+                    adapter.addToUsers(user);
+                }
+                listener.onUsersDownloaded();
                 adapter.notifyDataSetChanged();
-            }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
         });
+
     }
 
-    public void downloadUserFriendsForProfile(final String uID, final FriendsAdapter adapter){
+    public void downloadUserFriendsForProfile(final String uID, final FriendsAdapter adapter, final UsersDownloadedListener listener){
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("friends");
@@ -317,9 +323,11 @@ public class UserDatabase extends LociData {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     User user = postSnapshot.getValue(User.class);
                     adapter.addToUsers(user);
-                    // notify the adapter that data has been changed in order for it to be displayed in recyclerview
-                    adapter.notifyDataSetChanged();
                 }
+                listener.onUsersDownloaded();
+                // notify the adapter that data has been changed in order for it to be displayed in recyclerview
+                adapter.notifyDataSetChanged();
+
             }
 
             @Override
@@ -379,7 +387,7 @@ public class UserDatabase extends LociData {
         });
     }
 
-    public void downloadGroupMembers(final GroupMembersAdapter adapter, final Group group){
+    public void downloadGroupMembers(final GroupMembersAdapter adapter, final Group group, final UsersDownloadedListener listener){
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference ref = database.getReference("users");
@@ -406,6 +414,7 @@ public class UserDatabase extends LociData {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
                                 adapter.addToUsers(user);
+                                listener.onUsersDownloaded();
                             }
 
                             @Override

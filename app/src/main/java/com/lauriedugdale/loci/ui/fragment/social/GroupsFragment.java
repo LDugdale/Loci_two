@@ -9,9 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.listeners.GroupDownloadedListener;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.activity.social.GroupProfileActivity;
@@ -21,11 +23,13 @@ import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
  * Created by mnt_x on 27/06/2017.
  */
 
-public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapterOnClickHandler {
+public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapterOnClickHandler, GroupDownloadedListener {
 
     private GroupsAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private GroupDatabase mGroupDatabase;
+
+    private ProgressBar mProgressBar;
 
     public static GroupsFragment create(){
         return new GroupsFragment();
@@ -39,15 +43,15 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
 
         mGroupDatabase = new GroupDatabase(getActivity());
 
+        mProgressBar = (ProgressBar) view.findViewById(R.id.loading_indicator);
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_groups);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getActivity());
-
         mRecyclerView.setLayoutManager(mLayoutManager);
-
         mAdapter = new GroupsAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
-        mGroupDatabase.downloadUserAcessibleGroups(mAdapter);
+        mGroupDatabase.downloadUserAcessibleGroups(mAdapter, this);
         return view;
     }
 
@@ -63,4 +67,8 @@ public class GroupsFragment extends Fragment implements GroupsAdapter.GroupAdapt
         getActivity().startActivity(startViewEntryIntent);
     }
 
+    @Override
+    public void onGroupDownloaded() {
+        mProgressBar.setVisibility(View.GONE);
+    }
 }

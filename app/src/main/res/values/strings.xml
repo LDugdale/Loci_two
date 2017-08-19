@@ -124,4 +124,8 @@
     <string name="marker_advice">(Hold down to move)</string>
     <string name="done">Done</string>
 
+    // notifications
+    <string name="friend_notifications">Friend requests</string>
+    <string name="normal_notifications">Notifications</string>
+
 </resources>

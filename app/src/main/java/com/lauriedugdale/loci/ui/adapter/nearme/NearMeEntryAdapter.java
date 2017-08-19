@@ -46,6 +46,13 @@ public class NearMeEntryAdapter extends RecyclerView.Adapter<NearMeEntryAdapter.
         mEntries = new ArrayList<GeoEntry>();
     }
 
+    public List getAllEntries(){
+        return mEntries;
+    }
+
+    public void addBulkEntries(ArrayList<GeoEntry> entries){
+        mEntries = entries;
+    }
     public void addToEntries(GeoEntry entry){
         mEntries.add(entry);
         notifyDataSetChanged();

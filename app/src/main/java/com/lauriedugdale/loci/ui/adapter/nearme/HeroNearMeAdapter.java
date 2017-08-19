@@ -91,7 +91,6 @@ public class HeroNearMeAdapter extends RecyclerView.Adapter<HeroNearMeAdapter.Vi
     public void onBindViewHolder(final HeroNearMeAdapter.ViewHolder viewHolder, int position) {
 
         final GeoEntry entry = mEntries.get(position);
-
         // set entry picture
         mEntryStorage.getFilePic(viewHolder.mFilePic, entry);
         viewHolder.mAuthor.setText(entry.getCreatorName());

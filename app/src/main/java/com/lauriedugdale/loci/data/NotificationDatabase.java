@@ -1,6 +1,7 @@
 package com.lauriedugdale.loci.data;
 
 import android.content.Context;
+import android.support.constraint.ConstraintLayout;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -64,15 +65,14 @@ public class NotificationDatabase  extends LociData {
         });
 
 
-        uploadIncrementNotificationCount();
+        uploadIncrementNotificationCount(getCurrentUID());
     }
 
     public void uploadChangeSeenValue(String notificationID){
         getDatabase().child("notification").child(getCurrentUID() + "/" + notificationID + "/seen").setValue(0);
     }
 
-    private void uploadIncrementNotificationCount(){
-        final String uID = getCurrentUID();
+    public void uploadIncrementNotificationCount(String uID){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("notification");
 
@@ -106,7 +106,7 @@ public class NotificationDatabase  extends LociData {
      * ---------------------------- Notificatiom Download ----------------------------------
      * -------------------------------------------------------------------------------------
      */
-    public void downloadNotifications(final NotificationMainAdapter adapter){
+    public void downloadNotifications(final NotificationMainAdapter adapter, final ConstraintLayout view){
 
         final String uID = getCurrentUID();
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -122,6 +122,11 @@ public class NotificationDatabase  extends LociData {
                     }
                 }
 
+                if (adapter.getItemCount() == 0 ){
+                    view.setVisibility(View.GONE);
+                } else {
+                    view.setVisibility(View.VISIBLE);
+                }
 
             }
             @Override

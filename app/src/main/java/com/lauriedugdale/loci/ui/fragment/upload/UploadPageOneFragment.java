@@ -30,11 +30,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.GroupDatabase;
+import com.lauriedugdale.loci.listeners.GroupDownloadedListener;
 import com.lauriedugdale.loci.ui.activity.auth.LoginActivity;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
@@ -345,6 +347,7 @@ public class UploadPageOneFragment extends Fragment {
         // Using location, the PopupWindow will be displayed right under anchorView
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
 
+        final ProgressBar progressBar = (ProgressBar) popupView.findViewById(R.id.loading_indicator);
         TextView done = (TextView) popupView.findViewById(R.id.done);
         View background = popupView.findViewById(R.id.pv_background);
 
@@ -361,7 +364,12 @@ public class UploadPageOneFragment extends Fragment {
         mAdapter = new FetchGroupsAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 
-        mGroupDtabase.downloadUserAcessibleGroups(mAdapter);
+        mGroupDtabase.downloadUserAcessibleGroups(mAdapter, new GroupDownloadedListener() {
+            @Override
+            public void onGroupDownloaded() {
+                progressBar.setVisibility(View.GONE);
+            }
+        });
 
         done.setOnClickListener(new View.OnClickListener() {
             @Override

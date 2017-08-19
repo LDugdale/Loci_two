@@ -69,9 +69,7 @@
             </LinearLayout>
         </android.support.v7.widget.Toolbar>
 
-
     </android.support.design.widget.CoordinatorLayout>
-
 
     <android.support.design.widget.NavigationView
         android:id="@+id/navigation_view"
@@ -83,7 +81,5 @@
         android:background="@color/colorPrimaryDark"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/menu_navigation"/>
-
-
 
 </android.support.v4.widget.DrawerLayout>

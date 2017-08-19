@@ -649,7 +649,7 @@ public class EntryDatabase extends LociData {
 
         DatabaseReference database = FirebaseDatabase.getInstance().getReference("entry_location");
         GeoFire geoFire = new GeoFire(database);
-        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(currentLocation.getLatitude(), currentLocation.getLongitude()), 8); // 5 mile radius
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(currentLocation.getLatitude(), currentLocation.getLongitude()), 0.8); // half a mileujiu
 
         final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("entry_permission");
         final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
@@ -822,9 +822,7 @@ public class EntryDatabase extends LociData {
                                 }
 
                                 if (LocationUtils.isWithinBounds(currentLocation, entry) && entry.getFileType() == DataUtils.IMAGE) {
-
                                     hAdapter.addToEntries(entry);
-
                                 }
                                 aAdapter.addToEntries(entry);
                                 listener.onEntriesDownloaded();
@@ -867,7 +865,7 @@ public class EntryDatabase extends LociData {
         });
     }
 
-    public void downloadProfileEntries(final FileAdapter adapter, final String userID){
+    public void downloadProfileEntries(final FileAdapter adapter, final String userID, final EntriesDownloadedListener listener){
         String currentUID = getCurrentUID();
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -888,6 +886,7 @@ public class EntryDatabase extends LociData {
                             }
                             if (entry.getCreator().equals(userID)) {
                                 adapter.addToFiles(entry);
+                                listener.onEntriesDownloaded();
                             }
                         }
 
@@ -918,7 +917,9 @@ public class EntryDatabase extends LociData {
                             }
                             if (entry.getCreator().equals(userID)) {
                                 adapter.addToFiles(entry);
-                            }                        }
+                                listener.onEntriesDownloaded();
+                            }
+                        }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
@@ -933,7 +934,7 @@ public class EntryDatabase extends LociData {
         });
     }
 
-    public void downloadGroupProfileEntries(final FileAdapter adapter, String groupID){
+    public void downloadGroupProfileEntries(final FileAdapter adapter, String groupID, final EntriesDownloadedListener listener){
 
         // Get a reference to our posts
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -953,6 +954,7 @@ public class EntryDatabase extends LociData {
                                 return;
                             }
                             adapter.addToFiles(entry);
+                            listener.onEntriesDownloaded();
                         }
 
                         @Override
