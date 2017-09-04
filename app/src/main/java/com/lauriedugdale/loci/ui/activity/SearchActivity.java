@@ -1,6 +1,5 @@
 package com.lauriedugdale.loci.ui.activity;
 
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,7 +12,6 @@ import android.widget.ImageView;
 
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.SearchDatabase;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.ui.adapter.search.SearchEntriesSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchGroupsSection;
 import com.lauriedugdale.loci.ui.adapter.search.SearchUsersSection;

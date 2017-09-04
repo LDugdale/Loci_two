@@ -1,4 +1,4 @@
-package com.lauriedugdale.loci.ui.adapter;
+package com.lauriedugdale.loci.ui.adapter.social;
 
 import android.content.Context;
 import android.support.v7.widget.PopupMenu;
@@ -100,8 +100,8 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.ViewHolder
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
-                            // remove friend option
-                            case R.id.remove_friend:
+                            // remove group option
+                            case R.id.remove_group:
                                 // remove member from group
                                 mGroupDatabase.removeGroupMember(group.getGroupID(), null);
                                 mGroups.remove(position);

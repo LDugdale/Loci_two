@@ -40,6 +40,5 @@ public class NoMediaActivity extends AppCompatActivity implements EntryFragment.
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-
     }
 }

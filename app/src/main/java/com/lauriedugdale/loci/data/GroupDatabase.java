@@ -25,7 +25,7 @@ import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.listeners.GroupDownloadedListener;
 import com.lauriedugdale.loci.ui.adapter.FetchGroupsAdapter;
-import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
+import com.lauriedugdale.loci.ui.adapter.social.GroupsAdapter;
 import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.utils.SocialUtils;
 
@@ -293,9 +293,9 @@ public class GroupDatabase extends LociData {
             uID = getCurrentUID();
         }
 
-        getDatabase().child("group_access").child(uID).setValue(null);
+        getDatabase().child("group_access").child(uID + "/" + gID).setValue(null);
         getDatabase().child("group_permission").child(gID).child(uID).setValue(null);
-        getDatabase().child("group_members").child(gID + "/"  + getCurrentUID()).setValue(null);
+        getDatabase().child("group_members").child(gID + "/"  + uID).setValue(null);
 
         EntryDatabase entryDatabase = new EntryDatabase(getContext());
         entryDatabase.removeGroupEntries(gID, uID);

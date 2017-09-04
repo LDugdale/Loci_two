@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +31,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
+import com.lauriedugdale.loci.listeners.EntryUploadedListener;
 import com.lauriedugdale.loci.ui.customviews.CircularOverlay;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.EntryDatabase;
@@ -42,7 +44,8 @@ import com.lauriedugdale.loci.data.dataobjects.Group;
 public class UploadPageTwoFragment extends Fragment implements UploadPageOneFragment.OnNextButtonClickedListener,
                                                                 OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,
                                                                 GoogleMap.OnCameraChangeListener,
-                                                                GoogleApiClient.OnConnectionFailedListener {
+                                                                GoogleApiClient.OnConnectionFailedListener,
+                                                                EntryUploadedListener {
 
     private static final String TAG = UploadPageTwoFragment.class.getSimpleName();
 
@@ -53,6 +56,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
     private Marker mMarker;
 
     private ImageView mDone;
+    private ConstraintLayout mLoadingOverlay;
 
     // potential map types its possible to display
     private final int[] MAP_TYPES = { GoogleMap.MAP_TYPE_SATELLITE,
@@ -90,6 +94,7 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
 
         mCircularView = (CircularOverlay) view.findViewById(R.id.circular_view);
         mDone = (ImageView) view.findViewById(R.id.au_done);
+        mLoadingOverlay = (ConstraintLayout) view.findViewById(R.id.uploading);
 
         // set up google maps API
         mGoogleApiClient = new GoogleApiClient.Builder( getActivity() )
@@ -181,11 +186,14 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
 
         Projection projection = mMap.getProjection();
         float radius = 150f; // meters
+        // fetches the sp of the center of the map.
         Point centerPoint = projection.toScreenLocation(cameraPosition.target);
+        // fetches the sp from a 90 degree angle at a distance of the radius from the center of the map.
         Point radiusPoint = projection.toScreenLocation( SphericalUtil.computeOffset(cameraPosition.target, radius, 90));
-        float radiusPx = (float) Math.sqrt(Math.pow(centerPoint.x - radiusPoint.x, 2));
+        // computes the radius
+        float radiusSp = (float) Math.sqrt(Math.pow(centerPoint.x - radiusPoint.x, 2));
 
-        mCircularView.draw(projection.toScreenLocation(mMarker.getPosition()), radiusPx);
+        mCircularView.draw(projection.toScreenLocation(mMarker.getPosition()), radiusSp);
     }
 
     private void initCamera( Location location ) {
@@ -251,12 +259,18 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
                             uploadData,
                             dataType,
                             group,
-                            mCurrentLocation
+                            mCurrentLocation,
+                            UploadPageTwoFragment.this
                     );
-                    getActivity().finish();
+                    mLoadingOverlay.setVisibility(View.VISIBLE);
                 }
             }
         });
+    }
+
+    @Override
+    public void onEntryUploaded() {
+        getActivity().finish();
     }
 
     @Override
@@ -267,5 +281,4 @@ public class UploadPageTwoFragment extends Fragment implements UploadPageOneFrag
     @Override
     public void onConnectionSuspended(int i) {
     }
-
 }

@@ -82,7 +82,7 @@ public class NotificationFriendsAdapter extends RecyclerView.Adapter<Notificatio
         viewHolder.mName.setText(user.getUsername());
 
         // set profile picture
-        mUserDatabase.downloadProfilePic(viewHolder.mProfilePic, R.drawable.default_profile);
+        mUserDatabase.downloadNonLoggedInProfilePic(user.getUserID(), viewHolder.mProfilePic, R.drawable.default_profile);
 
         viewHolder.mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override

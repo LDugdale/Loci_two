@@ -80,7 +80,7 @@ public class GroupMembersAdapter extends RecyclerView.Adapter<GroupMembersAdapte
     /**
      * Populates data into the layout through the viewholder
      */
-    public void onBindViewHolder(final ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
 
         final User user = mUsers.get(position);
 
@@ -125,6 +125,8 @@ public class GroupMembersAdapter extends RecyclerView.Adapter<GroupMembersAdapte
                             switch (item.getItemId()) {
                                 case R.id.remove_member:
                                     mGroupDatabase.removeGroupMember(mGroup.getGroupID(), user.getUserID());
+                                    mUsers.remove(position);
+                                    notifyDataSetChanged();
                                     break;
                                 case R.id.make_admin:
                                     mGroupDatabase.changeAdminPermission(mGroup, user.getUserID(), popupMenu);

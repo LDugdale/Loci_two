@@ -7,8 +7,8 @@ android {
         applicationId "com.lauriedugdale.loci"
         minSdkVersion 24
         targetSdkVersion 25
-        versionCode 3
-        versionName "1.2"
+        versionCode 6
+        versionName "1.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -27,14 +27,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
-
-
-
-
-
-
-
 
     compile 'com.firebaseui:firebase-ui-storage:0.6.0'
     compile 'com.android.support:appcompat-v7:25.3.1'

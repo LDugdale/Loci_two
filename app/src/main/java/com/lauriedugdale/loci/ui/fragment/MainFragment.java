@@ -550,7 +550,6 @@ public class MainFragment extends BaseFragment implements OnMapReadyCallback, Go
         if (this.mMap != null) {
             //This is the current viewable region of the map
             LatLngBounds bounds = this.mMap.getProjection().getVisibleRegion().latLngBounds;
-
             //Loop through all the items that are available to be placed on the map
             Iterator it = mEntryMap.entrySet().iterator();
             while (it.hasNext()) {

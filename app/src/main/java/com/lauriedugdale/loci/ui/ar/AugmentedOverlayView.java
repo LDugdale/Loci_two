@@ -26,9 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Laurie Dugdale
+ * @author Laurie Dugdale adapted from code by Dat Nguyen
  */
-
 public class AugmentedOverlayView extends View {
 
     private Context mContext;
@@ -163,7 +162,7 @@ public class AugmentedOverlayView extends View {
             float[] cameraCoordinateVector = new float[4];
             Matrix.multiplyMV(cameraCoordinateVector, 0, rotatedProjectionMatrix, 0, pointInENU, 0);
 
-            // cameraCoordinateVector[2] is z, that al bggways less than 0 to display on right position
+            // cameraCoordinateVector[2] is z, that always less than 0 to display on right position
             // if z > 0, the point will display on the opposite
             if (cameraCoordinateVector[2] < 0) {
                 x  = (0.5f + cameraCoordinateVector[0]/cameraCoordinateVector[3]) * canvas.getWidth();

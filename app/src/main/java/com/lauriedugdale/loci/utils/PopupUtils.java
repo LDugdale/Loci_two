@@ -141,7 +141,7 @@ public class PopupUtils {
         // set author
         entryAuthor.setText(entry.getCreatorName());
 
-        LocationUtils.checkDistance(context, showEntry, entry.getLatitude(), entry.getLongitude());
+        LocationUtils.checkDistance(context, showEntry, entryDistance, entry.getLatitude(), entry.getLongitude());
 
         showEntry.setOnClickListener(new View.OnClickListener() {
             @Override

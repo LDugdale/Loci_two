@@ -14,10 +14,9 @@ import android.widget.ProgressBar;
 import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.GroupDatabase;
 import com.lauriedugdale.loci.listeners.GroupDownloadedListener;
-import com.lauriedugdale.loci.utils.DataUtils;
 import com.lauriedugdale.loci.data.dataobjects.Group;
 import com.lauriedugdale.loci.ui.activity.social.GroupProfileActivity;
-import com.lauriedugdale.loci.ui.adapter.GroupsAdapter;
+import com.lauriedugdale.loci.ui.adapter.social.GroupsAdapter;
 
 /**
  * Created by mnt_x on 27/06/2017.

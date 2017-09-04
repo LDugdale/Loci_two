@@ -71,7 +71,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 // show progress bar
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                // use firebase auth API to sent the reset password email
+                // use firebase auth API to send the reset password email
                 mAuth.sendPasswordResetEmail(email)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override

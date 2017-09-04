@@ -62,7 +62,7 @@ public class TransportRest {
                         // Getting JSON Array node
                         JSONArray stops = jsonObj.getJSONArray("stops");
 
-                        // looping through All Contacts
+                        // looping through stops
                         for (int i = 0; i < stops.length(); i++) {
 
                             JSONObject c = stops.getJSONObject(i);

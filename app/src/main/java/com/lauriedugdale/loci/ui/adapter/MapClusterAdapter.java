@@ -90,7 +90,7 @@ public class MapClusterAdapter extends RecyclerView.Adapter<MapClusterAdapter.Vi
         // set author
         viewHolder.mAuthor.setText(entry.getCreatorName());
         // check distance, if its too far away hide the show entry button
-        LocationUtils.checkDistance(mContext, viewHolder.mShowEntry, entry.getLatitude(), entry.getLongitude());
+        LocationUtils.checkDistance(mContext, viewHolder.mShowEntry, viewHolder.mDistance, entry.getLatitude(), entry.getLongitude());
         // set image
         mUserDatabase.downloadNonLoggedInProfilePic(entry.getCreator(), viewHolder.mEntryAuthor, R.drawable.default_profile);
         // add action listner

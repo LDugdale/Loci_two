@@ -15,49 +15,51 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by mnt_x on 29/06/2017.
+ * @author Laurie Dugdale adapted from code by Dat Nguyen
  */
 
 public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback {
 
     private static final String TAG = AugmentedCamera.class.getSimpleName();
 
-    SurfaceView surfaceView;
-    SurfaceHolder surfaceHolder;
-    Camera.Size previewSize;
-    List<Camera.Size> supportedPreviewSizes;
-    Camera camera;
-    Camera.Parameters parameters;
-    Activity activity;
-
-    float[] projectionMatrix = new float[16];
-
-    int cameraWidth;
-    int cameraHeight;
     private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
+
+    private SurfaceView mSurfaceView;
+    private SurfaceHolder mSurfaceHolder;
+    private Camera.Size mPreviewSize;
+    private List<Camera.Size> mSupportedPreviewSizes;
+    private Camera mCamera;
+    private Camera.Parameters mParameters;
+    private Activity mActivity;
+
+    private float[] mProjectionMatrix = new float[16];
+
+    private int mCameraWidth;
+    private int mCameraHeight;
+
 
     public AugmentedCamera(Context context, SurfaceView surfaceView) {
         super(context);
 
-        this.surfaceView = surfaceView;
-        this.activity = (Activity) context;
-        surfaceHolder = this.surfaceView.getHolder();
-        surfaceHolder.addCallback(this);
-        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        mSurfaceView = surfaceView;
+        mActivity = (Activity) context;
+        mSurfaceHolder = this.mSurfaceView.getHolder();
+        mSurfaceHolder.addCallback(this);
+        mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public void setCamera(Camera camera) {
-        this.camera = camera;
-        if (this.camera != null) {
-            supportedPreviewSizes = this.camera.getParameters().getSupportedPreviewSizes();
+        mCamera = camera;
+        if (mCamera != null) {
+            mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
             requestLayout();
-            Camera.Parameters params = this.camera.getParameters();
+            Camera.Parameters params = mCamera.getParameters();
 
             List<String> focusModes = params.getSupportedFocusModes();
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                 params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                this.camera.setParameters(params);
+                mCamera.setParameters(params);
             }
         }
     }
@@ -69,8 +71,8 @@ public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback
         final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
 
-        if (supportedPreviewSizes != null) {
-            previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
+        if (mSupportedPreviewSizes != null) {
+            mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
         }
     }
 
@@ -84,9 +86,9 @@ public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback
 
             int previewWidth = width;
             int previewHeight = height;
-            if (previewSize != null) {
-                previewWidth = previewSize.width;
-                previewHeight = previewSize.height;
+            if (mPreviewSize != null) {
+                previewWidth = mPreviewSize.width;
+                previewHeight = mPreviewSize.height;
             }
 
             if (width * previewHeight > height * previewWidth) {
@@ -103,16 +105,16 @@ public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback
 
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            if (camera != null) {
+            if (mCamera != null) {
 
-                parameters = camera.getParameters();
+                mParameters = mCamera.getParameters();
 
                 int orientation = getCameraOrientation();
 
-                camera.setDisplayOrientation(orientation);
-                camera.getParameters().setRotation(orientation);
+                mCamera.setDisplayOrientation(orientation);
+                mCamera.getParameters().setRotation(orientation);
 
-                camera.setPreviewDisplay(holder);
+                mCamera.setPreviewDisplay(holder);
             }
         } catch (IOException exception) {
             Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
@@ -123,7 +125,7 @@ public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
 
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
 
         int degrees = 0;
         switch (rotation) {
@@ -153,11 +155,11 @@ public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if (camera != null) {
-            camera.setPreviewCallback(null);
-            camera.stopPreview();
-            camera.release();
-            camera = null;
+        if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
         }
     }
 
@@ -202,33 +204,33 @@ public class AugmentedCamera extends ViewGroup implements SurfaceHolder.Callback
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if(camera != null) {
-            this.cameraWidth = width;
-            this.cameraHeight = height;
+        if(mCamera != null) {
+            this.mCameraWidth = width;
+            this.mCameraHeight = height;
 
-            Camera.Parameters params = camera.getParameters();
-            params.setPreviewSize(previewSize.width, previewSize.height);
+            Camera.Parameters params = mCamera.getParameters();
+            params.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
             requestLayout();
 
-            camera.setParameters(params);
-            camera.startPreview();
+            mCamera.setParameters(params);
+            mCamera.startPreview();
 
             generateProjectionMatrix();
         }
     }
 
     private void generateProjectionMatrix() {
-        float ratio = (float) this.cameraWidth / this.cameraHeight;
+        float ratio = (float) this.mCameraWidth / this.mCameraHeight;
         final int OFFSET = 0;
         final float LEFT =  -ratio;
         final float RIGHT = ratio;
         final float BOTTOM = -1;
         final float TOP = 1;
-        Matrix.frustumM(projectionMatrix, OFFSET, LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
+        Matrix.frustumM(mProjectionMatrix, OFFSET, LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
     }
 
-    public float[] getProjectionMatrix() {
-        return projectionMatrix;
+    public float[] getmProjectionMatrix() {
+        return mProjectionMatrix;
     }
 
 }

@@ -123,6 +123,7 @@
     <string name="drag_marker_notice">Drag the marker!</string>
     <string name="marker_advice">(Hold down to move)</string>
     <string name="done">Done</string>
+    <string name="uploading">Uploading</string>
 
     // notifications
     <string name="friend_notifications">Friend requests</string>

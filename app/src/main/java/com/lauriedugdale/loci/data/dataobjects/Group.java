@@ -24,7 +24,7 @@ public class Group implements Parcelable{
 
     public Group(String groupName) {
         this.groupName = groupName;
-        this.queryGroupName = "PUBLIC_" + groupName.toUpperCase();
+        this.queryGroupName = "PUBLIC__" + groupName.toUpperCase();
         everyoneAdmin = "admin";
     }
 

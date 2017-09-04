@@ -6,8 +6,8 @@
 
     <color name="colorSecondary">#00bebe</color>
 
-    <color name="colorPrimaryx">#AE728C</color>
-
+    <!--<color name="colorPrimaryx">#AE728C</color>-->
+    <color name="red">#EA6D6D</color>
 
     <color name="loading_background">#424242</color>
 

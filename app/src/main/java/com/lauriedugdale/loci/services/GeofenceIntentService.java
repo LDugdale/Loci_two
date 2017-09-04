@@ -18,6 +18,7 @@ import android.util.Log;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.data.UserDatabase;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.MainActivity;
 
@@ -81,6 +82,9 @@ public class GeofenceIntentService extends IntentService {
 
         if (triggeringGeofences.size() == 1){
             GeoEntry entry = mGeoEntries.getParcelable(triggeringGeofences.get(0).getRequestId());
+            if (entry == null){
+                return;
+            }
             title = entry.getTitle();
             description = entry.getCreatorName();
         } else {
@@ -99,13 +103,13 @@ public class GeofenceIntentService extends IntentService {
         stackBuilder.addNextIntent(notificationIntent);
         PendingIntent notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        UserDatabase userDatabase = new UserDatabase(this);
         // Get a compatible notification builder
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
         // Build the notification
-        builder.setSmallIcon(R.drawable.ic_image)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
-                        R.mipmap.o))
+        builder.setSmallIcon(R.mipmap.o)
+//                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.o))
                 .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary))
                 .setContentTitle(title)
                 .setContentText(description)

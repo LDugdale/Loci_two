@@ -11,6 +11,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
+import com.lauriedugdale.loci.R;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
 import com.lauriedugdale.loci.ui.activity.entry.AudioEntryActivity;
 import com.lauriedugdale.loci.ui.activity.entry.ImageEntryActivity;
@@ -18,6 +19,8 @@ import com.lauriedugdale.loci.ui.activity.entry.NoMediaActivity;
 
 /**
  * Helper methods for location based issues
+ *
+ * the methods "WGS84toECEF" and "ECEFtoENU" have been adapted from code by Dat Nguyen
  *
  * @author Laurie Dugdale
  */
@@ -132,7 +135,7 @@ public final class LocationUtils {
     }
 
 
-    public static void checkDistance(Context context, final TextView textView, final double markerLat, final double markerLng){
+    public static void checkDistance(final Context context, final TextView openTextView, final TextView distanceTextView, final double markerLat, final double markerLng){
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
         fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
@@ -143,9 +146,13 @@ public final class LocationUtils {
                     Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), markerLat, markerLng);
                     isWithinBounds = (distance <= MAXIMUM_DISTANCE);
                     if (isWithinBounds){
-                        textView.setVisibility(View.VISIBLE);
+                        distanceTextView.setTextColor(context.getResources().getColor(R.color.colorSecondary, context.getResources().newTheme()));
+                        openTextView.setVisibility(View.VISIBLE);
                     } else {
-                          textView.setVisibility(View.GONE);
+                        distanceTextView.setTextColor(context.getResources().getColor(R.color.red, context.getResources().newTheme()));
+
+                        distanceTextView.append(" - too far away");
+                        openTextView.setVisibility(View.GONE);
                     }
                 }
             }
@@ -155,7 +162,6 @@ public final class LocationUtils {
     public static boolean isWithinBounds(Location location, GeoEntry entry){
 
         Float distance = getDistanceInMeters(location.getLatitude(), location.getLongitude(), entry.getLatitude(), entry.getLongitude());
-        System.out.println(distance);
         return (distance <= MAXIMUM_DISTANCE);
     }
 

@@ -22,6 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.lauriedugdale.loci.listeners.EntriesDownloadedListener;
+import com.lauriedugdale.loci.listeners.EntryUploadedListener;
 import com.lauriedugdale.loci.listeners.SingleEntryDownloadListener;
 import com.lauriedugdale.loci.data.dataobjects.CameraPoint;
 import com.lauriedugdale.loci.data.dataobjects.FilterOptions;
@@ -86,7 +87,7 @@ public class EntryDatabase extends LociData {
      * @param group
      * @param location
      */
-    public void uploadEntryWithFile(final int permissions, final String title, final String description, final Uri path, final int type, final Group group, final Location location) {
+    public void uploadEntryWithFile(final int permissions, final String title, final String description, final Uri path, final int type, final Group group, final Location location, final EntryUploadedListener listener) {
 
         Log.d(TAG, "Uploading GeoEntry");
 
@@ -133,6 +134,7 @@ public class EntryDatabase extends LociData {
                 // upload the location of geoentry
                 uploadEntryLocation(entryID, location.getLatitude(), location.getLongitude());
 
+                listener.onEntryUploaded();
             }
         });
     }
@@ -266,6 +268,25 @@ public class EntryDatabase extends LociData {
         final DatabaseReference ref = database.getReference("entry_permission");
         final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
 
+
+        eRef.orderByChild("creator").equalTo(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
+                    if (entry.getGroupID() != null && entry.getGroupID().equals(gID)) {
+                        postSnapshot.getRef().child("groupID").setValue(null);
+                        postSnapshot.getRef().child("groupName").setValue(null);
+                        postSnapshot.getRef().child("fromWho").setValue(DataUtils.FROM_SELF);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
         // remove entries by the id being removed from the group id in entry_permission
         ref.child(gID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -289,24 +310,7 @@ public class EntryDatabase extends LociData {
                         public void onCancelled(DatabaseError databaseError) {
 
                         }
-                    });                }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
-        eRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    GeoEntry entry = postSnapshot.getValue(GeoEntry.class);
-
-                    if (entry.getGroupID().equals(gID)) {
-                        postSnapshot.getRef().child("groupID").setValue(null);
-                        postSnapshot.getRef().child("groupName").setValue(null);
-                        postSnapshot.getRef().child("fromWho").setValue(DataUtils.FROM_SELF);
-                    }
+                    });
                 }
             }
             @Override
@@ -314,15 +318,50 @@ public class EntryDatabase extends LociData {
             }
         });
 
+
         final DatabaseReference gmRef = database.getReference("group_members");
         gmRef.child(gID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    User user = postSnapshot.getValue(User.class);
+                for (DataSnapshot memberPostSnapshot : dataSnapshot.getChildren()) {
 
-                    if (!user.getUserID().equals(getCurrentUID())) {
-                        ref.child(user.getUserID()).orderByChild("creator").equalTo(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    String userID = memberPostSnapshot.getKey();
+
+                    if (!userID.equals(getCurrentUID())) {
+                        ref.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                    String entryKey = postSnapshot.getKey();
+                                    eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
+                                            if (entry == null) {
+                                                return;
+                                            }
+
+                                            if (entry.getCreator().equals(uID)){
+                                                postSnapshot.getRef().setValue(null);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+
+
+
+
+                        ref.child(userID).orderByChild("creator").equalTo(uID).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
@@ -980,22 +1019,31 @@ public class EntryDatabase extends LociData {
         DatabaseReference ref = database.getReference("entry_permission");
         final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
 
+        final int[] count = {0};
+
         ref.child(groupID).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+            public void onDataChange(final DataSnapshot permissionDataSnapshot) {
+                for (DataSnapshot postSnapshot : permissionDataSnapshot.getChildren()) {
 
                     String entryKey = postSnapshot.getKey();
                     eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            count[0]++;
                             GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
                             if (entry == null) {
+                                if (count[0] == permissionDataSnapshot.getChildrenCount()){
+                                    listener.onEntriesDownloaded();
+                                }
                                 return;
                             }
                             long date = entry.getUploadDate();
                             if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
                                 entryMap.put(entry.getEntryID(), entry);
+                            }
+
+                            if (count[0] == permissionDataSnapshot.getChildrenCount()){
                                 listener.onEntriesDownloaded();
                             }
                         }
@@ -1026,11 +1074,11 @@ public class EntryDatabase extends LociData {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference ref = database.getReference("entry_permission");
         final DatabaseReference eRef = FirebaseDatabase.getInstance().getReference("entries");
-
+        final int[] anyoneCount = {0};
         ref.child(currentUID).orderByChild("ownerID").equalTo(userID).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+            public void onDataChange(final DataSnapshot epDataSnapshot) {
+                for (DataSnapshot postSnapshot : epDataSnapshot.getChildren()) {
                     String entryKey = postSnapshot.getKey();
                     eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -1041,11 +1089,12 @@ public class EntryDatabase extends LociData {
                             }
 
                             long date = entry.getUploadDate();
+
                             if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
                                 entryMap.put(entry.getEntryID(), entry);
-                                listener.onEntriesDownloaded();
-
                             }
+
+
                         }
 
                         @Override
@@ -1063,20 +1112,28 @@ public class EntryDatabase extends LociData {
 
         ref.child("anyone").orderByChild("ownerID").equalTo(userID).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+            public void onDataChange(final DataSnapshot anyoneDataSnapshot) {
+                for (DataSnapshot postSnapshot : anyoneDataSnapshot.getChildren()) {
                     String entryKey = postSnapshot.getKey();
                     eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            anyoneCount[0]++;
+                            System.out.println(anyoneDataSnapshot.getChildrenCount() + "    " +anyoneCount[0]);
                             GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
                             if (entry == null || !entry.getCreator().equals(userID)) {
+                                if (anyoneDataSnapshot.getChildrenCount() == anyoneCount[0]){
+                                    listener.onEntriesDownloaded();
+                                }
                                 return;
                             }
 
                             long date = entry.getUploadDate();
                             if(fromTime <= date && date <= toTime && typesMap.get(entry.getFileType())){
                                 entryMap.put(entry.getEntryID(), entry);
+                            }
+
+                            if (anyoneDataSnapshot.getChildrenCount() == anyoneCount[0]){
                                 listener.onEntriesDownloaded();
                             }
                         }

@@ -198,11 +198,13 @@ public class GeoFencingService extends Service implements OnCompleteListener<Voi
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.hasChildren()){
+                            return;
+                        }
                         String entryKey = dataSnapshot.getKey();
                         eRef.child(entryKey).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-
                                 GeoEntry entry = dataSnapshot.getValue(GeoEntry.class);
                                 if (entry == null) {
                                     return;

@@ -26,6 +26,9 @@ import com.lauriedugdale.loci.R;
 
 import java.io.IOException;
 
+/**
+ * Code adapted from "A Step by Step Guide to Building an Android Audio Player" App written by Valdio Veliu
+ */
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener,
@@ -46,16 +49,15 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private int mPosition; // pauses and resumes MediaPlayer
 
-    //AudioFocus
     private AudioManager mAudioManager;
 
-    // Binder given to clients
-    private final IBinder audioBind = new AudioBinder();
+    // Used to bind the service
+    private final IBinder mAudioBind = new AudioBinder();
 
-    //Handle incoming phone calls
-    private boolean ongoingCall = false;
-    private PhoneStateListener phoneStateListener;
-    private TelephonyManager telephonyManager;
+    //Handle calls
+    private boolean mOngoingCall = false;
+    private PhoneStateListener mPhoneStateListener;
+    private TelephonyManager mTelephonyManager;
 
     private GeoEntry mGeoEntry;
 
@@ -73,13 +75,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onCreate() {
         super.onCreate();
-        // Perform one-time setup procedures
-
-        // Manage incoming phone calls during playback.
-        // Pause MediaPlayer on incoming call,
-        // Resume on hangup.
         callStateListener();
-
     }
 
     @Override
@@ -97,7 +93,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         // if the MediaSessionManager has not been created
         if (mMediaSessionManager == null) {
             try {
-                atartMediaSession();
+                startMediaSession();
                 initMediaPlayer();
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -112,7 +108,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public IBinder onBind(Intent intent) {
-        return audioBind;
+        return mAudioBind;
     }
 
     @Override
@@ -132,8 +128,8 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         }
         removeAudioFocus();
         //Disable the PhoneStateListener
-        if (phoneStateListener != null) {
-            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        if (mPhoneStateListener != null) {
+            mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
         }
 
         removeNotification();
@@ -156,17 +152,13 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
      */
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        //Invoked indicating buffering status of
-        //a media resource being streamed over the network.
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        //Invoked when playback of a media source has completed.
         stopAudio();
-
         removeNotification();
-        //stop the service
+        //stop service
         stopSelf();
     }
 
@@ -189,19 +181,16 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public boolean onInfo(MediaPlayer mp, int what, int extra) {
-        //Invoked to communicate some info
         return false;
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        //Invoked when the media source is ready for playback.
         playAudio();
     }
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-        //Invoked indicating the completion of a seek operation.
     }
 
     @Override
@@ -318,27 +307,26 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
      * Handle PhoneState changes
      */
     private void callStateListener() {
-        // Get the telephony manager
-        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        //Starting listening for PhoneState changes
-        phoneStateListener = new PhoneStateListener() {
+        // Get mTelephonyManager
+        mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        // listen for changes in the phone state
+        mPhoneStateListener = new PhoneStateListener() {
             @Override
             public void onCallStateChanged(int state, String incomingNumber) {
                 switch (state) {
-                    //if at least one call exists or the phone is ringing
-                    //pause the MediaPlayer
+                    // if there is a call or the phone is ringing pause the audio
                     case TelephonyManager.CALL_STATE_OFFHOOK:
                     case TelephonyManager.CALL_STATE_RINGING:
                         if (mMediaPlayer != null) {
                             pauseAudio();
-                            ongoingCall = true;
+                            mOngoingCall = true;
                         }
                         break;
                     case TelephonyManager.CALL_STATE_IDLE:
-                        // Phone idle. Start playing.
+                        // if the phone is idle resume the audio
                         if (mMediaPlayer != null) {
-                            if (ongoingCall) {
-                                ongoingCall = false;
+                            if (mOngoingCall) {
+                                mOngoingCall = false;
                                 resumeAudio();
                             }
                         }
@@ -346,16 +334,15 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                 }
             }
         };
-        // Register the listener with the telephony manager
-        // Listen for changes to the device call state.
-        telephonyManager.listen(phoneStateListener,
+        // listen for changes in phone call state.
+        mTelephonyManager.listen(mPhoneStateListener,
                 PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     /**
      * MediaSession and Notification actions
      */
-    private void atartMediaSession() throws RemoteException {
+    private void startMediaSession() throws RemoteException {
         if (mMediaSessionManager != null) return; //mediaSessionManager exists
 
         mMediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);

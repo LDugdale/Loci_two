@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 
 /**
  * Used to display a circular map in the UploadPageTwoFragment
- *
+ * adapted from code seen on stack overflow by username - antonio
  * @author Laurie Dugdale
  */
 public class CircularOverlay extends LinearLayout {

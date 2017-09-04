@@ -208,7 +208,7 @@ public class UserDatabase extends LociData {
      * -------------------------------------------------------------------------------------
      */
 
-    public void downloadFriendRequests(final NotificationFriendsAdapter adapter, final ConstraintLayout view) {
+    public void downloadFriendRequests(final NotificationFriendsAdapter adapter, final ConstraintLayout view, final UsersDownloadedListener listener) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference ref = database.getReference("users");
         getDatabase().child("friend_requests").child(getCurrentUID()).addChildEventListener(new ChildEventListener() {
@@ -224,6 +224,7 @@ public class UserDatabase extends LociData {
                             adapter.addToUsers(user);
                             adapter.notifyDataSetChanged();
 
+                            listener.onUsersDownloaded();
 
                             if(adapter.getItemCount() == 0){
                                 view.setVisibility(View.GONE);

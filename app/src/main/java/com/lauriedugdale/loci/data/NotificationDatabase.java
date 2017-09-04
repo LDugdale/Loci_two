@@ -12,6 +12,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lauriedugdale.loci.R;
+import com.lauriedugdale.loci.listeners.NotificationDownloadListener;
 import com.lauriedugdale.loci.listeners.SingleEntryDownloadListener;
 import com.lauriedugdale.loci.data.dataobjects.Comment;
 import com.lauriedugdale.loci.data.dataobjects.GeoEntry;
@@ -61,11 +62,12 @@ public class NotificationDatabase  extends LociData {
                 DatabaseReference pushEntryRef = entryRef.push();
                 notification.setNotificationID(pushEntryRef.getKey());
                 pushEntryRef.setValue(notification);
+                uploadIncrementNotificationCount(entry.getCreator());
+
             }
         });
 
 
-        uploadIncrementNotificationCount(getCurrentUID());
     }
 
     public void uploadChangeSeenValue(String notificationID){
@@ -106,7 +108,7 @@ public class NotificationDatabase  extends LociData {
      * ---------------------------- Notificatiom Download ----------------------------------
      * -------------------------------------------------------------------------------------
      */
-    public void downloadNotifications(final NotificationMainAdapter adapter, final ConstraintLayout view){
+    public void downloadNotifications(final NotificationMainAdapter adapter, final ConstraintLayout view, final NotificationDownloadListener listener){
 
         final String uID = getCurrentUID();
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -122,12 +124,13 @@ public class NotificationDatabase  extends LociData {
                     }
                 }
 
+                listener.onNotificationDownloaded();
+
                 if (adapter.getItemCount() == 0 ){
                     view.setVisibility(View.GONE);
                 } else {
                     view.setVisibility(View.VISIBLE);
                 }
-
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -148,6 +151,13 @@ public class NotificationDatabase  extends LociData {
         ref.child(uID + "/unseen").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println(dataSnapshot);
+
+                if (!dataSnapshot.exists()){
+                    return;
+                }
+
+                System.out.println("HERERERE");
                 long count = (long)dataSnapshot.getValue();
                 if (count > 0) {
                     notificationCount.setText(String.valueOf(count));

@@ -177,8 +177,9 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
             // put the sensor values in the rotation matric
             SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sensorEvent.values);
 
+            // if not null get the projection matrix from the camera
             if (mAugmentedCamera != null) {
-                projectionMatrix = mAugmentedCamera.getProjectionMatrix();
+                projectionMatrix = mAugmentedCamera.getmProjectionMatrix();
             }
 
             Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0);
@@ -187,10 +188,6 @@ public class AugmentedActivity extends AppCompatActivity implements SensorEventL
     }
 
     private void initLocationService() {
-
-        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
 
         try {
             mLocationManager = (LocationManager) this.getSystemService(this.LOCATION_SERVICE);
